@@ -4,8 +4,13 @@ import org.bukkit.command.CommandSender;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.command.CmdTags;
 import xyz.oribuin.eternaltags.manager.MessageManager;
+import xyz.oribuin.eternaltags.manager.TagManager;
+import xyz.oribuin.eternaltags.obj.Tag;
 import xyz.oribuin.orilibrary.command.SubCommand;
 import xyz.oribuin.orilibrary.libs.jetbrains.annotations.NotNull;
+import xyz.oribuin.orilibrary.util.StringPlaceholders;
+
+import java.util.List;
 
 @SubCommand.Info(
         names = {"create"},
@@ -26,12 +31,29 @@ public class SubCreate extends SubCommand {
 
         final MessageManager msg = this.plugin.getManager(MessageManager.class);
 
-        // /tags create <name> <tag>
-        // -1   0        1       2
-
+        // Check arguments
         if (args.length != 3) {
-
+            msg.send(sender, "invalid-arguments", StringPlaceholders.single("usage", this.getAnnotation().usage()));
+            return;
         }
+
+        final String name = args[1];
+        final String newTag = String.join(" ", args).substring(args[0].length() + name.length() + 2);
+
+        final List<Tag> cachedTags = this.plugin.getManager(TagManager.class).getTags();
+
+        // Check if the tag exists
+        if (cachedTags.stream().anyMatch(x -> x.getId().equalsIgnoreCase(name))) {
+            msg.send(sender, "tag-exists");
+            return;
+        }
+
+        // Create the new tag
+        final Tag tag = new Tag(name.toLowerCase(), name, newTag);
+        tag.setDescription("None.");
+
+        this.plugin.getManager(TagManager.class).createTag(tag);
+        msg.send(sender, "created-tag", StringPlaceholders.single("tag", newTag));
     }
 
 }

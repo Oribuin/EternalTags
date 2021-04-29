@@ -72,7 +72,8 @@ public class MessageManager extends Manager {
             return;
         }
 
-        receiver.sendMessage(HexUtils.colorify(PAPI.apply(receiver instanceof Player ? (Player) receiver : null, placeholders.apply(msg))));
+        final String prefix = this.getConfig().getString("prefix");
+        receiver.sendMessage(HexUtils.colorify(prefix + PAPI.apply(receiver instanceof Player ? (Player) receiver : null, placeholders.apply(msg))));
     }
 
     @Override
@@ -82,12 +83,14 @@ public class MessageManager extends Manager {
 
     private enum Messages {
         PREFIX("prefix", "&b&lTags &8| &f"),
+        CREATED_TAG("created-tag", "You have created the tag, %tag%&f!"),
 
         RELOAD("reload", "You have reloaded EternalTags!"),
         DISABLED_WORLD("disabled-world", "&cYou cannot do this in this world."),
         INVALID_PERMISSION("invalid-permission", "&cYou do not have permission to execute this command."),
         INVALID_PLAYER("invalid-player", "&cPlease enter a valid player."),
         INVALID_ARGUMENTS("invalid-arguments", "&cPlease provide valid arguments. Correct usage: %usage%"),
+        TAG_EXISTS("tag-exists", "&cThis tag already exists."),
         INVALID_FUNDS("invalid-funds", "&cYou do not have enough funds to do this, You need $%price%."),
         UNKNOWN_COMMAND("unknown-command", "&cPlease include a valid command."),
         PLAYER_ONLY("player-only", "&cOnly a player can execute this command."),

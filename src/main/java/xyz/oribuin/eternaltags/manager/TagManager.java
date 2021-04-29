@@ -1,11 +1,15 @@
 package xyz.oribuin.eternaltags.manager;
 
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.obj.Tag;
 import xyz.oribuin.orilibrary.manager.Manager;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,7 +18,9 @@ public class TagManager extends Manager {
 
     private final EternalTags plugin = (EternalTags) this.getPlugin();
     private final List<Tag> tags = new ArrayList<>();
-    private final ConfigurationSection section = this.plugin.getConfig().getConfigurationSection("tags");
+
+    private FileConfiguration config;
+    private ConfigurationSection section;
 
     public TagManager(final EternalTags plugin) {
         super(plugin);
@@ -22,11 +28,20 @@ public class TagManager extends Manager {
 
     @Override
     public void enable() {
+        this.config = YamlConfiguration.loadConfiguration(this.getDataFile());
+        this.section = this.config.getConfigurationSection("tags");
+
         this.cacheTags();
     }
 
     public void cacheTags() {
-        if (section == null) return;
+        this.plugin.reloadConfig();
+
+        if (section == null) {
+            this.section = this.config.createSection("tags");
+            this.saveData();
+        }
+
 
         // Cache all the plugin tags
         this.tags.clear();
@@ -38,6 +53,44 @@ public class TagManager extends Manager {
             this.tags.add(tag);
         }
 
+    }
+
+    /**
+     * Create and save a tag into the configuration file.
+     *
+     * @param tag The tag.
+     */
+    public void createTag(Tag tag) {
+        final String id = tag.getId().toLowerCase();
+
+        if (section == null) {
+            this.section = this.config.createSection("tags");
+            this.saveData();
+        }
+
+        this.section.set(id + ".name", tag.getName());
+        this.section.set(id + ".tag", tag.getTag());
+        this.section.set(id + ".description", tag.getDescription());
+        this.saveData();
+
+        this.getTags().add(tag);
+    }
+
+    /**
+     * Delete a tag from the configuration file
+     *
+     * @param tag The tag id.
+     */
+    public void deleteTag(String tag) {
+        if (section == null) {
+            this.section = this.config.createSection("tags");
+            this.saveData();
+        }
+
+        this.section.set(tag.toLowerCase(), null);
+        this.saveData();
+
+        this.tags.removeIf(x -> x.getId().equalsIgnoreCase(tag));
     }
 
     /**
@@ -62,5 +115,17 @@ public class TagManager extends Manager {
 
     public List<Tag> getTags() {
         return tags;
+    }
+
+    private void saveData() {
+        try {
+            this.config.save(this.getDataFile());
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private File getDataFile() {
+        return new File(this.plugin.getDataFolder(), "config.yml");
     }
 }

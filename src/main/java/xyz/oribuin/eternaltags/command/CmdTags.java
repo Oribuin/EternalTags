@@ -7,7 +7,12 @@ import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.gui.TagGUI;
 import xyz.oribuin.eternaltags.manager.MessageManager;
 import xyz.oribuin.orilibrary.command.Command;
+import xyz.oribuin.orilibrary.command.SubCommand;
 import xyz.oribuin.orilibrary.libs.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @Command.Info(
         name = "tags",
@@ -15,7 +20,7 @@ import xyz.oribuin.orilibrary.libs.jetbrains.annotations.NotNull;
         permission = "eternaltags.use",
         playerOnly = false,
         usage = "/tags",
-        subcommands = {},
+        subcommands = {SubCommand.class},
         aliases = {}
 )
 public class CmdTags extends Command {
@@ -35,9 +40,37 @@ public class CmdTags extends Command {
         }
 
         final FileConfiguration config = this.plugin.getManager(MessageManager.class).getConfig();
-        final String unknownCommand = config.getString("unknown-command");
-        final String noPerm = config.getString("invalid-permission");
+        final String prefix = config.getString("prefix");
+        final String unknownCommand = prefix + config.getString("unknown-command");
+        final String noPerm = prefix + config.getString("invalid-permission");
         this.runSubCommands(sender, args, unknownCommand, noPerm);
     }
 
+    @Override
+    public @NotNull List<String> completeString(@NotNull CommandSender sender, @NotNull String label, @NotNull String[] args) {
+
+        final List<String> tabComplete = new ArrayList<>();
+
+        if (this.getAnnotation().permission().length() > 0 && !sender.hasPermission(this.getAnnotation().permission()))
+            return playerList(sender);
+
+        switch (args.length) {
+            case 1: {
+                tabComplete.addAll(Arrays.asList("create", "delete", "set", "clear"));
+                break;
+            }
+
+            case 2: {
+                if (Arrays.asList("create", "delete").contains(args[0])) tabComplete.add("<name>");
+                if (Arrays.asList("set", "clear").contains(args[0])) return playerList(sender);
+                break;
+            }
+
+            default:
+                tabComplete.addAll(playerList(sender));
+
+        }
+
+        return tabComplete;
+    }
 }
