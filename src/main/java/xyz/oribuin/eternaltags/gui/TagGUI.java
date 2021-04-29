@@ -50,7 +50,6 @@ public class TagGUI {
      * @param player The player
      */
     public void createGUI(final Player player) {
-        this.clearItems(player);
 
         // Add the border slots
         final List<Integer> borderSlots = new ArrayList<>();
@@ -132,18 +131,6 @@ public class TagGUI {
 
     private String format(String string, Player player, StringPlaceholders placeholders) {
         return HexUtils.colorify(PAPI.apply(player, placeholders.apply(string)));
-    }
-
-    /**
-     * Clear all the items inside a gui then reopen it.
-     *
-     * @param player The player.
-     */
-    public void clearItems(final Player player) {
-        final List<Integer> slots = new ArrayList<>();
-        for (int i = 0; i <= 52; i++) slots.add(i);
-        gui.setItem(slots, ItemBuilder.from(Material.AIR).asGuiItem());
-        gui.open(player);
     }
 
     private GuiItem fillerItem() {
