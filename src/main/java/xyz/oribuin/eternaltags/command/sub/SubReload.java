@@ -6,6 +6,7 @@ import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.command.CmdTags;
 import xyz.oribuin.eternaltags.manager.DataManager;
 import xyz.oribuin.eternaltags.manager.MessageManager;
+import xyz.oribuin.eternaltags.manager.TagManager;
 import xyz.oribuin.orilibrary.command.SubCommand;
 import xyz.oribuin.orilibrary.libs.jetbrains.annotations.NotNull;
 
@@ -37,8 +38,8 @@ public class SubReload extends SubCommand {
         YamlConfiguration.loadConfiguration(new File(menuFolder, "tag-menu.yml"));
 
         // Reload main config files
-        YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), "messages.yml"));
-        YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), "config.yml"));
+        this.plugin.getManager(TagManager.class).enable();
+        msg.enable();
 
         // Disable then re enable the data manager
         CompletableFuture.runAsync(data::disable).thenRunAsync(data::enable);

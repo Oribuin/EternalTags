@@ -10,7 +10,11 @@ mysql:
 
 # Configure your tags here
 tags:
-  test:
-    name: 'Test Tag'
-    tag: '&7[<r:0.7>Test&7]'
-    description: 'The test tag'
+  eternaltags:
+    name: 'EternalTags'
+    tag: '&7[<r:0.7>EternalTags&7]'
+    description: 'The eternaltags tag!'
+  gradient:
+    name: 'Gradient'
+    tag: '&7[<g:#ED213A:#93291E>Gradient&7]'
+    description: 'A very cool gradient!'

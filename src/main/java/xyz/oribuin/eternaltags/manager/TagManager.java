@@ -43,7 +43,6 @@ public class TagManager extends Manager {
             this.saveData();
         }
 
-
         // Cache all the plugin tags
         this.tags.clear();
 

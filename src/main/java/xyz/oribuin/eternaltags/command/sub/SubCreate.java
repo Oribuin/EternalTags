@@ -32,7 +32,7 @@ public class SubCreate extends SubCommand {
         final MessageManager msg = this.plugin.getManager(MessageManager.class);
 
         // Check arguments
-        if (args.length != 3) {
+        if (args.length < 3) {
             msg.send(sender, "invalid-arguments", StringPlaceholders.single("usage", this.getAnnotation().usage()));
             return;
         }
