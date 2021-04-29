@@ -23,8 +23,8 @@ import java.util.stream.Collectors;
         permission = "eternaltags.use",
         playerOnly = false,
         usage = "/tags",
-        subcommands = {SubClear.class, SubCreate.class, SubDelete.class, SubReload.class, SubSet.class},
-        aliases = {}
+        subcommands = {SubClear.class, SubConvert.class, SubCreate.class, SubDelete.class, SubReload.class, SubSet.class},
+        aliases = {"eternaltags"}
 )
 public class CmdTags extends Command {
 
@@ -60,7 +60,7 @@ public class CmdTags extends Command {
 
         switch (args.length) {
             case 1: {
-                tabComplete.addAll(Arrays.asList("create", "delete", "set", "clear"));
+                tabComplete.addAll(Arrays.asList("create", "convert", "reload", "delete", "set", "clear"));
                 break;
             }
 

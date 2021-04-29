@@ -32,10 +32,6 @@ public class EternalTags extends OriPlugin {
 
         // Register Commands
         new CmdTags(this).register(null, null);
-
-
-        // Register Listeners.
-
     }
 
     @Override

@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 public class TagManager extends Manager {
@@ -91,6 +92,27 @@ public class TagManager extends Manager {
         this.saveData();
 
         this.tags.removeIf(x -> x.getId().equalsIgnoreCase(tag));
+    }
+
+    /**
+     * Save a list of tags into the configuration file.
+     *
+     * @param tags The tag list
+     */
+    public void saveTags(List<Tag> tags) {
+        if (section == null) {
+            this.section = this.config.createSection("tags");
+            this.saveData();
+        }
+
+        CompletableFuture.runAsync(() -> tags.forEach(tag -> {
+            this.section.set(tag.getId().toLowerCase() + ".name", tag.getName());
+            this.section.set(tag.getId().toLowerCase() + ".tag", tag.getTag());
+            this.section.set(tag.getId().toLowerCase() + ".description", tag.getDescription());
+        })).thenRun(() -> {
+            saveData();
+            this.getTags().addAll(tags);
+        });
     }
 
     /**

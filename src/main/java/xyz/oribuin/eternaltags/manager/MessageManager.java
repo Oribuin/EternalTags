@@ -76,6 +76,31 @@ public class MessageManager extends Manager {
         receiver.sendMessage(HexUtils.colorify(prefix + PAPI.apply(receiver instanceof Player ? (Player) receiver : null, placeholders.apply(msg))));
     }
 
+    /**
+     * Send a raw message to the receiver without any placeholders
+     *
+     * Use this to send a message to a player without the message being defined in a config.
+     *
+     * @param receiver The message receiver
+     * @param message The raw message
+     */
+    public void sendRaw(CommandSender receiver, String message) {
+        this.sendRaw(receiver, message, StringPlaceholders.empty());
+    }
+
+    /**
+     * Send a raw message to the receiver with placeholders.
+     *
+     * Use this to send a message to a player without the message being defined in a config.
+     *
+     * @param receiver The message receiver
+     * @param message The message
+     * @param placeholders Message Placeholders.
+     */
+    public void sendRaw(CommandSender receiver, String message, StringPlaceholders placeholders) {
+        receiver.sendMessage(HexUtils.colorify(PAPI.apply(receiver instanceof Player ? (Player) receiver : null, placeholders.apply(message))));
+    }
+
     @Override
     public void disable() {
 
@@ -87,6 +112,7 @@ public class MessageManager extends Manager {
         DELETED_TAG("deleted-tag", "You have deleted the tag, %tag%&f!"),
         CHANGED_TAG("changed-tag", "Your tag has been changed to %tag%"),
         CLEARED_TAG("cleared-tag", "Your tag has been cleared."),
+        CONVERTED("converted-tags", "You have converted %total% Tags into EternalTags."),
 
         RELOAD("reload", "You have reloaded EternalTags!"),
         DISABLED_WORLD("disabled-world", "&cYou cannot do this in this world."),
