@@ -1,0 +1,26 @@
+menu-name: 'EternalTags'
+
+tag:
+  material: 'NAME_TAG'
+  amount: 1
+  name: '&bTag &f » %tag%'
+  lore:
+    - '&7» &fDesc: &b%description%'
+    - '&7» &fName: &b%name%'
+    - ''
+    - '&7Click to set as your current tag.'
+  glow: true
+
+previous-page:
+  material: 'PAPER'
+  amount: 1
+  name: '&7« &b&lPrevious Page'
+  lore: []
+  glow: true
+
+next-page:
+  material: 'PAPER'
+  amount: 1
+  name: '&b&lNext Page &7»'
+  lore: []
+  glow: true

@@ -1,0 +1,16 @@
+# Enable if you want to save everything in MySQL
+mysql:
+  enabled: false
+  host: localhost
+  port: 3306
+  dbname: DBName
+  username: Username
+  password: Password
+  ssl: true
+
+# Configure your tags here
+tags:
+  test:
+    name: 'Test Tag'
+    tag: '&7[<r:0.7>Test&7]'
+    description: 'The test tag'
