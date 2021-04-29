@@ -4,6 +4,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import xyz.oribuin.eternaltags.EternalTags;
+import xyz.oribuin.eternaltags.command.sub.SubCreate;
 import xyz.oribuin.eternaltags.gui.TagGUI;
 import xyz.oribuin.eternaltags.manager.MessageManager;
 import xyz.oribuin.orilibrary.command.Command;
@@ -20,7 +21,7 @@ import java.util.List;
         permission = "eternaltags.use",
         playerOnly = false,
         usage = "/tags",
-        subcommands = {SubCommand.class},
+        subcommands = {SubCreate.class},
         aliases = {}
 )
 public class CmdTags extends Command {
