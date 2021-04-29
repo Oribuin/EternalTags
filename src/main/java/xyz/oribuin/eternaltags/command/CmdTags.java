@@ -4,9 +4,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import xyz.oribuin.eternaltags.EternalTags;
-import xyz.oribuin.eternaltags.command.sub.SubCreate;
-import xyz.oribuin.eternaltags.command.sub.SubDelete;
-import xyz.oribuin.eternaltags.command.sub.SubSet;
+import xyz.oribuin.eternaltags.command.sub.*;
 import xyz.oribuin.eternaltags.gui.TagGUI;
 import xyz.oribuin.eternaltags.manager.MessageManager;
 import xyz.oribuin.eternaltags.manager.TagManager;
@@ -25,7 +23,7 @@ import java.util.stream.Collectors;
         permission = "eternaltags.use",
         playerOnly = false,
         usage = "/tags",
-        subcommands = {SubCreate.class, SubDelete.class, SubSet.class},
+        subcommands = {SubClear.class, SubCreate.class, SubDelete.class, SubReload.class, SubSet.class},
         aliases = {}
 )
 public class CmdTags extends Command {
@@ -40,7 +38,7 @@ public class CmdTags extends Command {
     public void runFunction(@NotNull CommandSender sender, @NotNull String label, @NotNull String[] args) {
 
         if (sender instanceof Player && args.length == 0) {
-            new TagGUI(this.plugin).createGUI((Player) sender, null);
+            new TagGUI(this.plugin).createGUI((Player) sender);
             return;
         }
 

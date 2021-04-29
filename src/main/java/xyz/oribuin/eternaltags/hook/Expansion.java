@@ -29,6 +29,7 @@ public class Expansion extends PlaceholderExpansion {
         final String currentTag = this.data.getTag(uuid) == null ? "" : this.data.getTag(uuid).getTag();
 
         if (params.equalsIgnoreCase("tag")) return HexUtils.colorify(currentTag);
+        if (params.equalsIgnoreCase("tag_formatted")) return HexUtils.colorify(currentTag.length() == 0 ? "None" : currentTag);
         if (params.equalsIgnoreCase("total")) return String.valueOf(this.tag.getTags().size());
         if (params.equalsIgnoreCase("unlocked")) return String.valueOf(this.tag.getPlayersTag(player).size());
 

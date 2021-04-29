@@ -10,6 +10,7 @@ import xyz.oribuin.orilibrary.database.SQLiteConnector;
 import xyz.oribuin.orilibrary.manager.Manager;
 import xyz.oribuin.orilibrary.util.FileUtils;
 
+import javax.annotation.Nullable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.HashMap;
@@ -22,7 +23,6 @@ public class DataManager extends Manager {
 
     private final EternalTags plugin = (EternalTags) this.getPlugin();
     private final Map<UUID, Tag> cachedUsers = new HashMap<>();
-    private final Map<UUID, Integer> cachedCredits = new HashMap<>();
     private DatabaseConnector connector;
 
     public DataManager(final EternalTags plugin) {
@@ -56,7 +56,7 @@ public class DataManager extends Manager {
         }
 
         this.async(task -> this.connector.connect(connection -> {
-            final String query = "CREATE TABLE IF NOT EXISTS eternaltags_tags (player VARCHAR(50), tagID TXT, PRIMARY KEY(player))";
+            final String query = "CREATE TABLE IF NOT EXISTS eternaltags_tags (player VARCHAR(50), tagID TEXT, PRIMARY KEY(player))";
 
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.executeUpdate();
@@ -109,9 +109,15 @@ public class DataManager extends Manager {
      * @param uuid The player's uuid
      * @param tag  The tag
      */
-    public void updateUser(final UUID uuid, final Tag tag) {
+    public void updateUser(final UUID uuid, final @Nullable Tag tag) {
+
+        if (tag == null) {
+            this.removeUser(uuid);
+            return;
+        }
 
         this.cachedUsers.put(uuid, tag);
+
         final String query = "REPLACE INTO eternaltags_tags (player, tagID) VALUES (?, ?)";
 
         this.async(task -> this.connector.connect(connection -> {
@@ -121,6 +127,22 @@ public class DataManager extends Manager {
                 statement.setString(2, tag.getId());
                 statement.executeUpdate();
             }
+        }));
+
+    }
+
+    private void removeUser(final UUID uuid) {
+        this.cachedUsers.remove(uuid);
+
+        final String query = "DELETE FROM eternaltags_tags WHERE player = ?";
+
+        this.async(task -> this.connector.connect(connection -> {
+
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setString(1, uuid.toString());
+                statement.executeUpdate();
+            }
+
         }));
 
     }

@@ -6,7 +6,6 @@ import me.mattstudios.mfgui.gui.guis.PaginatedGui;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.hook.PAPI;
@@ -38,7 +37,7 @@ public class TagGUI {
         this.gui = new PaginatedGui(6, this.plugin.getMenuConfig().getString("menu-name"));
         this.gui.setUpdating(true);
         this.gui.setDefaultClickAction(event -> {
-            event.setResult(Event.Result.DENY);
+//            event.setResult(Event.Result.DENY);
             event.setCancelled(true);
             ((Player) event.getWhoClicked()).updateInventory();
         });
@@ -50,7 +49,7 @@ public class TagGUI {
      *
      * @param player The player
      */
-    public void createGUI(final Player player, @Nullable final String keyword) {
+    public void createGUI(final Player player) {
         this.clearItems(player);
 
         // Add the border slots
@@ -61,17 +60,19 @@ public class TagGUI {
         gui.setItem(47, ItemBuilder.from(this.getGUIItem("previous-page", null, player)).asGuiItem(event -> gui.previous()));
         gui.setItem(51, ItemBuilder.from(this.getGUIItem("next-page", null, player)).asGuiItem(event -> gui.next()));
 
-        final List<Tag> tags = this.tagManager.getPlayersTag(player);
+        gui.setItem(49, ItemBuilder.from(this.getGUIItem("clear-tag", null, player)).asGuiItem(event -> {
 
-        if (keyword != null)
-            tags.removeIf(tag -> tag.getId().equalsIgnoreCase(keyword));
+            this.plugin.getManager(MessageManager.class).send(event.getWhoClicked(), "cleared-tag");
+            this.plugin.getManager(DataManager.class).updateUser(event.getWhoClicked().getUniqueId(), null);
+            event.getWhoClicked().closeInventory();
 
+        }));
 
-        tags.forEach(tag -> gui.addItem(ItemBuilder.from(this.getGUIItem("tag", tag, player))
+        this.tagManager.getPlayersTag(player).forEach(tag -> gui.addItem(ItemBuilder.from(this.getGUIItem("tag", tag, player))
                 .asGuiItem(event -> {
 
                     if (!this.tagManager.getTags().contains(tag)) {
-                        this.createGUI(player, keyword);
+                        event.getWhoClicked().closeInventory();
                         return;
                     }
 
@@ -96,6 +97,7 @@ public class TagGUI {
 
         StringPlaceholders placeholders = StringPlaceholders.empty();
 
+        // Define tag placeholders if the tag isnt null
         if (tag != null) {
             placeholders = StringPlaceholders.builder("tag", tag.getTag())
                     .addPlaceholder("description", tag.getDescription())
@@ -104,16 +106,28 @@ public class TagGUI {
                     .build();
         }
 
+        // Create the lore
         final List<String> lore = new ArrayList<>();
         StringPlaceholders finalPlaceholders = placeholders;
         config.getStringList(path + ".lore").forEach(s -> lore.add(format(s, player, finalPlaceholders)));
 
-        return ItemBuilder.from(Material.valueOf(config.getString(path + ".material")))
+        // Create the item builder
+        final ItemBuilder item = ItemBuilder.from(Material.valueOf(config.getString(path + ".material")))
                 .setName(format(config.getString(path + ".name"), player, finalPlaceholders))
                 .setLore(lore)
                 .setAmount(config.getInt(path + ".amount"))
-                .glow(config.getBoolean(path + ".glow"))
-                .build();
+                .glow(config.getBoolean(path + ".glow"));
+
+        // Define the texture String
+        final String texture = config.getString(path + ".texture");
+
+        // Check if can apply texture
+        if (texture != null) {
+            item.setSkullTexture(texture);
+        }
+
+        // Build the new itemstack
+        return item.build();
     }
 
     private String format(String string, Player player, StringPlaceholders placeholders) {

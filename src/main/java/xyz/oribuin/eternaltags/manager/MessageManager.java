@@ -86,6 +86,7 @@ public class MessageManager extends Manager {
         CREATED_TAG("created-tag", "You have created the tag, %tag%&f!"),
         DELETED_TAG("deleted-tag", "You have deleted the tag, %tag%&f!"),
         CHANGED_TAG("changed-tag", "Your tag has been changed to %tag%"),
+        CLEARED_TAG("cleared-tag", "Your tag has been cleared."),
 
         RELOAD("reload", "You have reloaded EternalTags!"),
         DISABLED_WORLD("disabled-world", "&cYou cannot do this in this world."),
