@@ -5,6 +5,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import xyz.oribuin.eternaltags.command.CmdTags;
 import xyz.oribuin.eternaltags.hook.Expansion;
 import xyz.oribuin.eternaltags.manager.DataManager;
+import xyz.oribuin.eternaltags.manager.MessageManager;
 import xyz.oribuin.eternaltags.manager.TagManager;
 import xyz.oribuin.orilibrary.OriPlugin;
 import xyz.oribuin.orilibrary.util.FileUtils;
@@ -22,6 +23,7 @@ public class EternalTags extends OriPlugin {
         this.getServer().getScheduler().runTaskAsynchronously(this, () -> {
             this.getManager(TagManager.class);
             this.getManager(DataManager.class);
+            this.getManager(MessageManager.class);
         });
 
         // Register PlaceholderAPI Expansion
@@ -30,8 +32,13 @@ public class EternalTags extends OriPlugin {
         // Register Menu Config
         this.menuConfig = YamlConfiguration.loadConfiguration(FileUtils.createMenuFile(this, "tag-menu"));
 
+        // Get command messages
+        final FileConfiguration config = this.getManager(MessageManager.class).getConfig();
+        final String prefix = config.getString("prefix");
+        final String noPerm = prefix + config.getString("invalid-permission");
+
         // Register Commands
-        new CmdTags(this).register(null, null);
+        new CmdTags(this).register(null, noPerm);
     }
 
     @Override
