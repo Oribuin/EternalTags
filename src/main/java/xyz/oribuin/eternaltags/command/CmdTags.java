@@ -5,15 +5,19 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.command.sub.SubCreate;
+import xyz.oribuin.eternaltags.command.sub.SubDelete;
+import xyz.oribuin.eternaltags.command.sub.SubSet;
 import xyz.oribuin.eternaltags.gui.TagGUI;
 import xyz.oribuin.eternaltags.manager.MessageManager;
+import xyz.oribuin.eternaltags.manager.TagManager;
+import xyz.oribuin.eternaltags.obj.Tag;
 import xyz.oribuin.orilibrary.command.Command;
-import xyz.oribuin.orilibrary.command.SubCommand;
 import xyz.oribuin.orilibrary.libs.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Command.Info(
         name = "tags",
@@ -21,7 +25,7 @@ import java.util.List;
         permission = "eternaltags.use",
         playerOnly = false,
         usage = "/tags",
-        subcommands = {SubCreate.class},
+        subcommands = {SubCreate.class, SubDelete.class, SubSet.class},
         aliases = {}
 )
 public class CmdTags extends Command {
@@ -36,7 +40,7 @@ public class CmdTags extends Command {
     public void runFunction(@NotNull CommandSender sender, @NotNull String label, @NotNull String[] args) {
 
         if (sender instanceof Player && args.length == 0) {
-            new TagGUI(this.plugin).createGUI((Player) sender);
+            new TagGUI(this.plugin).createGUI((Player) sender, null);
             return;
         }
 
@@ -50,6 +54,7 @@ public class CmdTags extends Command {
     @Override
     public @NotNull List<String> completeString(@NotNull CommandSender sender, @NotNull String label, @NotNull String[] args) {
 
+        final TagManager tag = this.plugin.getManager(TagManager.class);
         final List<String> tabComplete = new ArrayList<>();
 
         if (this.getAnnotation().permission().length() > 0 && !sender.hasPermission(this.getAnnotation().permission()))
@@ -62,14 +67,21 @@ public class CmdTags extends Command {
             }
 
             case 2: {
-                if (Arrays.asList("create", "delete").contains(args[0])) tabComplete.add("<name>");
+                if (args[0].equalsIgnoreCase("create")) tabComplete.add("<name>");
+                if (args[0].equalsIgnoreCase("delete")) tabComplete.addAll(tag.getTags().stream().map(Tag::getId).collect(Collectors.toList()));
                 if (Arrays.asList("set", "clear").contains(args[0])) return playerList(sender);
+                break;
+            }
+
+            case 3: {
+                if (args[0].equalsIgnoreCase("set")) tabComplete.addAll(tag.getTags().stream().map(Tag::getId).collect(Collectors.toList()));
+                if (args[0].equalsIgnoreCase("create")) tabComplete.add("<tag>");
                 break;
             }
 
             default:
                 tabComplete.addAll(playerList(sender));
-
+                break;
         }
 
         return tabComplete;

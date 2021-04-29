@@ -11,6 +11,7 @@ import org.bukkit.inventory.ItemStack;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.hook.PAPI;
 import xyz.oribuin.eternaltags.manager.DataManager;
+import xyz.oribuin.eternaltags.manager.MessageManager;
 import xyz.oribuin.eternaltags.manager.TagManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 import xyz.oribuin.orilibrary.util.HexUtils;
@@ -49,8 +50,8 @@ public class TagGUI {
      *
      * @param player The player
      */
-    public void createGUI(final Player player) {
-//        this.clearItems(player);
+    public void createGUI(final Player player, @Nullable final String keyword) {
+        this.clearItems(player);
 
         // Add the border slots
         final List<Integer> borderSlots = new ArrayList<>();
@@ -60,12 +61,23 @@ public class TagGUI {
         gui.setItem(47, ItemBuilder.from(this.getGUIItem("previous-page", null, player)).asGuiItem(event -> gui.previous()));
         gui.setItem(51, ItemBuilder.from(this.getGUIItem("next-page", null, player)).asGuiItem(event -> gui.next()));
 
-        this.tagManager.getPlayersTag(player).forEach(tag -> gui.addItem(ItemBuilder.from(this.getGUIItem("tag", tag, player))
+        final List<Tag> tags = this.tagManager.getPlayersTag(player);
+
+        if (keyword != null)
+            tags.removeIf(tag -> tag.getId().equalsIgnoreCase(keyword));
+
+
+        tags.forEach(tag -> gui.addItem(ItemBuilder.from(this.getGUIItem("tag", tag, player))
                 .asGuiItem(event -> {
+
+                    if (!this.tagManager.getTags().contains(tag)) {
+                        this.createGUI(player, keyword);
+                        return;
+                    }
 
                     event.getWhoClicked().closeInventory();
                     this.data.updateUser(event.getWhoClicked().getUniqueId(), tag);
-
+                    this.plugin.getManager(MessageManager.class).send(event.getWhoClicked(), "changed-tag", StringPlaceholders.single("tag", tag.getTag()));
                 })));
 
         gui.open(player);
