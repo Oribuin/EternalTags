@@ -56,7 +56,7 @@ public class DataManager extends Manager {
         }
 
         this.async(task -> this.connector.connect(connection -> {
-            final String query = "CREATE TABLE IF NOT EXISTS eternaltags_tags (player VARCHAR(50), tagID TXT, credits INT, PRIMARY KEY(player))";
+            final String query = "CREATE TABLE IF NOT EXISTS eternaltags_tags (player VARCHAR(50), tagID TXT, PRIMARY KEY(player))";
 
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.executeUpdate();
