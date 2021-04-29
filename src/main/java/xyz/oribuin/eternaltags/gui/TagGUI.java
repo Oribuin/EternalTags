@@ -37,9 +37,8 @@ public class TagGUI {
         this.gui = new PaginatedGui(6, this.plugin.getMenuConfig().getString("menu-name"));
         this.gui.setUpdating(true);
         this.gui.setDefaultClickAction(event -> {
-            event.setCancelled(true);
             event.setResult(Event.Result.DENY);
-
+            event.setCancelled(true);
             ((Player) event.getWhoClicked()).updateInventory();
         });
 
@@ -51,7 +50,7 @@ public class TagGUI {
      * @param player The player
      */
     public void createGUI(final Player player) {
-        this.clearItems(player);
+//        this.clearItems(player);
 
         // Add the border slots
         final List<Integer> borderSlots = new ArrayList<>();
@@ -61,17 +60,13 @@ public class TagGUI {
         gui.setItem(47, ItemBuilder.from(this.getGUIItem("previous-page", null, player)).asGuiItem(event -> gui.previous()));
         gui.setItem(51, ItemBuilder.from(this.getGUIItem("next-page", null, player)).asGuiItem(event -> gui.next()));
 
-        this.tagManager.getPlayersTag(player).forEach(tag -> {
+        this.tagManager.getPlayersTag(player).forEach(tag -> gui.addItem(ItemBuilder.from(this.getGUIItem("tag", tag, player))
+                .asGuiItem(event -> {
 
-            final GuiItem item = ItemBuilder.from(this.getGUIItem("tag", tag, player)).asGuiItem(event -> {
-                event.getWhoClicked().closeInventory();
-                this.data.updateUser(event.getWhoClicked().getUniqueId(), tag);
+                    event.getWhoClicked().closeInventory();
+                    this.data.updateUser(event.getWhoClicked().getUniqueId(), tag);
 
-            });
-
-            gui.addItem(item);
-
-        });
+                })));
 
         gui.open(player);
     }
