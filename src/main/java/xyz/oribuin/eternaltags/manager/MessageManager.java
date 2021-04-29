@@ -84,12 +84,15 @@ public class MessageManager extends Manager {
     private enum Messages {
         PREFIX("prefix", "&b&lTags &8| &f"),
         CREATED_TAG("created-tag", "You have created the tag, %tag%&f!"),
+        DELETED_TAG("deleted-tag", "You have deleted the tag, %tag%&f!"),
+        CHANGED_TAG("changed-tag", "Your tag has been changed to %tag%"),
 
         RELOAD("reload", "You have reloaded EternalTags!"),
         DISABLED_WORLD("disabled-world", "&cYou cannot do this in this world."),
         INVALID_PERMISSION("invalid-permission", "&cYou do not have permission to execute this command."),
         INVALID_PLAYER("invalid-player", "&cPlease enter a valid player."),
         INVALID_ARGUMENTS("invalid-arguments", "&cPlease provide valid arguments. Correct usage: %usage%"),
+        TAG_DOESNT_EXIST("tag-doesnt-exist", "&cThis tag does not exist."),
         TAG_EXISTS("tag-exists", "&cThis tag already exists."),
         INVALID_FUNDS("invalid-funds", "&cYou do not have enough funds to do this, You need $%price%."),
         UNKNOWN_COMMAND("unknown-command", "&cPlease include a valid command."),
