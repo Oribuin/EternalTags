@@ -49,6 +49,8 @@ public class TagManager extends Manager {
         for (String key : section.getKeys(false)) {
             final Tag tag = new Tag(key, section.getString(key + ".name"), section.getString(key + ".tag"));
             tag.setDescription(section.getString(key + ".description"));
+            if (section.get(key + ".permission") != null)
+                tag.setPermission(section.getString(key + ".permission"));
 
             this.tags.add(tag);
         }
@@ -71,6 +73,7 @@ public class TagManager extends Manager {
         this.section.set(id + ".name", tag.getName());
         this.section.set(id + ".tag", tag.getTag());
         this.section.set(id + ".description", tag.getDescription());
+        this.section.set(id + ".permission", tag.getPermission());
         this.saveData();
 
         this.getTags().add(tag);
@@ -108,6 +111,7 @@ public class TagManager extends Manager {
             this.section.set(tag.getId().toLowerCase() + ".name", tag.getName());
             this.section.set(tag.getId().toLowerCase() + ".tag", tag.getTag());
             this.section.set(tag.getId().toLowerCase() + ".description", tag.getDescription());
+            this.section.set(tag.getId().toLowerCase() + ".permission", tag.getPermission());
         })).thenRun(() -> {
             saveData();
             this.getTags().addAll(tags);
@@ -124,7 +128,7 @@ public class TagManager extends Manager {
 
         return this.plugin.getManager(TagManager.class).getTags()
                 .stream()
-                .filter(tag -> player.hasPermission("eternaltags.tag." + tag.getId()))
+                .filter(tag -> player.hasPermission(tag.getPermission()))
                 .collect(Collectors.toList());
 
     }

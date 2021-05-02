@@ -34,3 +34,4 @@ clear-tag:
     - '&7» &bTag: &f%eternaltags_tag_formatted%'
     - ''
     - '&7Click to clear your current tag.'
+  model: -1

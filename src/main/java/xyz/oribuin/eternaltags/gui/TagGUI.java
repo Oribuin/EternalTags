@@ -1,5 +1,6 @@
 package xyz.oribuin.eternaltags.gui;
 
+import io.github.bananapuncher714.nbteditor.NBTEditor;
 import me.mattstudios.mfgui.gui.components.ItemBuilder;
 import me.mattstudios.mfgui.gui.guis.GuiItem;
 import me.mattstudios.mfgui.gui.guis.PaginatedGui;
@@ -125,8 +126,14 @@ public class TagGUI {
             item.setSkullTexture(texture);
         }
 
+        ItemStack itemStack = item.build();
+
+        if (config.get(path + ".model") != null && config.getInt(path + ".model") != -1) {
+            itemStack = NBTEditor.set(itemStack, config.getInt(path + ".model"), "CustomModelData");
+        }
+
         // Build the new itemstack
-        return item.build();
+        return itemStack;
     }
 
     private String format(String string, Player player, StringPlaceholders placeholders) {

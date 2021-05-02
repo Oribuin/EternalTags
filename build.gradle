@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'xyz.oribuin'
-version '1.0'
+version '1.0.1'
 
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
@@ -36,6 +36,7 @@ dependencies {
     compileOnly "me.clip:placeholderapi:2.10.9"
     compileOnly 'com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT'
 
+    implementation 'io.github.bananapuncher714:NBTEditor:7.16'
     implementation 'me.mattstudios.utils:matt-framework-gui:2.0.2'
     implementation name: "OriLib-1.2.0"
 
@@ -47,6 +48,9 @@ shadowJar {
     // Relocate all required dependencies.
     relocate('me.mattstudios', 'xyz.oribuin.eternaltags.libs.mattstudios')
     relocate('xyz.oribuin.orilibrary', 'xyz.oribuin.eternaltags.libs.orilibrary')
+    relocate ('io.github.bananapuncher', 'xyz.oribuin.eternaltags.libs.nbt')
+    relocate ('org.jetbrains', 'xyz.oribuin.eternaltags.libs.jetbrains')
+    relocate ('org.intellij', 'xyz.oribuin.eternaltags.libs.intellij')
 
 }
 

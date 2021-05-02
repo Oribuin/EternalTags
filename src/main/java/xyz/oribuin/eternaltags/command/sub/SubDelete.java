@@ -42,7 +42,7 @@ public class SubDelete extends SubCommand {
 
         // Check if the tag exists
         if (cachedTags.stream().noneMatch(x -> x.getId().equalsIgnoreCase(name))) {
-            msg.send(sender, "tag-exists");
+            msg.send(sender, "tag-doesnt-exist");
             return;
         }
 

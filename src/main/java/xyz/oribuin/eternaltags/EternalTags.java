@@ -43,7 +43,7 @@ public class EternalTags extends OriPlugin {
 
     @Override
     public void disablePlugin() {
-
+        // Unused
     }
 
     public FileConfiguration getMenuConfig() {

@@ -133,6 +133,7 @@ public class MessageManager extends Manager {
             this.key = key;
             this.defaultValue = defaultValue;
         }
+
     }
 
 }
