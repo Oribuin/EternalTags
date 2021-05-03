@@ -7,6 +7,7 @@ import me.mattstudios.mfgui.gui.guis.PaginatedGui;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.hook.PAPI;
@@ -26,31 +27,27 @@ public class TagGUI {
     private final EternalTags plugin;
     private final DataManager data;
     private final TagManager tagManager;
+    private final Player player;
 
-    private final PaginatedGui gui;
-
-    public TagGUI(final EternalTags plugin) {
+    public TagGUI(final EternalTags plugin, final Player player) {
         this.plugin = plugin;
         this.data = this.plugin.getManager(DataManager.class);
         this.tagManager = this.plugin.getManager(TagManager.class);
-
-
-        this.gui = new PaginatedGui(6, this.plugin.getMenuConfig().getString("menu-name"));
-        this.gui.setUpdating(true);
-        this.gui.setDefaultClickAction(event -> {
-//            event.setResult(Event.Result.DENY);
-            event.setCancelled(true);
-            ((Player) event.getWhoClicked()).updateInventory();
-        });
+        this.player = player;
 
     }
 
     /**
      * Create and open the GUI for the player
-     *
-     * @param player The player
      */
-    public void createGUI(final Player player) {
+    public void createGUI() {
+        final PaginatedGui gui = new PaginatedGui(6, format(this.plugin.getMenuConfig().getString("menu-name"), player, StringPlaceholders.empty()));
+        gui.setUpdating(true);
+        gui.setDefaultClickAction(event -> {
+            event.setResult(Event.Result.DENY);
+            event.setCancelled(true);
+            ((Player) event.getWhoClicked()).updateInventory();
+        });
 
         // Add the border slots
         final List<Integer> borderSlots = new ArrayList<>();

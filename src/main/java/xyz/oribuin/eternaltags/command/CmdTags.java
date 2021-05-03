@@ -38,7 +38,7 @@ public class CmdTags extends Command {
     public void runFunction(@NotNull CommandSender sender, @NotNull String label, @NotNull String[] args) {
 
         if (sender instanceof Player && args.length == 0) {
-            new TagGUI(this.plugin).createGUI((Player) sender);
+            new TagGUI(this.plugin, ((Player) sender)).createGUI();
             return;
         }
 

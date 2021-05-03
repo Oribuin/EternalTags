@@ -107,6 +107,13 @@ public class TagManager extends Manager {
             this.saveData();
         }
 
+        final List<Tag> newList = new ArrayList<>();
+        for (Tag tag : tags) {
+            if (this.tags.contains(tag)) continue;
+
+            newList.add(tag);
+        }
+
         CompletableFuture.runAsync(() -> tags.forEach(tag -> {
             this.section.set(tag.getId().toLowerCase() + ".name", tag.getName());
             this.section.set(tag.getId().toLowerCase() + ".tag", tag.getTag());
@@ -126,7 +133,7 @@ public class TagManager extends Manager {
      */
     public List<Tag> getPlayersTag(final Player player) {
 
-        return this.plugin.getManager(TagManager.class).getTags()
+        return this.getTags()
                 .stream()
                 .filter(tag -> player.hasPermission(tag.getPermission()))
                 .collect(Collectors.toList());

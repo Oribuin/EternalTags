@@ -59,6 +59,11 @@ public class SubConvert extends SubCommand {
         CompletableFuture.runAsync(() -> {
 
             for (String key : section.getKeys(false)) {
+
+                if (this.plugin.getManager(TagManager.class).getTags().stream().anyMatch(x -> x.getId().equalsIgnoreCase(key))) {
+                    continue;
+                }
+
                 final Tag tag = new Tag(key, StringUtils.capitalize(key), section.getString(key + ".tag"));
                 tag.setDescription(section.getString(key + ".description"));
                 if (section.get(key + ".permission") != null) {

@@ -9,6 +9,7 @@ import xyz.oribuin.eternaltags.manager.MessageManager;
 import xyz.oribuin.eternaltags.manager.TagManager;
 import xyz.oribuin.orilibrary.command.SubCommand;
 import xyz.oribuin.orilibrary.libs.jetbrains.annotations.NotNull;
+import xyz.oribuin.orilibrary.util.FileUtils;
 
 import java.io.File;
 import java.util.concurrent.CompletableFuture;
@@ -35,7 +36,9 @@ public class SubReload extends SubCommand {
 
         // Reload gui config
         final File menuFolder = new File(plugin.getDataFolder(), "menus");
-        YamlConfiguration.loadConfiguration(new File(menuFolder, "tag-menu.yml"));
+        final File menuConfig = new File(menuFolder, "tag-menu.yml");
+
+        YamlConfiguration.loadConfiguration(menuConfig);
 
         // Reload main config files
         this.plugin.getManager(TagManager.class).enable();
