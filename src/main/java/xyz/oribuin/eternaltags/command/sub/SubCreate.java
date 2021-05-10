@@ -1,8 +1,11 @@
 package xyz.oribuin.eternaltags.command.sub;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.command.CmdTags;
+import xyz.oribuin.eternaltags.event.TagCreateEvent;
+import xyz.oribuin.eternaltags.event.TagDeleteEvent;
 import xyz.oribuin.eternaltags.manager.MessageManager;
 import xyz.oribuin.eternaltags.manager.TagManager;
 import xyz.oribuin.eternaltags.obj.Tag;
@@ -51,6 +54,12 @@ public class SubCreate extends SubCommand {
         // Create the new tag
         final Tag tag = new Tag(name.toLowerCase(), name, newTag);
         tag.setDescription("None.");
+
+        final TagCreateEvent event = new TagCreateEvent(tag);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            return;
+        }
 
         this.plugin.getManager(TagManager.class).createTag(tag);
         msg.send(sender, "created-tag", StringPlaceholders.single("tag", newTag));

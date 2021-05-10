@@ -84,16 +84,16 @@ public class TagManager extends Manager {
      *
      * @param tag The tag id.
      */
-    public void deleteTag(String tag) {
+    public void deleteTag(Tag tag) {
         if (section == null) {
             this.section = this.config.createSection("tags");
             this.saveData();
         }
 
-        this.section.set(tag.toLowerCase(), null);
+        this.section.set(tag.getId().toLowerCase(), null);
         this.saveData();
 
-        this.tags.removeIf(x -> x.getId().equalsIgnoreCase(tag));
+        this.tags.removeIf(x -> x.getId().equalsIgnoreCase(tag.getId()));
     }
 
     /**

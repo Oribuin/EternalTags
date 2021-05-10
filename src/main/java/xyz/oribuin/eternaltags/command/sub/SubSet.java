@@ -5,6 +5,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.command.CmdTags;
+import xyz.oribuin.eternaltags.event.TagCreateEvent;
+import xyz.oribuin.eternaltags.event.TagDeleteEvent;
+import xyz.oribuin.eternaltags.event.TagEquipEvent;
 import xyz.oribuin.eternaltags.manager.DataManager;
 import xyz.oribuin.eternaltags.manager.MessageManager;
 import xyz.oribuin.eternaltags.manager.TagManager;
@@ -53,10 +56,17 @@ public class SubSet extends SubCommand {
         final Optional<Tag> tagOptional = cachedTags.stream().filter(tag -> tag.getId().equalsIgnoreCase(args[2])).findAny();
 
         // Check if the tag exists
-        if (tagOptional.isEmpty()) {
+        if (!tagOptional.isPresent()) {
             msg.send(sender, "tag-doesnt-exist");
             return;
         }
+
+        final TagEquipEvent event = new TagEquipEvent(player, tagOptional.get());
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            return;
+        }
+
 
         this.plugin.getManager(DataManager.class).updateUser(player.getUniqueId(), tagOptional.get());
         msg.send(sender, "changed-tag", StringPlaceholders.single("tag", tagOptional.get().getTag()));

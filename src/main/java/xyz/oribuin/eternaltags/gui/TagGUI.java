@@ -4,12 +4,14 @@ import io.github.bananapuncher714.nbteditor.NBTEditor;
 import me.mattstudios.mfgui.gui.components.ItemBuilder;
 import me.mattstudios.mfgui.gui.guis.GuiItem;
 import me.mattstudios.mfgui.gui.guis.PaginatedGui;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
 import xyz.oribuin.eternaltags.EternalTags;
+import xyz.oribuin.eternaltags.event.TagEquipEvent;
 import xyz.oribuin.eternaltags.hook.PAPI;
 import xyz.oribuin.eternaltags.manager.DataManager;
 import xyz.oribuin.eternaltags.manager.MessageManager;
@@ -73,6 +75,12 @@ public class TagGUI {
                         return;
                     }
 
+                    final TagEquipEvent x = new TagEquipEvent(player, tag);
+                    Bukkit.getPluginManager().callEvent(x);
+                    if (x.isCancelled()) {
+                        return;
+                    }
+
                     event.getWhoClicked().closeInventory();
                     this.data.updateUser(event.getWhoClicked().getUniqueId(), tag);
                     this.plugin.getManager(MessageManager.class).send(event.getWhoClicked(), "changed-tag", StringPlaceholders.single("tag", tag.getTag()));
@@ -106,7 +114,17 @@ public class TagGUI {
         // Create the lore
         final List<String> lore = new ArrayList<>();
         StringPlaceholders finalPlaceholders = placeholders;
-        config.getStringList(path + ".lore").forEach(s -> lore.add(format(s, player, finalPlaceholders)));
+        config.getStringList(path + ".lore").forEach(s -> {
+            // TODO, Add multi line splitting
+//            int number = 0;
+//
+//            while (number < s.length()) {
+//                number += 40;
+//
+//                if (number == 40 && )
+//            }
+            lore.add(format(s, player, finalPlaceholders));
+        });
 
         // Create the item builder
         final ItemBuilder item = ItemBuilder.from(Material.valueOf(config.getString(path + ".material")))
