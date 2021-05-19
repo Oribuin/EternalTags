@@ -49,4 +49,9 @@ public class EternalTags extends OriPlugin {
     public FileConfiguration getMenuConfig() {
         return menuConfig;
     }
+
+    public void setMenuConfig(FileConfiguration menuConfig) {
+        this.menuConfig = menuConfig;
+    }
+
 }

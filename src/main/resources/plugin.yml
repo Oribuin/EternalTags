@@ -1,6 +1,6 @@
 name: EternalTags
 main: xyz.oribuin.eternaltags.EternalTags
-version: '1.0.2'
+version: '1.0.3'
 author: Oribuin
 api-version: "1.13"
 description: A simple tag plugin alternative to other Tag plugins (With Hex Support)

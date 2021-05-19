@@ -1,6 +1,7 @@
 package xyz.oribuin.eternaltags.hook;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.EternalTags;
@@ -24,28 +25,50 @@ public class Expansion extends PlaceholderExpansion {
     }
 
     @Override
-    public String onPlaceholderRequest(Player player, @NotNull String params) {
+    public String onRequest(OfflinePlayer player, @NotNull String params) {
+        if (player == null) return null;
 
         final UUID uuid = player.getUniqueId();
         final Tag tag = this.data.getTag(uuid);
-        final String currentTag = tag == null ? "" : tag.getTag();
+        final String currentTag = tag != null ? tag.getTag() : "";
 
+        // Allow the ability to
+        if (params.equalsIgnoreCase("unlocked")) {
+            if (player.getPlayer() != null)
+                return String.valueOf(this.tag.getPlayersTag((Player) player).size());
+            else
+                return null;
+        }
 
-        if (params.equalsIgnoreCase("tag")) return HexUtils.colorify(currentTag);
-        if (params.equalsIgnoreCase("tag_formatted")) return HexUtils.colorify(currentTag.length() == 0 ? "None" : currentTag);
-        if (params.equalsIgnoreCase("tag_description")) return tag != null ? tag.getDescription() != null ? tag.getDescription() : "" : "";
-        if (params.equalsIgnoreCase("tag_name")) return tag != null ? tag.getName() : "";
-        if (params.equalsIgnoreCase("tag_id")) return tag != null ? tag.getId() : "";
-        if (params.equalsIgnoreCase("tag_permission")) return tag != null ? tag.getPermission() : "";
-        if (params.equalsIgnoreCase("total")) return String.valueOf(this.tag.getTags().size());
-        if (params.equalsIgnoreCase("unlocked")) return String.valueOf(this.tag.getPlayersTag(player).size());
+        switch (params.toLowerCase()) {
+            case "tag":
+                return HexUtils.colorify(currentTag);
+            case "tag_formatted":
+                return HexUtils.colorify(currentTag.length() == 0 ? "None" : currentTag);
+            case "tag_description":
+                return tag != null ? tag.getDescription() != null ? tag.getDescription() : "" : "";
+            case "tag_name":
+                return tag != null ? tag.getName() : "";
+            case "tag_id":
+                return tag != null ? tag.getId() : "";
+            case "tag_permission":
+                return tag != null ? tag.getPermission() : "";
+            case "total":
+                return String.valueOf(this.tag.getTags().size());
+            case "unlocked":
+                if (player.getPlayer() != null)
+                    return String.valueOf(this.tag.getPlayersTag((Player) player).size());
+                else
+                    return null;
+            default:
+                return null;
+        }
 
-        return null;
     }
 
     @Override
     public @NotNull String getIdentifier() {
-        return "EternalTags";
+        return "eternaltags";
     }
 
     @Override
@@ -57,4 +80,15 @@ public class Expansion extends PlaceholderExpansion {
     public @NotNull String getVersion() {
         return this.plugin.getDescription().getVersion();
     }
+
+    @Override
+    public boolean canRegister() {
+        return true;
+    }
+
+    @Override
+    public boolean persist() {
+        return true;
+    }
+
 }

@@ -32,20 +32,12 @@ public class SubReload extends SubCommand {
     public void executeArgument(@NotNull CommandSender sender, @NotNull String[] args) {
 
         final MessageManager msg = this.plugin.getManager(MessageManager.class);
-        final DataManager data = this.plugin.getManager(DataManager.class);
 
         // Reload gui config
-        final File menuFolder = new File(plugin.getDataFolder(), "menus");
-        final File menuConfig = new File(menuFolder, "tag-menu.yml");
-
-        YamlConfiguration.loadConfiguration(menuConfig);
+        this.plugin.setMenuConfig(YamlConfiguration.loadConfiguration(FileUtils.createMenuFile(this.plugin, "tag-menu")));
 
         // Reload main config files
-        this.plugin.getManager(TagManager.class).enable();
-        msg.enable();
-
-        // Disable then re enable the data manager
-        CompletableFuture.runAsync(data::disable).thenRunAsync(data::enable);
+        this.plugin.reload();
 
         msg.send(sender, "reload");
     }
