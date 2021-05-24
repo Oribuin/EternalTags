@@ -4,15 +4,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.command.CmdTags;
-import xyz.oribuin.eternaltags.manager.DataManager;
 import xyz.oribuin.eternaltags.manager.MessageManager;
-import xyz.oribuin.eternaltags.manager.TagManager;
 import xyz.oribuin.orilibrary.command.SubCommand;
 import xyz.oribuin.orilibrary.libs.jetbrains.annotations.NotNull;
 import xyz.oribuin.orilibrary.util.FileUtils;
-
-import java.io.File;
-import java.util.concurrent.CompletableFuture;
 
 @SubCommand.Info(
         names = {"reload"},
