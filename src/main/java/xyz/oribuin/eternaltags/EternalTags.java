@@ -11,6 +11,7 @@ import xyz.oribuin.eternaltags.util.Metrics;
 import xyz.oribuin.eternaltags.util.UpdateChecker;
 import xyz.oribuin.orilibrary.OriPlugin;
 import xyz.oribuin.orilibrary.util.FileUtils;
+import xyz.oribuin.orilibrary.util.HexUtils;
 
 public class EternalTags extends OriPlugin {
 
@@ -63,18 +64,18 @@ public class EternalTags extends OriPlugin {
      * Check for any plugin updates.
      */
     public void checkUpdates() {
-        this.getLogger().warning("Checking for updates...");
+        this.getLogger().info(HexUtils.colorify("&aChecking for plugin updates..."));
 
         if (UpdateChecker.getLatestVersion() != null) {
             // The amount of else here hurts my soul
             if (UpdateChecker.isUpdateAvailable(UpdateChecker.getLatestVersion(), this.getDescription().getVersion())) {
-                this.getLogger().warning("A new update is available for EternalTags (" + UpdateChecker.getLatestVersion() + ")");
+                this.getLogger().info(HexUtils.colorify("&aA new update is available for EternalTags (&c" + UpdateChecker.getLatestVersion() + "&a), You are on v" + this.getDescription().getVersion()));
             } else {
-                this.getLogger().warning("You are on the latest version of EternalTags!");
+                this.getLogger().info(HexUtils.colorify("&aYou are on the latest version of EternalTags!"));
             }
 
         } else {
-            this.getLogger().warning("Checking for update failed, Could not get latest version...");
+            this.getLogger().info(HexUtils.colorify("&cChecking for update failed, Could not get latest version..."));
         }
     }
 
