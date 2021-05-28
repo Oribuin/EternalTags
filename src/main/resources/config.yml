@@ -1,3 +1,9 @@
+# Should the plugin use bstats metrics?
+metrics: true
+
+# Should the plugin check for updates on startup?
+check-updates: true
+
 # Enable if you want to save everything in MySQL
 mysql:
   enabled: false

@@ -7,6 +7,8 @@ import xyz.oribuin.eternaltags.hook.Expansion;
 import xyz.oribuin.eternaltags.manager.DataManager;
 import xyz.oribuin.eternaltags.manager.MessageManager;
 import xyz.oribuin.eternaltags.manager.TagManager;
+import xyz.oribuin.eternaltags.util.Metrics;
+import xyz.oribuin.eternaltags.util.UpdateChecker;
 import xyz.oribuin.orilibrary.OriPlugin;
 import xyz.oribuin.orilibrary.util.FileUtils;
 
@@ -20,11 +22,22 @@ public class EternalTags extends OriPlugin {
         // Check if server has PlaceholderAPI, No sure why it wouldn't though.
         if (!hasPlugin("PlaceholderAPI")) return;
 
+        // Add bstats metrics
+        if (this.getConfig().getBoolean("metrics")) {
+            new Metrics(this, 11508);
+        }
+
+        // Load all plugin manages asynchronously
         this.getServer().getScheduler().runTaskAsynchronously(this, () -> {
             this.getManager(TagManager.class);
             this.getManager(DataManager.class);
             this.getManager(MessageManager.class);
         });
+
+        // Check for plugin updates
+        if (this.getConfig().getBoolean("check-updates")) {
+            this.checkUpdates();
+        }
 
         // Register PlaceholderAPI Expansion
         new Expansion(this).register();
@@ -44,6 +57,25 @@ public class EternalTags extends OriPlugin {
     @Override
     public void disablePlugin() {
         // Unused
+    }
+
+    /**
+     * Check for any plugin updates.
+     */
+    public void checkUpdates() {
+        this.getLogger().warning("Checking for updates...");
+
+        if (UpdateChecker.getLatestVersion() != null) {
+            // The amount of else here hurts my soul
+            if (UpdateChecker.isUpdateAvailable(UpdateChecker.getLatestVersion(), this.getDescription().getVersion())) {
+                this.getLogger().warning("A new update is available for EternalTags (" + UpdateChecker.getLatestVersion() + ")");
+            } else {
+                this.getLogger().warning("You are on the latest version of EternalTags!");
+            }
+
+        } else {
+            this.getLogger().warning("Checking for update failed, Could not get latest version...");
+        }
     }
 
     public FileConfiguration getMenuConfig() {
