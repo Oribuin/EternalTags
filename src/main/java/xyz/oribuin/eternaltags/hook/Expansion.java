@@ -3,7 +3,6 @@ package xyz.oribuin.eternaltags.hook;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.manager.DataManager;
 import xyz.oribuin.eternaltags.manager.TagManager;
@@ -25,7 +24,7 @@ public class Expansion extends PlaceholderExpansion {
     }
 
     @Override
-    public String onRequest(OfflinePlayer player, @NotNull String params) {
+    public String onRequest(OfflinePlayer player, String params) {
         if (player == null) return null;
 
         final UUID uuid = player.getUniqueId();
@@ -67,17 +66,17 @@ public class Expansion extends PlaceholderExpansion {
     }
 
     @Override
-    public @NotNull String getIdentifier() {
+    public String getIdentifier() {
         return "eternaltags";
     }
 
     @Override
-    public @NotNull String getAuthor() {
+    public String getAuthor() {
         return "Oribuin";
     }
 
     @Override
-    public @NotNull String getVersion() {
+    public String getVersion() {
         return this.plugin.getDescription().getVersion();
     }
 

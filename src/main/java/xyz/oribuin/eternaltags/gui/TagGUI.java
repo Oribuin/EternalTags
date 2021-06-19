@@ -1,14 +1,10 @@
 package xyz.oribuin.eternaltags.gui;
 
-import io.github.bananapuncher714.nbteditor.NBTEditor;
-import me.mattstudios.mfgui.gui.components.ItemBuilder;
-import me.mattstudios.mfgui.gui.guis.GuiItem;
-import me.mattstudios.mfgui.gui.guis.PaginatedGui;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.event.TagEquipEvent;
@@ -17,13 +13,17 @@ import xyz.oribuin.eternaltags.manager.DataManager;
 import xyz.oribuin.eternaltags.manager.MessageManager;
 import xyz.oribuin.eternaltags.manager.TagManager;
 import xyz.oribuin.eternaltags.obj.Tag;
+import xyz.oribuin.gui.Item;
+import xyz.oribuin.gui.PaginatedGui;
 import xyz.oribuin.orilibrary.util.HexUtils;
 import xyz.oribuin.orilibrary.util.StringPlaceholders;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
+@SuppressWarnings("deprecation")
 public class TagGUI {
 
     private final EternalTags plugin;
@@ -40,123 +40,142 @@ public class TagGUI {
     }
 
     /**
-     * Create and open the GUI for the player
+     * Create and open the gui for a player.
      */
     public void createGUI() {
-        final PaginatedGui gui = new PaginatedGui(6, format(this.plugin.getMenuConfig().getString("menu-name"), player, StringPlaceholders.empty()));
-        gui.setUpdating(true);
-        gui.setDefaultClickAction(event -> {
-            event.setResult(Event.Result.DENY);
-            event.setCancelled(true);
+
+        final List<Integer> pageSlots = new ArrayList<>();
+        for (int i = 0; i < 45; i++) pageSlots.add(i);
+
+        final PaginatedGui gui = new PaginatedGui(54, cs(this.plugin.getMenuConfig().getString("menu-name"), player, StringPlaceholders.empty()), pageSlots);
+        final StringPlaceholders.Builder pagePlaceholders = StringPlaceholders.builder()
+                .addPlaceholder("currentPage", gui.getCurrentPage())
+                .addPlaceholder("prevPage", gui.getPrevPage())
+                .addPlaceholder("nextPage", gui.getNextPage())
+                .addPlaceholder("totalPages", gui.getTotalPages());
+
+        gui.updateTitle(cs(this.plugin.getMenuConfig().getString("menu-name"), player, pagePlaceholders.build()));
+
+        gui.setDefaultClickFunction(event -> {
             ((Player) event.getWhoClicked()).updateInventory();
+            gui.update();
         });
 
-        // Add the border slots
+        // Get all the border slots;
         final List<Integer> borderSlots = new ArrayList<>();
         for (int i = 45; i < 54; i++) borderSlots.add(i);
-        borderSlots.forEach(integer -> gui.setItem(integer, fillerItem()));
+        borderSlots.forEach(i -> gui.setItem(i, fillerItem(), event -> {}));
 
-        gui.setItem(47, ItemBuilder.from(this.getGUIItem("previous-page", null, player)).asGuiItem(event -> gui.previous()));
-        gui.setItem(51, ItemBuilder.from(this.getGUIItem("next-page", null, player)).asGuiItem(event -> gui.next()));
+        // Add page items
+        gui.setItem(47,this.getGuiItem(gui, "previous-page", null, player), event -> gui.previous(player));
 
-        gui.setItem(49, ItemBuilder.from(this.getGUIItem("clear-tag", null, player)).asGuiItem(event -> {
+        gui.setItem(51, this.getGuiItem(gui, "next-page", null, player), event -> gui.next(player));
 
+        // Add clear tag item.
+        gui.setItem(49, this.getGuiItem(gui, "clear-tag", null, player), event -> {
             this.plugin.getManager(MessageManager.class).send(event.getWhoClicked(), "cleared-tag");
-            this.plugin.getManager(DataManager.class).updateUser(event.getWhoClicked().getUniqueId(), null);
+            this.data.updateUser(event.getWhoClicked().getUniqueId(), null);
             event.getWhoClicked().closeInventory();
+        });
 
+        // Extra Items
+        final ConfigurationSection section = this.plugin.getMenuConfig().getConfigurationSection("extra-items");
+        if (section != null) {
+            section.getKeys(false).forEach(s -> gui.setItem(section.getInt(s + ".slot"), this.getGuiItem(gui, s, null, player),event -> {}));
+        }
+
+//         Add all the tags to the gui.
+        this.tagManager.getPlayersTag(player).forEach(tag -> gui.addPageItem(this.getGuiItem(gui, "tag", tag, player), event -> {
+            if (!this.tagManager.getTags().contains(tag)) {
+                event.getWhoClicked().closeInventory();
+                return;
+            }
+
+            final TagEquipEvent tagEquipEvent = new TagEquipEvent(player, tag);
+            Bukkit.getPluginManager().callEvent(tagEquipEvent);
+            if (tagEquipEvent.isCancelled()) return;
+
+            event.getWhoClicked().closeInventory();
+            this.data.updateUser(event.getWhoClicked().getUniqueId(), tag);
+            this.plugin.getManager(MessageManager.class).send(event.getWhoClicked(), "changed-tag", StringPlaceholders.single("tag", tag.getTag()));
         }));
 
-        this.tagManager.getPlayersTag(player).forEach(tag -> gui.addItem(ItemBuilder.from(this.getGUIItem("tag", tag, player))
-                .asGuiItem(event -> {
-
-                    if (!this.tagManager.getTags().contains(tag)) {
-                        event.getWhoClicked().closeInventory();
-                        return;
-                    }
-
-                    final TagEquipEvent x = new TagEquipEvent(player, tag);
-                    Bukkit.getPluginManager().callEvent(x);
-                    if (x.isCancelled()) {
-                        return;
-                    }
-
-                    event.getWhoClicked().closeInventory();
-                    this.data.updateUser(event.getWhoClicked().getUniqueId(), tag);
-                    this.plugin.getManager(MessageManager.class).send(event.getWhoClicked(), "changed-tag", StringPlaceholders.single("tag", tag.getTag()));
-                })));
-
-        gui.open(player);
+        gui.open(player, 1);
     }
 
     /**
-     * Get an itemstack based on a configuration path.
+     * Create an ItemStack from a configuration path.
      *
-     * @param path   The config path
-     * @param tag    A potential tag for StringPlaceholders
-     * @param player The player
-     * @return The itemstack formed from the gui
+     * @param gui    The gui it's being added to (Used for page placeholders)
+     * @param path   The path to the item.
+     * @param tag    Any tag for tag placeholders.
+     * @param player The player for PAPI text
+     * @return The ItemStack
+     * @since 1.0.5
      */
-    private ItemStack getGUIItem(final String path, final @Nullable Tag tag, Player player) {
+    private ItemStack getGuiItem(PaginatedGui gui, final String path, final Tag tag, Player player) {
         final FileConfiguration config = this.plugin.getMenuConfig();
 
-        StringPlaceholders placeholders = StringPlaceholders.empty();
+        final StringPlaceholders.Builder builder = StringPlaceholders.builder()
+                .addPlaceholder("currentPage", gui.getCurrentPage())
+                .addPlaceholder("prevPage", gui.getPrevPage())
+                .addPlaceholder("nextPage", gui.getNextPage())
+                .addPlaceholder("totalPages", gui.getTotalPages());
 
-        // Define tag placeholders if the tag isnt null
         if (tag != null) {
-            placeholders = StringPlaceholders.builder("tag", tag.getTag())
-                    .addPlaceholder("description", tag.getDescription())
-                    .addPlaceholder("id", tag.getId())
-                    .addPlaceholder("name", tag.getName())
-                    .build();
+            builder.addPlaceholder("tag", tag.getTag());
+            builder.addPlaceholder("description", tag.getDescription());
+            builder.addPlaceholder("id", tag.getId());
+            builder.addPlaceholder("name", tag.getName());
         }
 
-        // Create the lore
-        final List<String> lore = new ArrayList<>();
-        StringPlaceholders finalPlaceholders = placeholders;
-        config.getStringList(path + ".lore").forEach(s -> {
-            // TODO, Add multi line splitting
-//            int number = 0;
-//
-//            while (number < s.length()) {
-//                number += 40;
-//
-//                if (number == 40 && )
-//            }
-            lore.add(format(s, player, finalPlaceholders));
-        });
+        final StringPlaceholders placeholders = builder.build();
+        final List<String> lore = config.getStringList(path + ".lore").stream().map(s -> cs(s, player, placeholders)).collect(Collectors.toList());
 
-        // Create the item builder
-        final ItemBuilder item = ItemBuilder.from(Material.valueOf(config.getString(path + ".material")))
-                .setName(format(config.getString(path + ".name"), player, finalPlaceholders))
-                .setLore(lore)
-                .setAmount(config.getInt(path + ".amount"))
-                .glow(config.getBoolean(path + ".glow"));
+        if (config.getString(path + ".material") == null) return new ItemStack(Material.AIR);
 
-        // Define the texture String
+        final Material material = Optional.ofNullable(Material.matchMaterial(config.getString(path + ".material"))).orElse(Material.BARREL);
+
+        final Item.Builder itemBuilder = new Item.Builder(material).setName(cs(config.getString(path + ".name"), player, placeholders)).setLore(lore).setAmount(config.getInt(path + ".amount"));
+
+        if (config.getBoolean(path + ".glow")) {
+            itemBuilder.glow();
+        }
+
+
         final String texture = config.getString(path + ".texture");
 
-        // Check if can apply texture
         if (texture != null) {
-            item.setSkullTexture(texture);
+            itemBuilder.setTexture(texture);
         }
 
-        ItemStack itemStack = item.build();
-
-        if (config.get(path + ".model") != null && config.getInt(path + ".model") != -1) {
-            itemStack = NBTEditor.set(itemStack, config.getInt(path + ".model"), "CustomModelData");
+        final ConfigurationSection nbt = config.getConfigurationSection(path + ".nbt");
+        if (nbt != null) {
+            for (String s : nbt.getKeys(false)) itemBuilder.setNBT(s, nbt.get(s));
         }
 
-        // Build the new itemstack
-        return itemStack;
+        return itemBuilder.create();
     }
 
-    private String format(String string, Player player, StringPlaceholders placeholders) {
-        return HexUtils.colorify(PAPI.apply(player, placeholders.apply(string)));
+    /**
+     * Colorized text
+     *
+     * @param txt          The message
+     * @param player       The player for PAPI Placeholders
+     * @param placeholders Any string placeholders.
+     * @return txt but colorified
+     * @since 1.0.5
+     */
+    private String cs(String txt, Player player, StringPlaceholders placeholders) {
+        return HexUtils.colorify(PAPI.apply(player, placeholders.apply(txt)));
     }
 
-    private GuiItem fillerItem() {
-        return ItemBuilder.from(Material.GRAY_STAINED_GLASS_PANE).setName(HexUtils.colorify("&a")).asGuiItem();
+    /**
+     * A general filler item for border items
+     *
+     * @return The GUI Item.
+     */
+    private ItemStack fillerItem() {
+        return new Item.Builder(Material.GRAY_STAINED_GLASS_PANE).setName(" ").create();
     }
-
 }

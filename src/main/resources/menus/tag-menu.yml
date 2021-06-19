@@ -1,4 +1,4 @@
-menu-name: 'EternalTags'
+menu-name: 'EternalTags (%currentPage%/%totalPages%)'
 
 tag:
   material: 'NAME_TAG'
@@ -14,14 +14,14 @@ tag:
 previous-page:
   material: 'PAPER'
   amount: 1
-  name: '&7« &b&lPrevious Page'
+  name: '&7« &b&lPrevious Page &7(%prevPage%)'
   lore: [ ]
   glow: true
 
 next-page:
   material: 'PAPER'
   amount: 1
-  name: '&b&lNext Page &7»'
+  name: '&7(%nextPage%) &b&lNext Page &7»'
   lore: [ ]
   glow: true
 
@@ -34,4 +34,5 @@ clear-tag:
     - '&7» &bTag: &f%eternaltags_tag_formatted%'
     - ''
     - '&7Click to clear your current tag.'
-  model: -1
+  nbt:
+    CustomModelData: 1

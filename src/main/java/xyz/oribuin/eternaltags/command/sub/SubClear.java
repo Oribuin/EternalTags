@@ -1,20 +1,15 @@
 package xyz.oribuin.eternaltags.command.sub;
 
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.command.CmdTags;
 import xyz.oribuin.eternaltags.manager.DataManager;
 import xyz.oribuin.eternaltags.manager.MessageManager;
-import xyz.oribuin.eternaltags.manager.TagManager;
-import xyz.oribuin.eternaltags.obj.Tag;
 import xyz.oribuin.orilibrary.command.SubCommand;
 import xyz.oribuin.orilibrary.libs.jetbrains.annotations.NotNull;
 import xyz.oribuin.orilibrary.util.StringPlaceholders;
-
-import java.util.List;
-import java.util.Optional;
 
 @SubCommand.Info(
         names = {"clear"},
@@ -41,15 +36,20 @@ public class SubClear extends SubCommand {
             return;
         }
 
-        final Player player = Bukkit.getPlayer(args[1]);
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
 
-        if (player == null) {
-            msg.send(sender, "invalid-player");
-            return;
-        }
+            @SuppressWarnings("deprecation")
+            OfflinePlayer player = Bukkit.getOfflinePlayer(args[1]);
 
-        this.plugin.getManager(DataManager.class).updateUser(player.getUniqueId(), null);
-        msg.send(sender, "cleared-tag");
+
+            if (!player.hasPlayedBefore()) {
+                msg.send(sender, "invalid-player");
+                return;
+            }
+
+            this.plugin.getManager(DataManager.class).updateUser(player.getUniqueId(), null);
+            msg.send(sender, "cleared-tag");
+        });
     }
 
 }

@@ -3,7 +3,6 @@ package xyz.oribuin.eternaltags.event;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.obj.Tag;
 
 public class TagDeleteEvent extends Event implements Cancellable {
@@ -25,7 +24,6 @@ public class TagDeleteEvent extends Event implements Cancellable {
         return list;
     }
 
-    @NotNull
     @Override
     public HandlerList getHandlers() {
         return list;

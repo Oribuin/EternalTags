@@ -1,56 +1,45 @@
 plugins {
-    id 'java'
-    id 'com.github.johnrengelman.shadow' version '6.0.0'
+    id "java"
+    id "com.github.johnrengelman.shadow" version "6.0.0"
 }
 
-group 'xyz.oribuin'
-version '1.0.4'
-
+group "xyz.oribuin"
+version "1.0.5"
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 
 compileJava {
-    options.encoding = 'UTF-8'
+    options.encoding = "UTF-8"
 }
 
 repositories {
     mavenCentral()
     mavenLocal()
 
-    maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
-    maven { url 'https://repo.rosewooddev.io/repository/public/' }
-    maven { url 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
-    maven { url 'https://repo.codemc.org/repository/maven-public' }
-    maven { url 'https://jitpack.io' }
-    maven { url 'https://papermc.io/repo/repository/maven-public/' }
+    maven { url "https://hub.spigotmc.org/nexus/content/repositories/snapshots/" }
+    maven { url "https://repo.rosewooddev.io/repository/public/" }
+    maven { url "https://repo.extendedclip.com/content/repositories/placeholderapi/" }
+    maven { url "https://repo.codemc.org/repository/maven-public" }
+    maven { url "https://jitpack.io" }
 
     flatDir {
         dirs "libs"
     }
-
 }
 
 dependencies {
-    compileOnly 'org.spigotmc:spigot:1.16.4'
+    compileOnly 'org.spigotmc:spigot:1.16.5'
     compileOnly("com.github.MilkBowl:VaultAPI:1.7") { exclude group: "org.bukkit" }
     compileOnly "me.clip:placeholderapi:2.10.9"
 
-    implementation 'io.github.bananapuncher714:NBTEditor:7.16'
-    implementation 'me.mattstudios.utils:matt-framework-gui:2.0.2'
     implementation name: "OriLib-1.2.0"
-
+    implementation name: "ori-gui-1.0"
 }
 
 shadowJar {
     archiveClassifier.set(null)
-
-    // Relocate all required dependencies.
-    relocate('me.mattstudios', 'xyz.oribuin.eternaltags.libs.mattstudios')
-    relocate('xyz.oribuin.orilibrary', 'xyz.oribuin.eternaltags.libs.orilibrary')
-    relocate ('io.github.bananapuncher', 'xyz.oribuin.eternaltags.libs.nbt')
-    relocate ('org.jetbrains', 'xyz.oribuin.eternaltags.libs.jetbrains')
-    relocate ('org.intellij', 'xyz.oribuin.eternaltags.libs.intellij')
-
+    relocate('xyz.oribuin.gui', "${project.group}.eternaltags.libs.gui")
+    relocate('xyz.oribuin.orilibrary', "${project.group}.eternaltags.libs.command")
 }
 
-tasks.findByName("build").dependsOn("shadowJar")
+tasks.getByName("build").dependsOn("shadowJar")
