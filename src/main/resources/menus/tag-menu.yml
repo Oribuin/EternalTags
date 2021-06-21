@@ -14,14 +14,14 @@ tag:
 previous-page:
   material: 'PAPER'
   amount: 1
-  name: '&7« &b&lPrevious Page &7(%prevPage%)'
+  name: '&7« &b&lPrevious Page'
   lore: [ ]
   glow: true
 
 next-page:
   material: 'PAPER'
   amount: 1
-  name: '&7(%nextPage%) &b&lNext Page &7»'
+  name: '&b&lNext Page &7»'
   lore: [ ]
   glow: true
 

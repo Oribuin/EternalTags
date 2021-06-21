@@ -5,6 +5,7 @@ import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.event.TagEquipEvent;
@@ -23,7 +24,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@SuppressWarnings("deprecation")
 public class TagGUI {
 
     private final EternalTags plugin;
@@ -36,7 +36,6 @@ public class TagGUI {
         this.data = this.plugin.getManager(DataManager.class);
         this.tagManager = this.plugin.getManager(TagManager.class);
         this.player = player;
-
     }
 
     /**
@@ -45,31 +44,52 @@ public class TagGUI {
     public void createGUI() {
 
         final List<Integer> pageSlots = new ArrayList<>();
-        for (int i = 0; i < 45; i++) pageSlots.add(i);
+        for (int i = 0; i < 45; i++)
+            pageSlots.add(i);
 
         final PaginatedGui gui = new PaginatedGui(54, cs(this.plugin.getMenuConfig().getString("menu-name"), player, StringPlaceholders.empty()), pageSlots);
-        final StringPlaceholders.Builder pagePlaceholders = StringPlaceholders.builder()
-                .addPlaceholder("currentPage", gui.getCurrentPage())
-                .addPlaceholder("prevPage", gui.getPrevPage())
-                .addPlaceholder("nextPage", gui.getNextPage())
-                .addPlaceholder("totalPages", gui.getTotalPages());
 
-        gui.updateTitle(cs(this.plugin.getMenuConfig().getString("menu-name"), player, pagePlaceholders.build()));
+        //  Add all the tags to the gui.
+        this.tagManager.getPlayersTag(player).forEach(tag -> gui.addPageItem(this.getGuiItem(gui, "tag", tag, player), event -> {
+            if (!this.tagManager.getTags().contains(tag)) {
+                event.getWhoClicked().closeInventory();
+                return;
+            }
+
+            final TagEquipEvent tagEquipEvent = new TagEquipEvent(player, tag);
+            Bukkit.getPluginManager().callEvent(tagEquipEvent);
+            if (tagEquipEvent.isCancelled())
+                return;
+
+            event.getWhoClicked().closeInventory();
+            this.data.updateUser(event.getWhoClicked().getUniqueId(), tag);
+            this.plugin.getManager(MessageManager.class).send(event.getWhoClicked(), "changed-tag", StringPlaceholders.single("tag", tag.getTag()));
+        }));
 
         gui.setDefaultClickFunction(event -> {
             ((Player) event.getWhoClicked()).updateInventory();
-            gui.update();
+            event.setCancelled(true);
+            event.setResult(Event.Result.DENY);
         });
 
         // Get all the border slots;
         final List<Integer> borderSlots = new ArrayList<>();
-        for (int i = 45; i < 54; i++) borderSlots.add(i);
-        borderSlots.forEach(i -> gui.setItem(i, fillerItem(), event -> {}));
+        for (int i = 45; i < 54; i++)
+            borderSlots.add(i);
 
-        // Add page items
-        gui.setItem(47,this.getGuiItem(gui, "previous-page", null, player), event -> gui.previous(player));
+        gui.setItems(borderSlots, fillerItem(), event -> { });
 
-        gui.setItem(51, this.getGuiItem(gui, "next-page", null, player), event -> gui.next(player));
+        // Add previous page item
+        gui.setItem(47, this.getGuiItem(gui, "previous-page", null, player), event -> {
+            gui.previous(player);
+            gui.updateTitle(cs(this.plugin.getMenuConfig().getString("menu-name"), player, this.getPages(gui).build()));
+        });
+
+        // Add next page item
+        gui.setItem(51, this.getGuiItem(gui, "next-page", null, player), event -> {
+            gui.next(player);
+            gui.updateTitle(cs(this.plugin.getMenuConfig().getString("menu-name"), player, this.getPages(gui).build()));
+        });
 
         // Add clear tag item.
         gui.setItem(49, this.getGuiItem(gui, "clear-tag", null, player), event -> {
@@ -81,26 +101,12 @@ public class TagGUI {
         // Extra Items
         final ConfigurationSection section = this.plugin.getMenuConfig().getConfigurationSection("extra-items");
         if (section != null) {
-            section.getKeys(false).forEach(s -> gui.setItem(section.getInt(s + ".slot"), this.getGuiItem(gui, s, null, player),event -> {}));
+            section.getKeys(false).forEach(s -> gui.setItem(section.getInt(s + ".slot"), this.getGuiItem(gui, s, null, player), event -> {}));
         }
 
-//         Add all the tags to the gui.
-        this.tagManager.getPlayersTag(player).forEach(tag -> gui.addPageItem(this.getGuiItem(gui, "tag", tag, player), event -> {
-            if (!this.tagManager.getTags().contains(tag)) {
-                event.getWhoClicked().closeInventory();
-                return;
-            }
-
-            final TagEquipEvent tagEquipEvent = new TagEquipEvent(player, tag);
-            Bukkit.getPluginManager().callEvent(tagEquipEvent);
-            if (tagEquipEvent.isCancelled()) return;
-
-            event.getWhoClicked().closeInventory();
-            this.data.updateUser(event.getWhoClicked().getUniqueId(), tag);
-            this.plugin.getManager(MessageManager.class).send(event.getWhoClicked(), "changed-tag", StringPlaceholders.single("tag", tag.getTag()));
-        }));
-
         gui.open(player, 1);
+        gui.updateTitle(cs(this.plugin.getMenuConfig().getString("menu-name"), player, this.getPages(gui).build()));
+
     }
 
     /**
@@ -116,11 +122,7 @@ public class TagGUI {
     private ItemStack getGuiItem(PaginatedGui gui, final String path, final Tag tag, Player player) {
         final FileConfiguration config = this.plugin.getMenuConfig();
 
-        final StringPlaceholders.Builder builder = StringPlaceholders.builder()
-                .addPlaceholder("currentPage", gui.getCurrentPage())
-                .addPlaceholder("prevPage", gui.getPrevPage())
-                .addPlaceholder("nextPage", gui.getNextPage())
-                .addPlaceholder("totalPages", gui.getTotalPages());
+        final StringPlaceholders.Builder builder = StringPlaceholders.builder();
 
         if (tag != null) {
             builder.addPlaceholder("tag", tag.getTag());
@@ -132,7 +134,8 @@ public class TagGUI {
         final StringPlaceholders placeholders = builder.build();
         final List<String> lore = config.getStringList(path + ".lore").stream().map(s -> cs(s, player, placeholders)).collect(Collectors.toList());
 
-        if (config.getString(path + ".material") == null) return new ItemStack(Material.AIR);
+        if (config.getString(path + ".material") == null)
+            return new ItemStack(Material.AIR);
 
         final Material material = Optional.ofNullable(Material.matchMaterial(config.getString(path + ".material"))).orElse(Material.BARREL);
 
@@ -142,7 +145,6 @@ public class TagGUI {
             itemBuilder.glow();
         }
 
-
         final String texture = config.getString(path + ".texture");
 
         if (texture != null) {
@@ -151,7 +153,8 @@ public class TagGUI {
 
         final ConfigurationSection nbt = config.getConfigurationSection(path + ".nbt");
         if (nbt != null) {
-            for (String s : nbt.getKeys(false)) itemBuilder.setNBT(s, nbt.get(s));
+            for (String s : nbt.getKeys(false))
+                itemBuilder.setNBT(s, nbt.get(s));
         }
 
         return itemBuilder.create();
@@ -178,4 +181,13 @@ public class TagGUI {
     private ItemStack fillerItem() {
         return new Item.Builder(Material.GRAY_STAINED_GLASS_PANE).setName(" ").create();
     }
+
+    private StringPlaceholders.Builder getPages(PaginatedGui gui) {
+        return StringPlaceholders.builder()
+                .addPlaceholder("currentPage", gui.getPage())
+                .addPlaceholder("prevPage", gui.getPrevPage())
+                .addPlaceholder("nextPage", gui.getNextPage())
+                .addPlaceholder("totalPages", gui.getTotalPages());
+    }
+
 }
