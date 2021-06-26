@@ -44,8 +44,6 @@ public class Expansion extends PlaceholderExpansion {
                 return HexUtils.colorify(currentTag);
             case "tag_formatted":
                 return HexUtils.colorify(currentTag.length() == 0 ? "None" : currentTag);
-            case "tag_description":
-                return tag != null ? tag.getDescription() != null ? tag.getDescription() : "" : "";
             case "tag_name":
                 return tag != null ? tag.getName() : "";
             case "tag_id":

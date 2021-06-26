@@ -5,7 +5,6 @@ import org.bukkit.command.CommandSender;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.command.CmdTags;
 import xyz.oribuin.eternaltags.event.TagCreateEvent;
-import xyz.oribuin.eternaltags.event.TagDeleteEvent;
 import xyz.oribuin.eternaltags.manager.MessageManager;
 import xyz.oribuin.eternaltags.manager.TagManager;
 import xyz.oribuin.eternaltags.obj.Tag;
@@ -13,6 +12,8 @@ import xyz.oribuin.orilibrary.command.SubCommand;
 import xyz.oribuin.orilibrary.libs.jetbrains.annotations.NotNull;
 import xyz.oribuin.orilibrary.util.StringPlaceholders;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @SubCommand.Info(
@@ -53,7 +54,7 @@ public class SubCreate extends SubCommand {
 
         // Create the new tag
         final Tag tag = new Tag(name.toLowerCase(), name, newTag);
-        tag.setDescription("None.");
+        tag.setDescription(Collections.singletonList("None"));
 
         final TagCreateEvent event = new TagCreateEvent(tag);
         Bukkit.getPluginManager().callEvent(event);

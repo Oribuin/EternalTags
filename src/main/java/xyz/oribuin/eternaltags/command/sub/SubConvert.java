@@ -65,7 +65,7 @@ public class SubConvert extends SubCommand {
                 }
 
                 final Tag tag = new Tag(key, StringUtils.capitalize(key), section.getString(key + ".tag"));
-                tag.setDescription(section.getString(key + ".description"));
+                tag.setDescription(section.getStringList(key + ".description"));
                 if (section.get(key + ".permission") != null) {
                     tag.setPermission(section.getString(key + ".permission"));
                 }

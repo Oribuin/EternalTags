@@ -1,6 +1,7 @@
 package xyz.oribuin.eternaltags.gui;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -22,6 +23,7 @@ import xyz.oribuin.orilibrary.util.StringPlaceholders;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class TagGUI {
@@ -50,7 +52,7 @@ public class TagGUI {
         final PaginatedGui gui = new PaginatedGui(54, cs(this.plugin.getMenuConfig().getString("menu-name"), player, StringPlaceholders.empty()), pageSlots);
 
         //  Add all the tags to the gui.
-        this.tagManager.getPlayersTag(player).forEach(tag -> gui.addPageItem(this.getGuiItem(gui, "tag", tag, player), event -> {
+        this.tagManager.getPlayersTag(player).forEach(tag -> gui.addPageItem(this.getGuiItem("tag", tag, player), event -> {
             if (!this.tagManager.getTags().contains(tag)) {
                 event.getWhoClicked().closeInventory();
                 return;
@@ -80,19 +82,19 @@ public class TagGUI {
         gui.setItems(borderSlots, fillerItem(), event -> { });
 
         // Add previous page item
-        gui.setItem(47, this.getGuiItem(gui, "previous-page", null, player), event -> {
+        gui.setItem(47, this.getGuiItem("previous-page", null, player), event -> {
             gui.previous(player);
             gui.updateTitle(cs(this.plugin.getMenuConfig().getString("menu-name"), player, this.getPages(gui).build()));
         });
 
         // Add next page item
-        gui.setItem(51, this.getGuiItem(gui, "next-page", null, player), event -> {
+        gui.setItem(51, this.getGuiItem("next-page", null, player), event -> {
             gui.next(player);
             gui.updateTitle(cs(this.plugin.getMenuConfig().getString("menu-name"), player, this.getPages(gui).build()));
         });
 
         // Add clear tag item.
-        gui.setItem(49, this.getGuiItem(gui, "clear-tag", null, player), event -> {
+        gui.setItem(49, this.getGuiItem("clear-tag", null, player), event -> {
             this.plugin.getManager(MessageManager.class).send(event.getWhoClicked(), "cleared-tag");
             this.data.updateUser(event.getWhoClicked().getUniqueId(), null);
             event.getWhoClicked().closeInventory();
@@ -101,7 +103,7 @@ public class TagGUI {
         // Extra Items
         final ConfigurationSection section = this.plugin.getMenuConfig().getConfigurationSection("extra-items");
         if (section != null) {
-            section.getKeys(false).forEach(s -> gui.setItem(section.getInt(s + ".slot"), this.getGuiItem(gui, s, null, player), event -> {}));
+            section.getKeys(false).forEach(s -> gui.setItem(section.getInt(s + ".slot"), this.getGuiItem(s, null, player), event -> {}));
         }
 
         gui.open(player, 1);
@@ -112,34 +114,68 @@ public class TagGUI {
     /**
      * Create an ItemStack from a configuration path.
      *
-     * @param gui    The gui it's being added to (Used for page placeholders)
      * @param path   The path to the item.
      * @param tag    Any tag for tag placeholders.
      * @param player The player for PAPI text
      * @return The ItemStack
      * @since 1.0.5
      */
-    private ItemStack getGuiItem(PaginatedGui gui, final String path, final Tag tag, Player player) {
+    private ItemStack getGuiItem(final String path, final Tag tag, Player player) {
         final FileConfiguration config = this.plugin.getMenuConfig();
 
         final StringPlaceholders.Builder builder = StringPlaceholders.builder();
 
         if (tag != null) {
             builder.addPlaceholder("tag", tag.getTag());
-            builder.addPlaceholder("description", tag.getDescription());
             builder.addPlaceholder("id", tag.getId());
             builder.addPlaceholder("name", tag.getName());
         }
 
         final StringPlaceholders placeholders = builder.build();
-        final List<String> lore = config.getStringList(path + ".lore").stream().map(s -> cs(s, player, placeholders)).collect(Collectors.toList());
+
+        List<String> lore = config.getStringList(path + ".lore").stream()
+                .map(s -> cs(s, player, placeholders))
+                .collect(Collectors.toList());
+
+        // I am aware this code is awful, I do not like it either but it is the only solution i could come up with
+        if (tag != null) {
+            for (int i = 0; i < lore.size(); i++) {
+
+                String index = lore.get(i);
+                if (!index.toLowerCase().contains("%description%"))
+                    continue;
+
+                final List<String> desc = new ArrayList<>(tag.getDescription());
+
+                if (desc.size() == 0) {
+                    lore.set(i, index.replace("%description%", "None"));
+                    break;
+                }
+
+                lore.set(i, index.replace("%description%", cs(desc.get(0), player, placeholders)));
+                desc.remove(i);
+
+                AtomicInteger integer = new AtomicInteger(i + 1);
+                desc.forEach(s -> {
+                    final String color = ChatColor.getLastColors(index);
+                    lore.add(integer.getAndIncrement(), color + cs(s, player, placeholders));
+                });
+
+                break;
+            }
+
+        }
+
 
         if (config.getString(path + ".material") == null)
             return new ItemStack(Material.AIR);
 
         final Material material = Optional.ofNullable(Material.matchMaterial(config.getString(path + ".material"))).orElse(Material.BARREL);
 
-        final Item.Builder itemBuilder = new Item.Builder(material).setName(cs(config.getString(path + ".name"), player, placeholders)).setLore(lore).setAmount(config.getInt(path + ".amount"));
+        final Item.Builder itemBuilder = new Item.Builder(material)
+                .setName(cs(config.getString(path + ".name"), player, placeholders))
+                .setLore(lore)
+                .setAmount(config.getInt(path + ".amount"));
 
         if (config.getBoolean(path + ".glow")) {
             itemBuilder.glow();

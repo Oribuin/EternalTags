@@ -11,6 +11,7 @@ import xyz.oribuin.orilibrary.manager.Manager;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -48,7 +49,10 @@ public class TagManager extends Manager {
 
         for (String key : section.getKeys(false)) {
             final Tag tag = new Tag(key, section.getString(key + ".name"), section.getString(key + ".tag"));
-            tag.setDescription(section.getString(key + ".description"));
+            tag.setDescription(section.get(key + ".description") instanceof String ?
+                    Collections.singletonList(section.getString(key + ".description"))
+                    : section.getStringList(key + ".description"));
+
             if (section.get(key + ".permission") != null)
                 tag.setPermission(section.getString(key + ".permission"));
 
@@ -109,7 +113,8 @@ public class TagManager extends Manager {
 
         final List<Tag> newList = new ArrayList<>();
         for (Tag tag : tags) {
-            if (this.tags.contains(tag)) continue;
+            if (this.tags.contains(tag))
+                continue;
 
             newList.add(tag);
         }

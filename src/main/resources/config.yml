@@ -19,10 +19,12 @@ tags:
   eternaltags:
     name: 'EternalTags'
     tag: '&7[<r:0.7>EternalTags&7]'
-    description: 'The eternaltags tag!'
+    description:
+      - 'The eternaltags tag!'
     permission: 'eternaltags.tag.eternaltags'
   gradient:
     name: 'Gradient'
     tag: '&7[<g:#ED213A:#93291E>Gradient&7]'
-    description: 'A very cool gradient!'
+    description:
+      - 'A very cool gradient!'
     permission: 'eternaltags.tag.gradient'
