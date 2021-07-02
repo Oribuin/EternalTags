@@ -175,11 +175,8 @@ public class TagGUI {
         final Item.Builder itemBuilder = new Item.Builder(material)
                 .setName(cs(config.getString(path + ".name"), player, placeholders))
                 .setLore(lore)
-                .setAmount(config.getInt(path + ".amount"));
-
-        if (config.getBoolean(path + ".glow")) {
-            itemBuilder.glow();
-        }
+                .setAmount(config.getInt(path + ".amount"))
+                .glow(config.getBoolean(path + ".glow"));
 
         final String texture = config.getString(path + ".texture");
 
