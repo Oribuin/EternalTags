@@ -4,6 +4,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import xyz.oribuin.eternaltags.command.CmdTags;
 import xyz.oribuin.eternaltags.hook.Expansion;
+import xyz.oribuin.eternaltags.listener.PlayerJoinListener;
 import xyz.oribuin.eternaltags.manager.DataManager;
 import xyz.oribuin.eternaltags.manager.MessageManager;
 import xyz.oribuin.eternaltags.manager.TagManager;
@@ -21,7 +22,8 @@ public class EternalTags extends OriPlugin {
     public void enablePlugin() {
 
         // Check if server has PlaceholderAPI, No sure why it wouldn't though.
-        if (!hasPlugin("PlaceholderAPI")) return;
+        if (!hasPlugin("PlaceholderAPI"))
+            return;
 
         // Add bstats metrics
         if (this.getConfig().getBoolean("metrics")) {
@@ -53,6 +55,9 @@ public class EternalTags extends OriPlugin {
 
         // Register Commands
         new CmdTags(this).register(null, noPerm);
+
+        // Register Listeners.
+        new PlayerJoinListener(this);
     }
 
     @Override

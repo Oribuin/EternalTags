@@ -4,6 +4,10 @@ metrics: true
 # Should the plugin check for updates on startup?
 check-updates: true
 
+# Default tag for players who have joined for the first time.
+# Set this to 'None' to disable.
+default-tag: 'eternaltags'
+
 # Enable if you want to save everything in MySQL
 mysql:
   enabled: false
