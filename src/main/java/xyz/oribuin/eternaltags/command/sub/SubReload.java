@@ -6,7 +6,7 @@ import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.command.CmdTags;
 import xyz.oribuin.eternaltags.manager.MessageManager;
 import xyz.oribuin.orilibrary.command.SubCommand;
-import xyz.oribuin.orilibrary.libs.jetbrains.annotations.NotNull;
+
 import xyz.oribuin.orilibrary.util.FileUtils;
 
 @SubCommand.Info(
@@ -24,7 +24,7 @@ public class SubReload extends SubCommand {
     }
 
     @Override
-    public void executeArgument(@NotNull CommandSender sender, @NotNull String[] args) {
+    public void executeArgument( CommandSender sender,  String[] args) {
 
         final MessageManager msg = this.plugin.getManager(MessageManager.class);
 

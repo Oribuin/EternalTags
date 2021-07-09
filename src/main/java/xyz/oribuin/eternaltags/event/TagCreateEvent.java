@@ -16,12 +16,12 @@ public class TagCreateEvent extends Event implements Cancellable {
         this.tag = tag;
     }
 
-    public Tag getTag() {
-        return tag;
-    }
-
     public static HandlerList getHandlerList() {
         return list;
+    }
+
+    public Tag getTag() {
+        return tag;
     }
 
     @Override

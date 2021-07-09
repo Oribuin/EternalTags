@@ -13,9 +13,7 @@ import xyz.oribuin.orilibrary.util.FileUtils;
 import javax.annotation.Nullable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -127,6 +125,23 @@ public class DataManager extends Manager {
                 statement.setString(2, tag.getId());
                 statement.executeUpdate();
             }
+        }));
+
+    }
+
+    public void updateEveryone(Tag tag) {
+        Set<Map.Entry<UUID, Tag>> entry = new HashSet<>(this.cachedUsers.entrySet());
+
+        entry.forEach(uuidTagEntry -> this.cachedUsers.put(uuidTagEntry.getKey(), tag));
+
+        this.async(task -> this.connector.connect(connection -> {
+            final String query = "UPDATE eternaltags_tags SET tagID = ?";
+
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setString(1, tag.getId());
+                statement.executeUpdate();
+            }
+
         }));
 
     }

@@ -20,7 +20,8 @@ public class UpdateChecker {
             final URLConnection connection = url.openConnection();
             final InputStream stream = connection.getInputStream();
 
-            if (stream == null) return null;
+            if (stream == null)
+                return null;
 
             final BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
             final JsonObject object = new JsonParser().parse(reader).getAsJsonObject();

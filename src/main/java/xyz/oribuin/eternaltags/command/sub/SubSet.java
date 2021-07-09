@@ -5,15 +5,13 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.command.CmdTags;
-import xyz.oribuin.eternaltags.event.TagCreateEvent;
-import xyz.oribuin.eternaltags.event.TagDeleteEvent;
 import xyz.oribuin.eternaltags.event.TagEquipEvent;
 import xyz.oribuin.eternaltags.manager.DataManager;
 import xyz.oribuin.eternaltags.manager.MessageManager;
 import xyz.oribuin.eternaltags.manager.TagManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 import xyz.oribuin.orilibrary.command.SubCommand;
-import xyz.oribuin.orilibrary.libs.jetbrains.annotations.NotNull;
+
 import xyz.oribuin.orilibrary.util.StringPlaceholders;
 
 import java.util.List;
@@ -34,7 +32,7 @@ public class SubSet extends SubCommand {
     }
 
     @Override
-    public void executeArgument(@NotNull CommandSender sender, @NotNull String[] args) {
+    public void executeArgument( CommandSender sender,  String[] args) {
 
         final MessageManager msg = this.plugin.getManager(MessageManager.class);
 

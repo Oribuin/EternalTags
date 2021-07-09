@@ -13,7 +13,7 @@ import xyz.oribuin.eternaltags.manager.MessageManager;
 import xyz.oribuin.eternaltags.manager.TagManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 import xyz.oribuin.orilibrary.command.SubCommand;
-import xyz.oribuin.orilibrary.libs.jetbrains.annotations.NotNull;
+
 import xyz.oribuin.orilibrary.util.StringPlaceholders;
 
 import java.io.File;
@@ -36,7 +36,7 @@ public class SubConvert extends SubCommand {
     }
 
     @Override
-    public void executeArgument(@NotNull CommandSender sender, @NotNull String[] args) {
+    public void executeArgument( CommandSender sender,  String[] args) {
 
         final MessageManager msg = this.plugin.getManager(MessageManager.class);
 

@@ -1,10 +1,9 @@
 package xyz.oribuin.eternaltags.command.sub;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.command.CmdTags;
-import xyz.oribuin.eternaltags.event.TagCreateEvent;
+import xyz.oribuin.eternaltags.manager.DataManager;
 import xyz.oribuin.eternaltags.manager.MessageManager;
 import xyz.oribuin.eternaltags.manager.TagManager;
 import xyz.oribuin.eternaltags.obj.Tag;
@@ -12,20 +11,20 @@ import xyz.oribuin.orilibrary.command.SubCommand;
 
 import xyz.oribuin.orilibrary.util.StringPlaceholders;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @SubCommand.Info(
-        names = {"create"},
-        usage = "/tags create <name> <tag>",
-        permission = "eternaltags.create",
+        names = {"setall"},
+        usage = "/tags setall <tag>",
+        permission = "eternaltags.setall",
         command = CmdTags.class
 )
-public class SubCreate extends SubCommand {
+public class SubSetAll extends SubCommand {
 
     private final EternalTags plugin = (EternalTags) this.getOriPlugin();
 
-    public SubCreate(EternalTags plugin, CmdTags command) {
+    public SubSetAll(EternalTags plugin, CmdTags command) {
         super(plugin, command);
     }
 
@@ -35,34 +34,22 @@ public class SubCreate extends SubCommand {
         final MessageManager msg = this.plugin.getManager(MessageManager.class);
 
         // Check arguments
-        if (args.length < 3) {
+        if (args.length != 2) {
             msg.send(sender, "invalid-arguments", StringPlaceholders.single("usage", this.getAnnotation().usage()));
             return;
         }
 
-        final String name = args[1];
-        final String newTag = String.join(" ", args).substring(args[0].length() + name.length() + 2);
-
         final List<Tag> cachedTags = this.plugin.getManager(TagManager.class).getTags();
+        final Optional<Tag> tagOptional = cachedTags.stream().filter(tag -> tag.getId().equalsIgnoreCase(args[1])).findAny();
 
         // Check if the tag exists
-        if (cachedTags.stream().anyMatch(x -> x.getId().equalsIgnoreCase(name))) {
-            msg.send(sender, "tag-exists");
+        if (!tagOptional.isPresent()) {
+            msg.send(sender, "tag-doesnt-exist");
             return;
         }
 
-        // Create the new tag
-        final Tag tag = new Tag(name.toLowerCase(), name, newTag);
-        tag.setDescription(Collections.singletonList("None"));
-
-        final TagCreateEvent event = new TagCreateEvent(tag);
-        Bukkit.getPluginManager().callEvent(event);
-        if (event.isCancelled()) {
-            return;
-        }
-
-        this.plugin.getManager(TagManager.class).createTag(tag);
-        msg.send(sender, "created-tag", StringPlaceholders.single("tag", newTag));
+        this.plugin.getManager(DataManager.class).updateEveryone(tagOptional.get());
+        msg.send(sender, "changed-all-tags", StringPlaceholders.single("tag", tagOptional.get().getTag()));
     }
 
 }
