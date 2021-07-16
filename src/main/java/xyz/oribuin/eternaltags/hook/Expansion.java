@@ -3,6 +3,7 @@ package xyz.oribuin.eternaltags.hook;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.manager.DataManager;
 import xyz.oribuin.eternaltags.manager.TagManager;
@@ -43,15 +44,14 @@ public class Expansion extends PlaceholderExpansion {
             final Optional<Tag> tagOptional = this.tag.getTags().stream().filter(x -> x.getId().equalsIgnoreCase(tagId)).findFirst();
             return tagOptional.filter(x -> x.getTag() != null)
                     .map(Tag::getTag)
-                    .map(HexUtils::colorify)
                     .orElse("");
         }
 
         switch (params.toLowerCase()) {
             case "tag":
-                return HexUtils.colorify(currentTag);
+                return currentTag;
             case "tag_formatted":
-                return HexUtils.colorify(currentTag.length() == 0 ? "None" : currentTag);
+                return currentTag.length() == 0 ? "None" : currentTag;
             case "tag_name":
                 return tag != null ? tag.getName() : "";
             case "tag_id":
@@ -72,17 +72,17 @@ public class Expansion extends PlaceholderExpansion {
     }
 
     @Override
-    public String getIdentifier() {
+    public @NotNull String getIdentifier() {
         return "eternaltags";
     }
 
     @Override
-    public String getAuthor() {
+    public @NotNull String getAuthor() {
         return "Oribuin";
     }
 
     @Override
-    public String getVersion() {
+    public @NotNull String getVersion() {
         return this.plugin.getDescription().getVersion();
     }
 

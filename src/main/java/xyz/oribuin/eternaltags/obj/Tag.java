@@ -3,6 +3,8 @@ package xyz.oribuin.eternaltags.obj;
 import java.util.ArrayList;
 import java.util.List;
 
+import static xyz.oribuin.orilibrary.util.HexUtils.colorify;
+
 public class Tag {
 
     private final String id;
@@ -28,7 +30,7 @@ public class Tag {
     }
 
     public String getTag() {
-        return tag;
+        return colorify(tag);
     }
 
     public String getPermission() {

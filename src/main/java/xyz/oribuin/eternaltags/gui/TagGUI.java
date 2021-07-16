@@ -17,14 +17,16 @@ import xyz.oribuin.eternaltags.manager.TagManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 import xyz.oribuin.gui.Item;
 import xyz.oribuin.gui.PaginatedGui;
-import xyz.oribuin.orilibrary.util.HexUtils;
 import xyz.oribuin.orilibrary.util.StringPlaceholders;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+
+import static xyz.oribuin.orilibrary.util.HexUtils.colorify;
 
 public class TagGUI {
 
@@ -51,8 +53,11 @@ public class TagGUI {
 
         final PaginatedGui gui = new PaginatedGui(54, cs(this.plugin.getMenuConfig().getString("menu-name"), player, StringPlaceholders.empty()), pageSlots);
 
+        final List<Tag> playersTag = new ArrayList<>(this.tagManager.getPlayersTag(player));
+        playersTag.sort(Comparator.comparing(Tag::getName));
+
         //  Add all the tags to the gui.
-        this.tagManager.getPlayersTag(player).forEach(tag -> gui.addPageItem(this.getGuiItem("tag", tag, player), event -> {
+        playersTag.forEach(tag -> gui.addPageItem(this.getGuiItem("tag", tag, player), event -> {
             if (!this.tagManager.getTags().contains(tag)) {
                 event.getWhoClicked().closeInventory();
                 return;
@@ -94,12 +99,15 @@ public class TagGUI {
         });
 
         // Add clear tag item.
-        gui.setItem(49, this.getGuiItem("clear-tag", null, player), event -> {
-            this.plugin.getManager(MessageManager.class).send(event.getWhoClicked(), "cleared-tag");
-            this.data.updateUser(event.getWhoClicked().getUniqueId(), null);
-            event.getWhoClicked().closeInventory();
-        });
+        if (this.plugin.getMenuConfig().getBoolean("clear-tag.enabled")) {
 
+            gui.setItem(49, this.getGuiItem("clear-tag", null, player), event -> {
+                this.plugin.getManager(MessageManager.class).send(event.getWhoClicked(), "cleared-tag");
+                this.data.updateUser(event.getWhoClicked().getUniqueId(), null);
+                event.getWhoClicked().closeInventory();
+            });
+
+        }
         // Extra Items
         final ConfigurationSection section = this.plugin.getMenuConfig().getConfigurationSection("extra-items");
         if (section != null) {
@@ -139,6 +147,7 @@ public class TagGUI {
 
         // I am aware this code is awful, I do not like it either but it is the only solution i could come up with
         if (tag != null) {
+
             for (int i = 0; i < lore.size(); i++) {
 
                 String index = lore.get(i);
@@ -165,7 +174,6 @@ public class TagGUI {
             }
 
         }
-
 
         if (config.getString(path + ".material") == null)
             return new ItemStack(Material.AIR);
@@ -203,7 +211,7 @@ public class TagGUI {
      * @since 1.0.5
      */
     private String cs(String txt, Player player, StringPlaceholders placeholders) {
-        return HexUtils.colorify(PAPI.apply(player, placeholders.apply(txt)));
+        return colorify(PAPI.apply(player, placeholders.apply(txt)));
     }
 
     /**

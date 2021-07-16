@@ -65,7 +65,6 @@ public class SubSet extends SubCommand {
             return;
         }
 
-
         this.plugin.getManager(DataManager.class).updateUser(player.getUniqueId(), tagOptional.get());
         msg.send(sender, "changed-tag", StringPlaceholders.single("tag", tagOptional.get().getTag()));
     }
