@@ -149,7 +149,6 @@ public class TagGUI {
         if (tag != null) {
 
             for (int i = 0; i < lore.size(); i++) {
-
                 String index = lore.get(i);
                 if (!index.toLowerCase().contains("%description%"))
                     continue;
@@ -162,7 +161,10 @@ public class TagGUI {
                 }
 
                 lore.set(i, index.replace("%description%", cs(desc.get(0), player, placeholders)));
-                desc.remove(i);
+                //                    O
+                // I I I I I I I I I >o<
+                // marry me whoever understands that
+                desc.remove(desc.size() > i ? i : i - 1);
 
                 AtomicInteger integer = new AtomicInteger(i + 1);
                 desc.forEach(s -> {
