@@ -8,7 +8,6 @@ import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.manager.DataManager;
 import xyz.oribuin.eternaltags.manager.TagManager;
 import xyz.oribuin.eternaltags.obj.Tag;
-import xyz.oribuin.orilibrary.util.HexUtils;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -58,6 +57,8 @@ public class Expansion extends PlaceholderExpansion {
                 return tag != null ? tag.getId() : "";
             case "tag_permission":
                 return tag != null ? tag.getPermission() : "";
+            case "tag_description":
+                return tag != null ? String.join(" ", tag.getDescription()) : " ";
             case "total":
                 return String.valueOf(this.tag.getTags().size());
             case "unlocked":
