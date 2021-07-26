@@ -9,7 +9,6 @@ import xyz.oribuin.eternaltags.manager.MessageManager;
 import xyz.oribuin.eternaltags.manager.TagManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 import xyz.oribuin.orilibrary.command.SubCommand;
-
 import xyz.oribuin.orilibrary.util.StringPlaceholders;
 
 import java.util.Collections;
@@ -30,7 +29,7 @@ public class SubCreate extends SubCommand {
     }
 
     @Override
-    public void executeArgument( CommandSender sender,  String[] args) {
+    public void executeArgument(CommandSender sender, String[] args) {
 
         final MessageManager msg = this.plugin.getManager(MessageManager.class);
 

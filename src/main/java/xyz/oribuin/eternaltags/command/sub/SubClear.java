@@ -25,7 +25,7 @@ public class SubClear extends SubCommand {
     }
 
     @Override
-    public void executeArgument( CommandSender sender,  String[] args) {
+    public void executeArgument(CommandSender sender, String[] args) {
 
         final MessageManager msg = this.plugin.getManager(MessageManager.class);
 

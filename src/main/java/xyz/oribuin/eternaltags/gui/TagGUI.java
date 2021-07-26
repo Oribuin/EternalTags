@@ -145,9 +145,9 @@ public class TagGUI {
                 .map(s -> cs(s, player, placeholders))
                 .collect(Collectors.toList());
 
-        // I am aware this code is awful, I do not like it either but it is the only solution i could come up with
-        if (tag != null) {
 
+        if (tag != null) {
+            // I am aware this code is awful, I do not like it either but it is the only solution i could come up with
             for (int i = 0; i < lore.size(); i++) {
                 String index = lore.get(i);
 
@@ -162,9 +162,6 @@ public class TagGUI {
                 }
 
                 lore.set(i, index.replace("%description%", cs(desc.get(0), player, placeholders)));
-
-                //                    O
-                // I I I I I I I I I >o<
                 desc.remove(desc.size() > i ? i : desc.size() - 1);
 
                 AtomicInteger integer = new AtomicInteger(i + 1);
