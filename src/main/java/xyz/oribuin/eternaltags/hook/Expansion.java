@@ -8,6 +8,7 @@ import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.manager.DataManager;
 import xyz.oribuin.eternaltags.manager.TagManager;
 import xyz.oribuin.eternaltags.obj.Tag;
+import xyz.oribuin.orilibrary.util.HexUtils;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -33,7 +34,7 @@ public class Expansion extends PlaceholderExpansion {
 
         final UUID uuid = player.getUniqueId();
         final Tag tag = this.data.getTag(uuid);
-        final String currentTag = tag != null ? tag.getTag() : "";
+        final String currentTag = HexUtils.colorify(tag != null ? tag.getTag() : "");
 
         // Allow the ability to get any tag from the id
         final String[] args = params.split("_");
@@ -50,7 +51,9 @@ public class Expansion extends PlaceholderExpansion {
             case "tag":
                 return currentTag;
             case "tag_formatted":
-                return currentTag.length() == 0 ? "None" : currentTag;
+                return currentTag.length() == 0 ? this.plugin.getConfig().get("formatted-placeholder") != null ?
+                        this.plugin.getConfig().getString("formatted-placeholder") : "None" :
+                        currentTag;
             case "tag_name":
                 return tag != null ? tag.getName() : "";
             case "tag_id":

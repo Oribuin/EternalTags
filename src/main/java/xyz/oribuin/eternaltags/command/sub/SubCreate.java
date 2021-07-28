@@ -9,6 +9,7 @@ import xyz.oribuin.eternaltags.manager.MessageManager;
 import xyz.oribuin.eternaltags.manager.TagManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 import xyz.oribuin.orilibrary.command.SubCommand;
+import xyz.oribuin.orilibrary.util.HexUtils;
 import xyz.oribuin.orilibrary.util.StringPlaceholders;
 
 import java.util.Collections;
@@ -61,7 +62,7 @@ public class SubCreate extends SubCommand {
         }
 
         this.plugin.getManager(TagManager.class).createTag(tag);
-        msg.send(sender, "created-tag", StringPlaceholders.single("tag", newTag));
+        msg.send(sender, "created-tag", StringPlaceholders.single("tag", HexUtils.colorify(newTag)));
     }
 
 }

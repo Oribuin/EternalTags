@@ -8,6 +8,9 @@ check-updates: true
 # Set this to 'None' to disable.
 default-tag: 'eternaltags'
 
+# This is the placeholder that will show instead of "None" for placeholder %eternaltags_tag_formatted%
+formatted_placeholder: 'None'
+
 # Enable if you want to save everything in MySQL
 mysql:
   enabled: false

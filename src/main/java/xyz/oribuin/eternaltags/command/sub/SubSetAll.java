@@ -8,6 +8,7 @@ import xyz.oribuin.eternaltags.manager.MessageManager;
 import xyz.oribuin.eternaltags.manager.TagManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 import xyz.oribuin.orilibrary.command.SubCommand;
+import xyz.oribuin.orilibrary.util.HexUtils;
 import xyz.oribuin.orilibrary.util.StringPlaceholders;
 
 import java.util.List;
@@ -48,7 +49,7 @@ public class SubSetAll extends SubCommand {
         }
 
         this.plugin.getManager(DataManager.class).updateEveryone(tagOptional.get());
-        msg.send(sender, "changed-all-tags", StringPlaceholders.single("tag", tagOptional.get().getTag()));
+        msg.send(sender, "changed-all-tags", StringPlaceholders.single("tag", HexUtils.colorify(tagOptional.get().getTag())));
     }
 
 }

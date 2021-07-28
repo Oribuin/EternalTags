@@ -30,7 +30,7 @@ public class Tag {
     }
 
     public String getTag() {
-        return colorify(tag);
+        return tag;
     }
 
     public String getPermission() {

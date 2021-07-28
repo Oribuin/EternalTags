@@ -85,7 +85,8 @@ public class TagGUI {
 
             event.getWhoClicked().closeInventory();
             this.data.updateUser(event.getWhoClicked().getUniqueId(), tag);
-            this.plugin.getManager(MessageManager.class).send(event.getWhoClicked(), "changed-tag", StringPlaceholders.single("tag", tag.getTag()));
+            this.plugin.getManager(MessageManager.class).send(event.getWhoClicked(), "changed-tag",
+                    StringPlaceholders.single("tag", colorify(tag.getTag())));
         }));
 
         gui.setDefaultClickFunction(event -> {
@@ -149,7 +150,7 @@ public class TagGUI {
         final StringPlaceholders.Builder builder = StringPlaceholders.builder();
 
         if (tag != null) {
-            builder.addPlaceholder("tag", tag.getTag());
+            builder.addPlaceholder("tag", colorify(tag.getTag()));
             builder.addPlaceholder("id", tag.getId());
             builder.addPlaceholder("name", tag.getName());
         }

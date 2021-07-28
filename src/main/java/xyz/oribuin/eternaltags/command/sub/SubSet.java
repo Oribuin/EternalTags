@@ -11,6 +11,7 @@ import xyz.oribuin.eternaltags.manager.MessageManager;
 import xyz.oribuin.eternaltags.manager.TagManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 import xyz.oribuin.orilibrary.command.SubCommand;
+import xyz.oribuin.orilibrary.util.HexUtils;
 import xyz.oribuin.orilibrary.util.StringPlaceholders;
 
 import java.util.List;
@@ -65,7 +66,7 @@ public class SubSet extends SubCommand {
         }
 
         this.plugin.getManager(DataManager.class).updateUser(player.getUniqueId(), tagOptional.get());
-        msg.send(sender, "changed-tag", StringPlaceholders.single("tag", tagOptional.get().getTag()));
+        msg.send(sender, "changed-tag", StringPlaceholders.single("tag", HexUtils.colorify(tagOptional.get().getTag())));
     }
 
 }
