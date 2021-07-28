@@ -58,6 +58,9 @@ public class EternalTags extends OriPlugin {
 
         // Register Listeners.
         new PlayerJoinListener(this);
+
+        // Initialize the API
+        new EternalAPI(this);
     }
 
     @Override

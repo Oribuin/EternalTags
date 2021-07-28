@@ -111,7 +111,7 @@ public class MessageManager extends Manager {
         CREATED_TAG("created-tag", "You have created the tag, %tag%&f!"),
         DELETED_TAG("deleted-tag", "You have deleted the tag, %tag%&f!"),
         CHANGED_TAG("changed-tag", "Your tag has been changed to %tag%"),
-        CHANGED_ALL_TAGS("changed-all-tags", "You have changed everyone's to %tag%"),
+        CHANGED_ALL_TAGS("changed-all-tags", "You have changed everyone's tag to %tag%"),
         CLEARED_TAG("cleared-tag", "Your tag has been cleared."),
         CONVERTED("converted-tags", "You have converted %total% Tags into EternalTags."),
 

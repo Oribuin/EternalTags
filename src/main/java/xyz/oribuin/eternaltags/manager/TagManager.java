@@ -111,14 +111,6 @@ public class TagManager extends Manager {
             this.saveData();
         }
 
-        final List<Tag> newList = new ArrayList<>();
-        for (Tag tag : tags) {
-            if (this.tags.contains(tag))
-                continue;
-
-            newList.add(tag);
-        }
-
         CompletableFuture.runAsync(() -> tags.forEach(tag -> {
             this.section.set(tag.getId().toLowerCase() + ".name", tag.getName());
             this.section.set(tag.getId().toLowerCase() + ".tag", tag.getTag());

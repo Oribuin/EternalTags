@@ -23,7 +23,16 @@ import java.util.stream.Collectors;
         permission = "eternaltags.use",
         playerOnly = false,
         usage = "/tags",
-        subcommands = {SubClear.class, SubConvert.class, SubCreate.class, SubDelete.class, SubReload.class, SubSet.class, SubSetAll.class},
+        subcommands = {
+                SubClear.class,
+                SubConvert.class,
+                SubCreate.class,
+                SubDelete.class,
+                SubReload.class,
+                SubSearch.class,
+                SubSet.class,
+                SubSetAll.class
+        },
         aliases = {"eternaltags"}
 )
 public class CmdTags extends Command {
@@ -71,6 +80,12 @@ public class CmdTags extends Command {
             case 2: {
                 if (args[0].equalsIgnoreCase("create"))
                     tabComplete.add("<name>");
+
+                if (args[0].equalsIgnoreCase("search") && sender instanceof Player)
+                    tabComplete.addAll(tag.getPlayersTag((Player) sender)
+                            .stream()
+                            .map(Tag::getName)
+                            .collect(Collectors.toList()));
 
                 if (Arrays.asList("delete", "setall").contains(args[0]))
                     tabComplete.addAll(tag.getTags().stream().map(Tag::getId).collect(Collectors.toList()));

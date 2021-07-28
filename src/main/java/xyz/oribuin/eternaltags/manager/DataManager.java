@@ -114,10 +114,13 @@ public class DataManager extends Manager {
             return;
         }
 
+        // Save the tag if it doesnt exist in the config file.
+        final TagManager tagManager = this.plugin.getManager(TagManager.class);
+        if (!tagManager.getTags().contains(tag))
+            tagManager.createTag(tag);
+
         this.cachedUsers.put(uuid, tag);
-
         final String query = "REPLACE INTO eternaltags_tags (player, tagID) VALUES (?, ?)";
-
         this.async(task -> this.connector.connect(connection -> {
 
             try (PreparedStatement statement = connection.prepareStatement(query)) {
@@ -129,6 +132,11 @@ public class DataManager extends Manager {
 
     }
 
+    /**
+     * Change every single person in the database's current tag.
+     *
+     * @param tag The tag.
+     */
     public void updateEveryone(Tag tag) {
         Set<Map.Entry<UUID, Tag>> entry = new HashSet<>(this.cachedUsers.entrySet());
 
@@ -146,18 +154,20 @@ public class DataManager extends Manager {
 
     }
 
+    /**
+     * Clear a player's active tag from the database
+     *
+     * @param uuid The UUID of the player
+     */
     private void removeUser(final UUID uuid) {
         this.cachedUsers.remove(uuid);
 
         final String query = "DELETE FROM eternaltags_tags WHERE player = ?";
-
         this.async(task -> this.connector.connect(connection -> {
-
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, uuid.toString());
                 statement.executeUpdate();
             }
-
         }));
 
     }
@@ -169,7 +179,7 @@ public class DataManager extends Manager {
      * @return The tag
      */
     public Tag getTag(UUID uuid) {
-        return this.cachedUsers.get(uuid);
+        return this.cachedUsers.getOrDefault(uuid, null);
     }
 
     @Override
@@ -177,7 +187,7 @@ public class DataManager extends Manager {
         this.connector.closeConnection();
     }
 
-    public void async(Consumer<BukkitTask> callback) {
+    private void async(Consumer<BukkitTask> callback) {
         this.plugin.getServer().getScheduler().runTaskAsynchronously(plugin, callback);
     }
 

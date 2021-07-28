@@ -34,12 +34,23 @@ public class TagGUI {
     private final DataManager data;
     private final TagManager tagManager;
     private final Player player;
+    private final String keyword;
 
     public TagGUI(final EternalTags plugin, final Player player) {
         this.plugin = plugin;
         this.data = this.plugin.getManager(DataManager.class);
         this.tagManager = this.plugin.getManager(TagManager.class);
         this.player = player;
+        this.keyword = null;
+    }
+
+    // This isnt a mess, I promise.
+    public TagGUI(final EternalTags plugin, final Player player, String keyword) {
+        this.plugin = plugin;
+        this.data = this.plugin.getManager(DataManager.class);
+        this.tagManager = this.plugin.getManager(TagManager.class);
+        this.player = player;
+        this.keyword = keyword;
     }
 
     /**
@@ -55,6 +66,10 @@ public class TagGUI {
 
         final List<Tag> playersTag = new ArrayList<>(this.tagManager.getPlayersTag(player));
         playersTag.sort(Comparator.comparing(Tag::getName));
+
+        if (keyword != null) {
+            playersTag.removeIf(tag -> !tag.getName().toLowerCase().contains(keyword.toLowerCase()));
+        }
 
         //  Add all the tags to the gui.
         playersTag.forEach(tag -> gui.addPageItem(this.getGuiItem("tag", tag, player), event -> {
