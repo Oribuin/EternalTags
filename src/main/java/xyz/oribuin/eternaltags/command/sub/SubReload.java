@@ -11,8 +11,7 @@ import xyz.oribuin.orilibrary.util.FileUtils;
 @SubCommand.Info(
         names = {"reload"},
         usage = "/tags reload",
-        permission = "eternaltags.reload",
-        command = CmdTags.class
+        permission = "eternaltags.reload"
 )
 public class SubReload extends SubCommand {
 
@@ -28,7 +27,7 @@ public class SubReload extends SubCommand {
         final MessageManager msg = this.plugin.getManager(MessageManager.class);
 
         // Reload gui config
-        this.plugin.setMenuConfig(YamlConfiguration.loadConfiguration(FileUtils.createMenuFile(this.plugin, "tag-menu")));
+        this.plugin.setMenuConfig(YamlConfiguration.loadConfiguration(FileUtils.createFile(this.plugin, "menus", "tag-menu.yml")));
 
         // Reload main config files
         this.plugin.reload();

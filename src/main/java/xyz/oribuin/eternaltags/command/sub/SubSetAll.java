@@ -17,8 +17,7 @@ import java.util.Optional;
 @SubCommand.Info(
         names = {"setall"},
         usage = "/tags setall <tag>",
-        permission = "eternaltags.setall",
-        command = CmdTags.class
+        permission = "eternaltags.setall"
 )
 public class SubSetAll extends SubCommand {
 
@@ -35,7 +34,7 @@ public class SubSetAll extends SubCommand {
 
         // Check arguments
         if (args.length != 2) {
-            msg.send(sender, "invalid-arguments", StringPlaceholders.single("usage", this.getAnnotation().usage()));
+            msg.send(sender, "invalid-arguments", StringPlaceholders.single("usage", this.getInfo().usage()));
             return;
         }
 

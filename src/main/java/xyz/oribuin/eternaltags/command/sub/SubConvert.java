@@ -3,7 +3,8 @@ package xyz.oribuin.eternaltags.command.sub;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.plugin.Plugin;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.command.CmdTags;
 import xyz.oribuin.eternaltags.manager.MessageManager;
@@ -12,16 +13,14 @@ import xyz.oribuin.eternaltags.obj.Tag;
 import xyz.oribuin.orilibrary.command.SubCommand;
 import xyz.oribuin.orilibrary.util.StringPlaceholders;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.io.File;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @SubCommand.Info(
         names = {"convert"},
         usage = "/tags convert",
-        permission = "eternaltags.clear",
-        command = CmdTags.class
+        permission = "eternaltags.convert"
 )
 public class SubConvert extends SubCommand {
 
@@ -35,52 +34,105 @@ public class SubConvert extends SubCommand {
 
     @Override
     public void executeArgument(CommandSender sender, String[] args) {
-        final List<Tag> tags = this.convertDeluxeTags(sender);
-        msg.send(sender, "converted-tags", StringPlaceholders.single("total", tags.size()));
 
+        if (args.length != 2) {
+            this.msg.send(sender, "invalid-arguments", StringPlaceholders.single("usage", this.getInfo().usage()));
+            return;
+        }
+
+        final Optional<ConvertablePlugin> pluginOptional = Arrays.stream(ConvertablePlugin.values())
+                .filter(pl -> pl.name().equalsIgnoreCase(args[1]))
+                .findAny();
+
+        if (!pluginOptional.isPresent()) {
+            this.msg.send(sender, "invalid-plugin");
+            return;
+        }
+
+        final List<Tag> tags = new ArrayList<>();
+        switch (pluginOptional.get()) {
+            case DELUXETAGS:
+                tags.addAll(this.convertDeluxeTags());
+                break;
+            case CIFYTAGS:
+                tags.addAll(this.convertCIFYTags());
+                break;
+        }
+
+        msg.send(sender, "converted-tags", StringPlaceholders.single("total", tags.size()));
     }
 
     /**
      * Convert all the tags from DeluxeTags to EternalTags
      * absolutely yoink their tags
      *
-     * @param sender The command sender
      * @return A list of converted tags.
      */
-    private List<Tag> convertDeluxeTags(CommandSender sender) {
-        final Plugin deluxeTags = this.plugin.getServer().getPluginManager().getPlugin("DeluxeTags");
+    private List<Tag> convertDeluxeTags() {
+        final File file = new File(new File(this.plugin.getDataFolder().getParentFile(), "DeluxeTags"), "config.yml");
 
-        if (deluxeTags == null || !deluxeTags.isEnabled()) {
-            msg.sendRaw(sender, "&c&lError &7| &fPlugin requires DeluxeTags to be enabled to do this.");
-            return Collections.emptyList();
+        final FileConfiguration config = YamlConfiguration.loadConfiguration(file);
+        final ConfigurationSection section = config.getConfigurationSection("deluxetags");
+
+        if (section == null) {
+            return new ArrayList<>();
         }
+        final List<Tag> tags = section.getKeys(false)
+                .stream()
+                .filter(key -> tagManager.getTags().stream().noneMatch(tag -> tag.getId().equalsIgnoreCase(key)))
+                .map(key -> {
+                    final Tag tag = new Tag(key, StringUtils.capitalize(key), section.getString(key + ".tag"));
 
-        final List<Tag> tags = new ArrayList<>();
-        final ConfigurationSection config = deluxeTags.getConfig().getConfigurationSection("deluxetags");
-        if (config == null) {
-            msg.sendRaw(sender, "&c&lError &7| &fFailed to convert tags from DeluxeTags.");
-            return Collections.emptyList();
-        }
+                    tag.setDescription(Collections.singletonList(Optional.ofNullable(section.getString(key + ".description")).orElse("")));
+                    if (section.getString(key + ".permission") != null) {
+                        tag.setPermission(key + ".permission");
+                    }
 
-        CompletableFuture.runAsync(() -> {
+                    return tag;
+                })
+                .collect(Collectors.toList());
 
-            for (String key : config.getKeys(false)) {
-
-                if (tagManager.getTags().stream().anyMatch(tag -> tag.getId().equalsIgnoreCase(key))) {
-                    return;
-                }
-
-                final Tag tag = new Tag(key, StringUtils.capitalize(key), config.getString(key + ".tag"));
-                tag.setDescription(config.getStringList(key + ".description"));
-                if (config.get(key + ".permission") != null) {
-                    tag.setPermission(config.getString(key + ".permission"));
-                }
-
-                tags.add(tag);
-            }
-
-        }).thenRunAsync(() -> tagManager.saveTags(tags));
-
+        tagManager.saveTags(tags);
         return tags;
     }
+
+    /**
+     * Convert all the tags from CIFYTags to EternalTags
+     * absolutely yoink their tags
+     *
+     * @return A list of converted tags.
+     */
+    private List<Tag> convertCIFYTags() {
+        final File file = new File(new File(this.plugin.getDataFolder().getParentFile(), "CIFYTags"), "config.yml");
+
+        final FileConfiguration config = YamlConfiguration.loadConfiguration(file);
+        final ConfigurationSection section = config.getConfigurationSection("tags");
+
+        if (section == null) {
+            return new ArrayList<>();
+        }
+
+        final List<Tag> tags = section.getKeys(false)
+                .stream()
+                .filter(key -> tagManager.getTags().stream().noneMatch(tag -> tag.getId().equalsIgnoreCase(key)))
+                .map(key -> {
+                    final Tag tag = new Tag(key, StringUtils.capitalize(key), section.getString(key + ".prefix"));
+
+                    tag.setDescription(Collections.singletonList(Optional.ofNullable(section.getString(key + ".description")).orElse("")));
+                    if (section.getBoolean(key + ".permission")) {
+                        tag.setPermission("cifytags.use." + key.toLowerCase());
+                    }
+
+                    return tag;
+                })
+                .collect(Collectors.toList());
+
+        tagManager.saveTags(tags);
+        return tags;
+    }
+
+    private enum ConvertablePlugin {
+        DELUXETAGS, CIFYTAGS
+    }
+
 }

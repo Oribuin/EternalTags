@@ -1,7 +1,6 @@
 package xyz.oribuin.eternaltags.command;
 
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.command.sub.*;
@@ -23,7 +22,7 @@ import java.util.stream.Collectors;
         permission = "eternaltags.use",
         playerOnly = false,
         usage = "/tags",
-        subcommands = {
+        subCommands = {
                 SubClear.class,
                 SubConvert.class,
                 SubCreate.class,
@@ -38,6 +37,7 @@ import java.util.stream.Collectors;
 public class CmdTags extends Command {
 
     private final EternalTags plugin = (EternalTags) this.getOriPlugin();
+    private final MessageManager msg = this.plugin.getManager(MessageManager.class);
 
     public CmdTags(EternalTags plugin) {
         super(plugin);
@@ -50,12 +50,7 @@ public class CmdTags extends Command {
             new TagGUI(this.plugin, ((Player) sender)).createGUI();
             return;
         }
-
-        final FileConfiguration config = this.plugin.getManager(MessageManager.class).getConfig();
-        final String prefix = config.getString("prefix");
-        final String unknownCommand = prefix + config.getString("unknown-command");
-        final String noPerm = prefix + config.getString("invalid-permission");
-        this.runSubCommands(sender, args, unknownCommand, noPerm);
+        this.runSubCommands(sender, args, x -> msg.send(x, "unknown-command"), x -> msg.send(x, "invalid-permission"));
     }
 
     @Override
@@ -64,12 +59,9 @@ public class CmdTags extends Command {
         final TagManager tag = this.plugin.getManager(TagManager.class);
         final List<String> tabComplete = new ArrayList<>();
 
-        if (this.getInfo().permission().length() > 0 && !sender.hasPermission(this.getInfo().permission()))
-            return playerList(sender);
-
         switch (args.length) {
             case 1: {
-                tabComplete.addAll(this.getSubCommands().stream().map(SubCommand::getAnnotation)
+                tabComplete.addAll(this.getSubCommands().stream().map(SubCommand::getInfo)
                         .filter(info -> info.permission().length() != 0 && sender.hasPermission(info.permission()))
                         .map(info -> info.names()[0])
                         .collect(Collectors.toList()));
@@ -92,6 +84,11 @@ public class CmdTags extends Command {
 
                 if (Arrays.asList("set", "clear").contains(args[0]))
                     return playerList(sender);
+
+                if (args[0].equalsIgnoreCase("convert")) {
+                    tabComplete.add("DeluxeTags");
+                    tabComplete.add("CIFYTags");
+                }
 
                 break;
             }

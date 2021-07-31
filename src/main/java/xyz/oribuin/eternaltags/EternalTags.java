@@ -46,15 +46,11 @@ public class EternalTags extends OriPlugin {
         new Expansion(this).register();
 
         // Register Menu Config
-        this.menuConfig = YamlConfiguration.loadConfiguration(FileUtils.createMenuFile(this, "tag-menu"));
+        this.menuConfig = YamlConfiguration.loadConfiguration(FileUtils.createFile(this, "menus", "tag-menu.yml"));
 
-        // Get command messages
-        final FileConfiguration config = this.getManager(MessageManager.class).getConfig();
-        final String prefix = config.getString("prefix");
-        final String noPerm = prefix + config.getString("invalid-permission");
-
+        final MessageManager msg = this.getManager(MessageManager.class);
         // Register Commands
-        new CmdTags(this).register(null, noPerm);
+        new CmdTags(this).register(sender -> msg.send(sender, "player-only"), sender -> msg.send(sender, "invalid-permission"));
 
         // Register Listeners.
         new PlayerJoinListener(this);
@@ -75,16 +71,16 @@ public class EternalTags extends OriPlugin {
         this.getLogger().info(HexUtils.colorify("&aChecking for plugin updates..."));
 
         if (UpdateChecker.getLatestVersion() != null) {
-            // The amount of else here hurts my soul
             if (UpdateChecker.isUpdateAvailable(UpdateChecker.getLatestVersion(), this.getDescription().getVersion())) {
                 this.getLogger().info(HexUtils.colorify("&aA new update is available for EternalTags (&c" + UpdateChecker.getLatestVersion() + "&a), You are on v" + this.getDescription().getVersion()));
-            } else {
-                this.getLogger().info(HexUtils.colorify("&aYou are on the latest version of EternalTags!"));
+                return;
             }
 
+            this.getLogger().info(HexUtils.colorify("&aYou are on the latest version of EternalTags!"));
         } else {
             this.getLogger().info(HexUtils.colorify("&cChecking for update failed, Could not get latest version..."));
         }
+
     }
 
     public FileConfiguration getMenuConfig() {

@@ -18,8 +18,7 @@ import java.util.List;
 @SubCommand.Info(
         names = {"create"},
         usage = "/tags create <name> <tag>",
-        permission = "eternaltags.create",
-        command = CmdTags.class
+        permission = "eternaltags.create"
 )
 public class SubCreate extends SubCommand {
 
@@ -36,7 +35,7 @@ public class SubCreate extends SubCommand {
 
         // Check arguments
         if (args.length < 3) {
-            msg.send(sender, "invalid-arguments", StringPlaceholders.single("usage", this.getAnnotation().usage()));
+            msg.send(sender, "invalid-arguments", StringPlaceholders.single("usage", this.getInfo().usage()));
             return;
         }
 

@@ -12,8 +12,7 @@ import xyz.oribuin.orilibrary.util.StringPlaceholders;
 @SubCommand.Info(
         names = {"search", "find"},
         usage = "/tags search <name>",
-        permission = "eternaltags.search",
-        command = CmdTags.class
+        permission = "eternaltags.search"
 )
 public class SubSearch extends SubCommand {
 
@@ -30,7 +29,7 @@ public class SubSearch extends SubCommand {
 
         // Check arguments
         if (args.length < 2) {
-            msg.send(sender, "invalid-arguments", StringPlaceholders.single("usage", this.getAnnotation().usage()));
+            msg.send(sender, "invalid-arguments", StringPlaceholders.single("usage", this.getInfo().usage()));
             return;
         }
 

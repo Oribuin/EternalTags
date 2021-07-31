@@ -13,8 +13,7 @@ import xyz.oribuin.orilibrary.util.StringPlaceholders;
 @SubCommand.Info(
         names = {"clear"},
         usage = "/tags clear <player>",
-        permission = "eternaltags.clear",
-        command = CmdTags.class
+        permission = "eternaltags.clear"
 )
 public class SubClear extends SubCommand {
 
@@ -31,7 +30,7 @@ public class SubClear extends SubCommand {
 
         // Check arguments
         if (args.length != 2) {
-            msg.send(sender, "invalid-arguments", StringPlaceholders.single("usage", this.getAnnotation().usage()));
+            msg.send(sender, "invalid-arguments", StringPlaceholders.single("usage", this.getInfo().usage()));
             return;
         }
 

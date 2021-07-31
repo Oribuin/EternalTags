@@ -17,8 +17,7 @@ import java.util.Optional;
 @SubCommand.Info(
         names = {"delete"},
         usage = "/tags delete <name> ",
-        permission = "eternaltags.delete",
-        command = CmdTags.class
+        permission = "eternaltags.delete"
 )
 public class SubDelete extends SubCommand {
 
@@ -35,7 +34,7 @@ public class SubDelete extends SubCommand {
 
         // Check arguments
         if (args.length != 2) {
-            msg.send(sender, "invalid-arguments", StringPlaceholders.single("usage", this.getAnnotation().usage()));
+            msg.send(sender, "invalid-arguments", StringPlaceholders.single("usage", this.getInfo().usage()));
             return;
         }
 

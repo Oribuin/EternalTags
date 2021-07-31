@@ -118,6 +118,7 @@ public class MessageManager extends Manager {
         RELOAD("reload", "You have reloaded EternalTags!"),
         DISABLED_WORLD("disabled-world", "&cYou cannot do this in this world."),
         INVALID_PERMISSION("invalid-permission", "&cYou do not have permission to execute this command."),
+        INVALID_PLUGIN("invalid-plugin", "Please enter a valid plugin name that can be converted!"),
         INVALID_PLAYER("invalid-player", "&cPlease enter a valid player."),
         INVALID_ARGUMENTS("invalid-arguments", "&cPlease provide valid arguments. Correct usage: %usage%"),
         TAG_DOESNT_EXIST("tag-doesnt-exist", "&cThis tag does not exist."),

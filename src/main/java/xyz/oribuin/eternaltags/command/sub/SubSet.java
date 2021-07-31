@@ -20,8 +20,7 @@ import java.util.Optional;
 @SubCommand.Info(
         names = {"set"},
         usage = "/tags set <player> <tag>",
-        permission = "eternaltags.set",
-        command = CmdTags.class
+        permission = "eternaltags.set"
 )
 public class SubSet extends SubCommand {
 
@@ -38,7 +37,7 @@ public class SubSet extends SubCommand {
 
         // Check arguments
         if (args.length != 3) {
-            msg.send(sender, "invalid-arguments", StringPlaceholders.single("usage", this.getAnnotation().usage()));
+            msg.send(sender, "invalid-arguments", StringPlaceholders.single("usage", this.getInfo().usage()));
             return;
         }
 

@@ -7,7 +7,7 @@ import xyz.oribuin.eternaltags.obj.Tag;
 
 /**
  * @author Oribuin
- * @since v1.0.10
+ * @since v1.0.11
  */
 public class EternalAPI {
 
