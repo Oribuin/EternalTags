@@ -56,6 +56,10 @@ public class TagManager extends Manager {
             if (section.get(key + ".permission") != null)
                 tag.setPermission(section.getString(key + ".permission"));
 
+            if (section.get(key + ".order") != null) {
+                tag.setOrder(section.getInt(key + ".order"));
+            }
+
             this.tags.add(tag);
         }
 
@@ -78,6 +82,7 @@ public class TagManager extends Manager {
         this.section.set(id + ".tag", tag.getTag());
         this.section.set(id + ".description", tag.getDescription());
         this.section.set(id + ".permission", tag.getPermission());
+        this.section.set(id + ".order", tag.getOrder());
         this.saveData();
 
         this.getTags().add(tag);
@@ -116,6 +121,7 @@ public class TagManager extends Manager {
             this.section.set(tag.getId().toLowerCase() + ".tag", tag.getTag());
             this.section.set(tag.getId().toLowerCase() + ".description", tag.getDescription());
             this.section.set(tag.getId().toLowerCase() + ".permission", tag.getPermission());
+            this.section.set(tag.getId().toLowerCase() + ".order", tag.getOrder());
         })).thenRun(() -> {
             saveData();
             this.getTags().addAll(tags);

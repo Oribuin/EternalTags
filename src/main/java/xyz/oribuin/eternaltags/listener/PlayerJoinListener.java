@@ -8,6 +8,7 @@ import xyz.oribuin.eternaltags.manager.DataManager;
 import xyz.oribuin.eternaltags.manager.TagManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 
+import javax.swing.*;
 import java.util.Optional;
 
 public class PlayerJoinListener implements Listener {

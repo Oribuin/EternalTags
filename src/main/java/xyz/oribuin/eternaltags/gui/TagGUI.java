@@ -19,10 +19,7 @@ import xyz.oribuin.gui.Item;
 import xyz.oribuin.gui.PaginatedGui;
 import xyz.oribuin.orilibrary.util.StringPlaceholders;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -64,8 +61,8 @@ public class TagGUI {
 
         final PaginatedGui gui = new PaginatedGui(54, cs(this.plugin.getMenuConfig().getString("menu-name"), player, StringPlaceholders.empty()), pageSlots);
 
-        final List<Tag> playersTag = new ArrayList<>(this.tagManager.getPlayersTag(player));
-        playersTag.sort(Comparator.comparing(Tag::getName));
+        List<Tag> playersTag = new ArrayList<>(this.tagManager.getPlayersTag(player));
+        this.sortList(playersTag);
 
         if (keyword != null) {
             playersTag.removeIf(tag -> !tag.getName().toLowerCase().contains(keyword.toLowerCase()));
@@ -228,6 +225,31 @@ public class TagGUI {
      */
     private String cs(String txt, Player player, StringPlaceholders placeholders) {
         return colorify(PAPI.apply(player, placeholders.apply(txt)));
+    }
+
+    /**
+     * Sort the list of tags in the gui
+     *
+     * @param tags The list of plugin tags.
+     */
+    private void sortList(List<Tag> tags) {
+        final String sortTypeOption = this.plugin.getMenuConfig().getString("sort-type");
+
+        if (sortTypeOption != null && sortTypeOption.equalsIgnoreCase("CUSTOM")) {
+            tags.sort(Comparator.comparing(Tag::getOrder));
+            return;
+        }
+
+        if (sortTypeOption != null && sortTypeOption.equalsIgnoreCase("NONE")) {
+            return;
+        }
+
+        if (sortTypeOption != null && sortTypeOption.equalsIgnoreCase("RANDOM")) {
+            Collections.shuffle(tags);
+            return;
+        }
+
+        tags.sort(Comparator.comparing(Tag::getName));
     }
 
     /**

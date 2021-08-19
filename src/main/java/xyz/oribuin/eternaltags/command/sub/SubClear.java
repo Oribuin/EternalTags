@@ -3,12 +3,12 @@ package xyz.oribuin.eternaltags.command.sub;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.command.CmdTags;
 import xyz.oribuin.eternaltags.manager.DataManager;
 import xyz.oribuin.eternaltags.manager.MessageManager;
 import xyz.oribuin.orilibrary.command.SubCommand;
-import xyz.oribuin.orilibrary.util.StringPlaceholders;
 
 @SubCommand.Info(
         names = {"clear"},
@@ -18,6 +18,7 @@ import xyz.oribuin.orilibrary.util.StringPlaceholders;
 public class SubClear extends SubCommand {
 
     private final EternalTags plugin = (EternalTags) this.getOriPlugin();
+    private final MessageManager msg = this.plugin.getManager(MessageManager.class);
 
     public SubClear(EternalTags plugin, CmdTags command) {
         super(plugin, command);
@@ -26,28 +27,33 @@ public class SubClear extends SubCommand {
     @Override
     public void executeArgument(CommandSender sender, String[] args) {
 
-        final MessageManager msg = this.plugin.getManager(MessageManager.class);
+        if (sender.hasPermission("eternaltags.clear.other") && args.length == 2) {
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
 
-        // Check arguments
-        if (args.length != 2) {
-            msg.send(sender, "invalid-arguments", StringPlaceholders.single("usage", this.getInfo().usage()));
+                @SuppressWarnings("deprecation")
+                OfflinePlayer player = Bukkit.getOfflinePlayer(args[1]);
+
+
+                if (!player.hasPlayedBefore()) {
+                    msg.send(sender, "invalid-player");
+                    return;
+                }
+
+                this.plugin.getManager(DataManager.class).updateUser(player.getUniqueId(), null);
+                msg.send(sender, "cleared-tag");
+            });
+
             return;
         }
 
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+        if (!(sender instanceof Player)) {
+            msg.send(sender, "player-only");
+            return;
+        }
 
-            @SuppressWarnings("deprecation")
-            OfflinePlayer player = Bukkit.getOfflinePlayer(args[1]);
+        this.plugin.getManager(DataManager.class).updateUser(((Player) sender).getUniqueId(), null);
+        msg.send(sender, "cleared-tag");
 
-
-            if (!player.hasPlayedBefore()) {
-                msg.send(sender, "invalid-player");
-                return;
-            }
-
-            this.plugin.getManager(DataManager.class).updateUser(player.getUniqueId(), null);
-            msg.send(sender, "cleared-tag");
-        });
     }
 
 }

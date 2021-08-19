@@ -85,7 +85,11 @@ public class SubConvert extends SubCommand {
 
                     tag.setDescription(Collections.singletonList(Optional.ofNullable(section.getString(key + ".description")).orElse("")));
                     if (section.getString(key + ".permission") != null) {
-                        tag.setPermission(key + ".permission");
+                        tag.setPermission(section.getString(key + ".permission"));
+                    }
+
+                    if (section.get(key + ".order") != null) {
+                        tag.setOrder(section.getInt(key + ".order"));
                     }
 
                     return tag;

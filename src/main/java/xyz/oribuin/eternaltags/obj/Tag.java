@@ -3,8 +3,6 @@ package xyz.oribuin.eternaltags.obj;
 import java.util.ArrayList;
 import java.util.List;
 
-import static xyz.oribuin.orilibrary.util.HexUtils.colorify;
-
 public class Tag {
 
     private final String id;
@@ -12,6 +10,7 @@ public class Tag {
     private final String tag;
     private String permission;
     private List<String> description;
+    private int order;
 
     public Tag(final String id, final String name, final String tag) {
         this.id = id;
@@ -19,6 +18,7 @@ public class Tag {
         this.tag = tag;
         this.description = new ArrayList<>();
         this.permission = "eternaltags.tag." + id.toLowerCase();
+        this.order = -1;
     }
 
     public String getId() {
@@ -47,5 +47,13 @@ public class Tag {
 
     public void setDescription(List<String> description) {
         this.description = description;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
+    }
+
+    public int getOrder() {
+        return order;
     }
 }

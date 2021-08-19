@@ -1,4 +1,7 @@
 menu-name: 'EternalTags (%currentPage%/%totalPages%)'
+# Available Options: ALPHABETICAL, CUSTOM, NONE, RANDOM (Use Random to confuse everyone.)
+sort-type: ALPHABETICAL
+
 tag:
   material: 'NAME_TAG'
   amount: 1
