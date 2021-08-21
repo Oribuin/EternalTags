@@ -29,9 +29,29 @@ tags:
     description:
       - 'The eternaltags tag!'
     permission: 'eternaltags.tag.eternaltags'
+    # Used if you want a specific order on your tags and if you have your tag order in tag-menu set to CUSTOM
+    order: -1
+    # Used if you want a specific icon for the tag, This is not required, You can
+    icon: NAME_TAG
   gradient:
     name: 'Gradient'
     tag: '&7[<g:#ED213A:#93291E>Gradient&7]'
     description:
       - 'A very cool gradient!'
     permission: 'eternaltags.tag.gradient'
+  animatedRainbow:
+    name: 'AnimatedRainbow'
+    tag: '&7[<r#10:0.7>AnimatedRainbow&7]'
+    description:
+      - 'A tag that will cycle through all the'
+      - 'colors of the rainbow.'
+    permission: 'eternaltags.tag.animatedrainbow'
+    icon: RED_CONCRETE
+  animatedGradient:
+    name: 'AnimatedGradient'
+    tag: '&7[<g#10:#ED213A:#93291E>AnimatedGradient&7]'
+    description:
+      - 'A tag that will cycle through all the'
+      - 'colors of the gradient'
+    permission: 'eternaltags.tag.animatedgradient'
+    order: 1

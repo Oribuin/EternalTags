@@ -1,5 +1,6 @@
 package xyz.oribuin.eternaltags.manager;
 
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -13,6 +14,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -58,6 +60,11 @@ public class TagManager extends Manager {
 
             if (section.get(key + ".order") != null) {
                 tag.setOrder(section.getInt(key + ".order"));
+            }
+
+            if (section.getString(key + ".icon") != null) {
+                // added objects.requireNotNull because this cannot be null
+                tag.setIcon(Material.matchMaterial(Objects.requireNonNull(section.getString(key + ".icon"))));
             }
 
             this.tags.add(tag);
@@ -122,6 +129,7 @@ public class TagManager extends Manager {
             this.section.set(tag.getId().toLowerCase() + ".description", tag.getDescription());
             this.section.set(tag.getId().toLowerCase() + ".permission", tag.getPermission());
             this.section.set(tag.getId().toLowerCase() + ".order", tag.getOrder());
+            this.section.set(tag.getId().toLowerCase() + ".icon", tag.getIcon());
         })).thenRun(() -> {
             saveData();
             this.getTags().addAll(tags);

@@ -1,5 +1,7 @@
 package xyz.oribuin.eternaltags.obj;
 
+import org.bukkit.Material;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +13,7 @@ public class Tag {
     private String permission;
     private List<String> description;
     private int order;
+    private Material icon;
 
     public Tag(final String id, final String name, final String tag) {
         this.id = id;
@@ -19,6 +22,7 @@ public class Tag {
         this.description = new ArrayList<>();
         this.permission = "eternaltags.tag." + id.toLowerCase();
         this.order = -1;
+        this.icon = null;
     }
 
     public String getId() {
@@ -55,5 +59,13 @@ public class Tag {
 
     public int getOrder() {
         return order;
+    }
+
+    public Material getIcon() {
+        return icon;
+    }
+
+    public void setIcon(Material icon) {
+        this.icon = icon;
     }
 }

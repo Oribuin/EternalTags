@@ -24,6 +24,7 @@ public class SubReload extends SubCommand {
     @Override
     public void executeArgument(CommandSender sender, String[] args) {
 
+        this.plugin.saveDefaultConfig();
         final MessageManager msg = this.plugin.getManager(MessageManager.class);
 
         // Reload gui config

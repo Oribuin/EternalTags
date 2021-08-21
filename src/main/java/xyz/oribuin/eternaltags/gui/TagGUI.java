@@ -31,23 +31,32 @@ public class TagGUI {
     private final DataManager data;
     private final TagManager tagManager;
     private final Player player;
-    private final String keyword;
+
+    private final List<Tag> playersTags;
 
     public TagGUI(final EternalTags plugin, final Player player) {
         this.plugin = plugin;
         this.data = this.plugin.getManager(DataManager.class);
         this.tagManager = this.plugin.getManager(TagManager.class);
         this.player = player;
-        this.keyword = null;
+
+        this.playersTags = new ArrayList<>(this.tagManager.getPlayersTag(player));
+        this.sortList(playersTags);
     }
 
-    // This isnt a mess, I promise.
+    // This isn't a mess, I promise.
     public TagGUI(final EternalTags plugin, final Player player, String keyword) {
         this.plugin = plugin;
         this.data = this.plugin.getManager(DataManager.class);
         this.tagManager = this.plugin.getManager(TagManager.class);
         this.player = player;
-        this.keyword = keyword;
+
+        this.playersTags = new ArrayList<>(this.tagManager.getPlayersTag(player));
+        this.sortList(playersTags);
+
+        if (keyword != null) {
+            playersTags.removeIf(tag -> !tag.getName().toLowerCase().contains(keyword.toLowerCase()));
+        }
     }
 
     /**
@@ -61,15 +70,8 @@ public class TagGUI {
 
         final PaginatedGui gui = new PaginatedGui(54, cs(this.plugin.getMenuConfig().getString("menu-name"), player, StringPlaceholders.empty()), pageSlots);
 
-        List<Tag> playersTag = new ArrayList<>(this.tagManager.getPlayersTag(player));
-        this.sortList(playersTag);
-
-        if (keyword != null) {
-            playersTag.removeIf(tag -> !tag.getName().toLowerCase().contains(keyword.toLowerCase()));
-        }
-
         //  Add all the tags to the gui.
-        playersTag.forEach(tag -> gui.addPageItem(this.getGuiItem("tag", tag, player), event -> {
+        playersTags.forEach(tag -> gui.addPageItem(this.getGuiItem("tag", tag, player), event -> {
             if (!this.tagManager.getTags().contains(tag)) {
                 event.getWhoClicked().closeInventory();
                 return;
@@ -191,7 +193,10 @@ public class TagGUI {
         if (config.getString(path + ".material") == null)
             return new ItemStack(Material.AIR);
 
-        final Material material = Optional.ofNullable(Material.matchMaterial(config.getString(path + ".material"))).orElse(Material.BARREL);
+        Material material = Optional.ofNullable(Material.matchMaterial(config.getString(path + ".material"))).orElse(Material.BARREL);
+
+        if (tag != null && tag.getIcon() != null)
+            material = tag.getIcon();
 
         final Item.Builder itemBuilder = new Item.Builder(material)
                 .setName(cs(config.getString(path + ".name"), player, placeholders))
@@ -207,8 +212,19 @@ public class TagGUI {
 
         final ConfigurationSection nbt = config.getConfigurationSection(path + ".nbt");
         if (nbt != null) {
-            for (String s : nbt.getKeys(false))
-                itemBuilder.setNBT(s, nbt.get(s));
+            for (String s : nbt.getKeys(false)) {
+
+                // else if ladders are painful
+                if (nbt.get(s) instanceof String)
+                    itemBuilder.setNBT(plugin, s, nbt.getString(s));
+                else if (nbt.get(s) instanceof Integer)
+                    itemBuilder.setNBT(plugin, s, nbt.getInt(s));
+                else if (nbt.get(s) instanceof Double)
+                    itemBuilder.setNBT(plugin, s, nbt.getString(s));
+                else
+                    itemBuilder.setNBT(plugin, s, nbt.getString(s));
+
+            }
         }
 
         return itemBuilder.create();
@@ -235,12 +251,12 @@ public class TagGUI {
     private void sortList(List<Tag> tags) {
         final String sortTypeOption = this.plugin.getMenuConfig().getString("sort-type");
 
-        if (sortTypeOption != null && sortTypeOption.equalsIgnoreCase("CUSTOM")) {
-            tags.sort(Comparator.comparing(Tag::getOrder));
+        if (sortTypeOption != null && sortTypeOption.equalsIgnoreCase("NONE")) {
             return;
         }
 
-        if (sortTypeOption != null && sortTypeOption.equalsIgnoreCase("NONE")) {
+        if (sortTypeOption != null && sortTypeOption.equalsIgnoreCase("CUSTOM")) {
+            tags.sort(Comparator.comparing(Tag::getOrder));
             return;
         }
 
