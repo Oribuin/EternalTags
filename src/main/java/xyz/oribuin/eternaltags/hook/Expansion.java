@@ -8,10 +8,8 @@ import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.manager.DataManager;
 import xyz.oribuin.eternaltags.manager.TagManager;
 import xyz.oribuin.eternaltags.obj.Tag;
-import xyz.oribuin.orilibrary.util.HexUtils;
 
-import java.util.Optional;
-import java.util.UUID;
+import static xyz.oribuin.orilibrary.util.HexUtils.colorify;
 
 public class Expansion extends PlaceholderExpansion {
 
@@ -27,52 +25,45 @@ public class Expansion extends PlaceholderExpansion {
 
     @Override
     public String onRequest(OfflinePlayer player, String params) {
-        if (player == null)
-            return null;
-        if (params == null)
-            return null;
-
-        final UUID uuid = player.getUniqueId();
-        final Tag tag = this.data.getTag(uuid);
-        final String currentTag = HexUtils.colorify(tag != null ? tag.getTag() : "");
 
         // Allow the ability to get any tag from the id
         final String[] args = params.split("_");
-        if (args.length == 2 && args[0].equalsIgnoreCase("get")) {
 
+        if (args.length == 2 && args[0].equalsIgnoreCase("get")) {
             final String tagId = String.join(" ", args).substring(args[0].length() + 1);
-            final Optional<Tag> tagOptional = this.tag.getTags().stream().filter(x -> x.getId().equalsIgnoreCase(tagId)).findFirst();
-            return tagOptional.filter(x -> x.getTag() != null)
-                    .map(Tag::getTag)
-                    .orElse("");
+            return this.tag.getTags().stream().filter(x -> x.getId().equalsIgnoreCase(tagId)).map(Tag::getTag).findAny().orElse("");
         }
+
+        final Tag tag = this.data.getTag(player.getUniqueId());
+        final String currentTag = colorify(tag != null ? tag.getTag() : "");
+
+        final String formattedPlaceholder = colorify(this.plugin.getConfig().get("formatted_placeholder") != null
+                ? this.plugin.getConfig().getString("formatted_placeholder")
+                : "None");
 
         switch (params.toLowerCase()) {
             case "tag":
                 return currentTag;
             case "tag_formatted":
-                return currentTag.length() == 0 ? this.plugin.getConfig().get("formatted-placeholder") != null ?
-                        this.plugin.getConfig().getString("formatted-placeholder") : "None" :
-                        currentTag;
+                return tag != null ? colorify(tag.getTag()) : formattedPlaceholder;
             case "tag_name":
-                return tag != null ? tag.getName() : "";
+                return tag != null ? tag.getName() : formattedPlaceholder;
             case "tag_id":
-                return tag != null ? tag.getId() : "";
+                return tag != null ? tag.getId() : formattedPlaceholder;
             case "tag_permission":
-                return tag != null ? tag.getPermission() : "";
+                return tag != null ? tag.getPermission() : formattedPlaceholder;
             case "tag_description":
-                return tag != null ? String.join(" ", tag.getDescription()) : " ";
+                return tag != null ? String.join(" ", tag.getDescription()) : formattedPlaceholder;
             case "total":
                 return String.valueOf(this.tag.getTags().size());
             case "unlocked":
                 if (player.getPlayer() != null)
                     return String.valueOf(this.tag.getPlayersTag((Player) player).size());
                 else
-                    return null;
+                    return "0";
             default:
                 return null;
         }
-
     }
 
     @Override
