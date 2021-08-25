@@ -163,6 +163,7 @@ public class TagGUI {
 
         if (tag != null) {
             // I am aware this code is awful, I do not like it either but it is the only solution i could come up with
+            // Reject humanity, Become GriefPreventions developer
             for (int i = 0; i < lore.size(); i++) {
                 String index = lore.get(i);
 

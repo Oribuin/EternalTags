@@ -121,6 +121,7 @@ public class MessageManager extends Manager {
         INVALID_PLUGIN("invalid-plugin", "Please enter a valid plugin name that can be converted!"),
         INVALID_PLAYER("invalid-player", "&cPlease enter a valid player."),
         INVALID_ARGUMENTS("invalid-arguments", "&cPlease provide valid arguments. Correct usage: %usage%"),
+        INVALID_NUMBER("invalid-num", "&cPlease provide a valid number."),
         TAG_DOESNT_EXIST("tag-doesnt-exist", "&cThis tag does not exist."),
         TAG_EXISTS("tag-exists", "&cThis tag already exists."),
         INVALID_FUNDS("invalid-funds", "&cYou do not have enough funds to do this, You need $%price%."),

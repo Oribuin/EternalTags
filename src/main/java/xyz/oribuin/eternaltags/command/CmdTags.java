@@ -30,7 +30,8 @@ import java.util.stream.Collectors;
                 SubReload.class,
                 SubSearch.class,
                 SubSet.class,
-                SubSetAll.class
+                SubSetAll.class,
+                SubView.class
         },
         aliases = {"eternaltags"}
 )
