@@ -1,5 +1,6 @@
 package xyz.oribuin.eternaltags.manager;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -11,10 +12,7 @@ import xyz.oribuin.orilibrary.manager.Manager;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -143,12 +141,31 @@ public class TagManager extends Manager {
      * @return A list of tags.
      */
     public List<Tag> getPlayersTag(final Player player) {
-
         return this.getTags()
                 .stream()
                 .filter(tag -> player.hasPermission(tag.getPermission()))
                 .collect(Collectors.toList());
 
+    }
+
+    /**
+     * Find a tag with a matching id.
+     *
+     * @param id The id of the tag.
+     * @return An optional tag
+     */
+    public Optional<Tag> getTagFromID(String id) {
+        return this.getTags().stream().filter(tag -> tag.getId().equalsIgnoreCase(id.toLowerCase())).findFirst();
+    }
+    /**
+     * Find a tag with a matching id that a player owns
+     *
+     * @param player The player.
+     * @param id The id of the tag.
+     * @return An optional tag
+     */
+    public Optional<Tag> getPlayersTagFromID(Player player, String id) {
+        return this.getPlayersTag(player).stream().filter(tag -> tag.getId().equalsIgnoreCase(id.toLowerCase())).findFirst();
     }
 
     @Override

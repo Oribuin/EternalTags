@@ -48,7 +48,7 @@ public class CmdTags extends Command {
     public void runFunction(CommandSender sender, String label, String[] args) {
 
         if (sender instanceof Player && args.length == 0) {
-            new TagGUI(this.plugin, ((Player) sender)).createGUI();
+            new TagGUI(this.plugin, ((Player) sender), null).createGUI();
             return;
         }
         this.runSubCommands(sender, args, x -> msg.send(x, "unknown-command"), x -> msg.send(x, "invalid-permission"));

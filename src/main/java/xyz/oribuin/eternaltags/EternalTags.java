@@ -17,6 +17,7 @@ import xyz.oribuin.orilibrary.util.HexUtils;
 public class EternalTags extends OriPlugin {
 
     private FileConfiguration menuConfig;
+    private FileConfiguration favouriteConfig;
 
     @Override
     public void enablePlugin() {
@@ -47,6 +48,7 @@ public class EternalTags extends OriPlugin {
 
         // Register Menu Config
         this.menuConfig = YamlConfiguration.loadConfiguration(FileUtils.createFile(this, "menus", "tag-menu.yml"));
+        this.favouriteConfig = YamlConfiguration.loadConfiguration(FileUtils.createFile(this, "menus", "favourites-menu.yml"));
 
         final MessageManager msg = this.getManager(MessageManager.class);
         // Register Commands
@@ -89,6 +91,14 @@ public class EternalTags extends OriPlugin {
 
     public void setMenuConfig(FileConfiguration menuConfig) {
         this.menuConfig = menuConfig;
+    }
+
+    public FileConfiguration getFavouriteConfig() {
+        return favouriteConfig;
+    }
+
+    public void setFavouriteConfig(FileConfiguration favouriteConfig) {
+        this.favouriteConfig = favouriteConfig;
     }
 
 }

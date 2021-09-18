@@ -29,6 +29,7 @@ public class SubReload extends SubCommand {
 
         // Reload gui config
         this.plugin.setMenuConfig(YamlConfiguration.loadConfiguration(FileUtils.createFile(this.plugin, "menus", "tag-menu.yml")));
+        this.plugin.setMenuConfig(YamlConfiguration.loadConfiguration(FileUtils.createFile(this.plugin, "menus", "tag-menu.yml")));
 
         // Reload main config files
         this.plugin.reload();

@@ -2,6 +2,9 @@ menu-name: 'EternalTags (%currentPage%/%totalPages%)'
 # Available Options: ALPHABETICAL, CUSTOM, NONE, RANDOM (Use Random to confuse everyone.)
 sort-type: ALPHABETICAL
 
+# Should tags that are favourited be sorted before others.
+favourites-first: true
+
 tag:
   material: 'NAME_TAG'
   amount: 1
@@ -39,3 +42,13 @@ clear-tag:
     - '&7Click to clear your current tag.'
   nbt:
     CustomModelData: 1
+
+favourite-tags:
+  enabled: true
+  material: DIAMOND
+  slot: 53
+  amount: 1
+  name: '&bFavourite Tags'
+  lore:
+    - '&7» Click to view your favourite'
+    - '&7» Tags all in one menu!'

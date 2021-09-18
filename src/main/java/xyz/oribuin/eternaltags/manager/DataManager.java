@@ -1,6 +1,7 @@
 package xyz.oribuin.eternaltags.manager;
 
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.obj.Tag;
@@ -16,12 +17,16 @@ import java.sql.ResultSet;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class DataManager extends Manager {
 
     private final EternalTags plugin = (EternalTags) this.getPlugin();
-    private final Map<UUID, Tag> cachedUsers = new HashMap<>();
+    private final TagManager tagManager = this.plugin.getManager(TagManager.class);
     private DatabaseConnector connector;
+
+    private final Map<UUID, Tag> cachedUsers = new HashMap<>();
+    private final Map<UUID, Set<Tag>> cachedFavourites = new HashMap<>();
 
     public DataManager(final EternalTags plugin) {
         super(plugin);
@@ -54,24 +59,26 @@ public class DataManager extends Manager {
         }
 
         this.async(task -> this.connector.connect(connection -> {
-            final String query = "CREATE TABLE IF NOT EXISTS eternaltags_tags (player VARCHAR(50), tagID TEXT, PRIMARY KEY(player))";
+            final String baseTable = "CREATE TABLE IF NOT EXISTS eternaltags_tags (player VARCHAR(50), tagID TEXT, PRIMARY KEY(player))";
 
-            try (PreparedStatement statement = connection.prepareStatement(query)) {
+            try (PreparedStatement statement = connection.prepareStatement(baseTable)) {
+                statement.executeUpdate();
+            }
+
+            final String favouriteTable = "CREATE TABLE IF NOT EXISTS eternaltags_favourites (player VARCHAR(50), tagID TEXT)";
+            try (PreparedStatement statement = connection.prepareStatement(favouriteTable)) {
                 statement.executeUpdate();
             }
 
             this.cacheUsers();
+            this.cacheFavourites();
         }));
 
     }
 
     private void cacheUsers() {
-
-        // Get tag manager
-        final TagManager tags = this.plugin.getManager(TagManager.class);
-
         // Make sure tags are registered.
-        CompletableFuture.runAsync(tags::cacheTags).thenRunAsync(() -> {
+        CompletableFuture.runAsync(tagManager::cacheTags).thenRunAsync(() -> {
 
             this.cachedUsers.clear();
             final String query = "SELECT * FROM eternaltags_tags";
@@ -87,7 +94,7 @@ public class DataManager extends Manager {
                         final UUID player = UUID.fromString(result.getString("player"));
 
                         // Check if tag is available before adding it to map
-                        final Tag tag = tags.getTags().stream().filter(x -> x.getId().equalsIgnoreCase(tagId)).findAny().orElse(null);
+                        final Tag tag = tagManager.getTags().stream().filter(x -> x.getId().equalsIgnoreCase(tagId)).findAny().orElse(null);
 
                         this.cachedUsers.put(player, tag);
                     }
@@ -97,7 +104,32 @@ public class DataManager extends Manager {
             });
 
         });
+    }
 
+    private void cacheFavourites() {
+        this.async((t) -> {
+            this.cachedUsers.clear();
+
+            this.connector.connect(connection -> {
+                final String query = "SELECT * FROM eternaltags_favourites";
+
+                try (PreparedStatement statement = connection.prepareStatement(query)) {
+                    final ResultSet result = statement.executeQuery();
+
+                    // Ori and getting a collection of stuff literally never goes well but thats fine.
+                    while (result.next()) {
+                        final UUID uuid = UUID.fromString(result.getString("player"));
+                        final Set<Tag> favouritedTags = this.cachedFavourites.getOrDefault(uuid, new HashSet<>());
+
+                        // inb4 StackOverflowException or ConcurrentModificationException
+                        Optional<Tag> optional = tagManager.getTagFromID(result.getString("tagID"));
+                        optional.ifPresent(favouritedTags::add);
+                        this.cachedFavourites.put(uuid, favouritedTags);
+                    }
+                }
+            });
+
+        });
 
     }
 
@@ -115,7 +147,6 @@ public class DataManager extends Manager {
         }
 
         // Save the tag if it doesnt exist in the config file.
-        final TagManager tagManager = this.plugin.getManager(TagManager.class);
         if (!tagManager.getTags().contains(tag))
             tagManager.createTag(tag);
 
@@ -159,13 +190,56 @@ public class DataManager extends Manager {
      *
      * @param uuid The UUID of the player
      */
-    private void removeUser(final UUID uuid) {
+    public void removeUser(final UUID uuid) {
         this.cachedUsers.remove(uuid);
 
         final String query = "DELETE FROM eternaltags_tags WHERE player = ?";
         this.async(task -> this.connector.connect(connection -> {
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, uuid.toString());
+                statement.executeUpdate();
+            }
+        }));
+
+    }
+
+    /**
+     * Add a tag to a player's favourite tags.
+     *
+     * @param uuid The uuid of the player
+     * @param tag  The tag being added
+     */
+    public void addFavourite(UUID uuid, Tag tag) {
+        final Set<Tag> favourites = this.getFavourites(uuid);
+        favourites.add(tag);
+        this.cachedFavourites.put(uuid, favourites);
+
+        this.async(task -> this.connector.connect(connection -> {
+            final String query = "INSERT INTO eternaltags_favourites (player, tagID) VALUES (?, ?)";
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setString(1, uuid.toString());
+                statement.setString(2, tag.getId());
+                statement.executeUpdate();
+            }
+        }));
+    }
+
+    /**
+     * Remove a player's favourited tags.
+     *
+     * @param uuid The uuid of the player
+     * @param tag  The tag being removed.
+     */
+    public void removeFavourite(UUID uuid, Tag tag) {
+        final Set<Tag> favourites = this.getFavourites(uuid);
+        favourites.removeIf(x -> x.getId().equalsIgnoreCase(tag.getId()));
+        this.cachedFavourites.put(uuid, favourites);
+
+        this.async(task -> this.connector.connect(connection -> {
+            final String query = "DELETE FROM eternaltags_favourites WHERE player = ? AND tagID = ?";
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setString(1, uuid.toString());
+                statement.setString(2, tag.getId());
                 statement.executeUpdate();
             }
         }));
@@ -182,6 +256,18 @@ public class DataManager extends Manager {
         return this.cachedUsers.getOrDefault(uuid, null);
     }
 
+    public Set<Tag> getFavourites(UUID uuid) {
+        return this.cachedFavourites.getOrDefault(uuid, new HashSet<>());
+    }
+
+    public Set<Tag> getFavourites(Player player) {
+        return this.getFavourites(player.getUniqueId())
+                .stream()
+                .filter(tag -> player.hasPermission(tag.getPermission()))
+                .collect(Collectors.toSet());
+
+    }
+
     @Override
     public void disable() {
         this.connector.closeConnection();
@@ -193,6 +279,10 @@ public class DataManager extends Manager {
 
     public Map<UUID, Tag> getCachedUsers() {
         return cachedUsers;
+    }
+
+    public Map<UUID, Set<Tag>> getCachedFavourites() {
+        return cachedFavourites;
     }
 
 }

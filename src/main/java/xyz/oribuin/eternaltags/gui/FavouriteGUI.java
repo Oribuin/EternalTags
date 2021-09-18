@@ -25,53 +25,31 @@ import java.util.stream.Collectors;
 
 import static xyz.oribuin.orilibrary.util.HexUtils.colorify;
 
-public class TagGUI {
+public class FavouriteGUI {
 
     private final EternalTags plugin;
     private final DataManager data;
     private final TagManager tagManager;
     private final Player player;
-    private final String keyword;
 
     private final List<Tag> playersTags;
 
-
-    // This isn't a mess, I promise.
-    public TagGUI(final EternalTags plugin, final Player player, String keyword) {
+    public FavouriteGUI(final EternalTags plugin, final Player player) {
         this.plugin = plugin;
         this.data = this.plugin.getManager(DataManager.class);
         this.tagManager = this.plugin.getManager(TagManager.class);
         this.player = player;
 
-        // Prioritise the favourite tags first :)
-        if (this.plugin.getMenuConfig().getBoolean("favourites-first")) {
-            this.playersTags = new ArrayList<>(this.data.getFavourites(player));
-            // Sort the favourites correctly.
-            this.sortList(playersTags);
-        } else {
-            this.playersTags = new ArrayList<>();
-        }
-
-        // Get any tag that isnt part of the favourite tags.
-        final List<Tag> otherTags = this.tagManager.getPlayersTag(player).stream()
-                .filter(tag -> !this.playersTags.contains(tag))
-                .collect(Collectors.toList());
-
-        this.sortList(otherTags);
-        this.playersTags.addAll(otherTags);
-        this.keyword = keyword;
-
-        if (keyword != null) {
-            playersTags.removeIf(tag -> !tag.getName().toLowerCase().contains(keyword.toLowerCase()));
-        }
+        this.playersTags = new ArrayList<>(data.getFavourites(player));
+        this.sortList(playersTags);
     }
 
     /**
      * Create and open the gui for a player.
      */
-    public PaginatedGui createGUI() {
+    public void createGUI() {
+        final FileConfiguration config = this.plugin.getFavouriteConfig();
 
-        final FileConfiguration config = this.plugin.getMenuConfig();
         final List<Integer> pageSlots = new ArrayList<>();
         for (int i = 0; i < 45; i++)
             pageSlots.add(i);
@@ -88,12 +66,8 @@ public class TagGUI {
             // Apologies bedrock users.
             if (event.isShiftClick()) {
                 final UUID uuid = event.getWhoClicked().getUniqueId();
-                if (data.getFavourites(uuid).stream().map(Tag::getId).collect(Collectors.toList()).contains(tag.getId())) {
-                    data.removeFavourite(uuid, tag);
-                } else {
-                    data.addFavourite(uuid, tag);
-                }
-
+                data.removeFavourite(uuid, tag);
+                new FavouriteGUI(this.plugin, player).createGUI();
                 return;
             }
 
@@ -133,20 +107,11 @@ public class TagGUI {
             gui.updateTitle(cs(config.getString("menu-name"), player, this.getPages(gui).build()));
         });
 
-        // Add clear tag item.
-        if (config.getBoolean("clear-tag.enabled")) {
-
-            gui.setItem(49, this.getGuiItem("clear-tag", null, player), event -> {
-                this.plugin.getManager(MessageManager.class).send(event.getWhoClicked(), "cleared-tag");
-                this.data.updateUser(event.getWhoClicked().getUniqueId(), null);
-                event.getWhoClicked().closeInventory();
-            });
+        if (config.getBoolean("go-back.enabled")) {
+            gui.setItem(config.getInt("go-back.slot"), this.getGuiItem("go-back", null, player), event ->
+                    new TagGUI(this.plugin, (Player) event.getWhoClicked(), null).createGUI());
         }
 
-        if (config.getBoolean("favourite-tags.enabled")) {
-            gui.setItem(config.getInt("favourite-tags.slot"), this.getGuiItem("favourite-tags", null, player), event ->
-                    new FavouriteGUI(this.plugin, (Player) event.getWhoClicked()).createGUI());
-        }
 
         // Extra Items
         final ConfigurationSection section = config.getConfigurationSection("extra-items");
@@ -156,7 +121,7 @@ public class TagGUI {
 
         gui.open(player, 1);
         gui.updateTitle(cs(config.getString("menu-name"), player, this.getPages(gui).build()));
-        return gui;
+
     }
 
     /**
@@ -169,7 +134,7 @@ public class TagGUI {
      * @since 1.0.5
      */
     private ItemStack getGuiItem(final String path, final Tag tag, Player player) {
-        final FileConfiguration config = this.plugin.getMenuConfig();
+        final FileConfiguration config = this.plugin.getFavouriteConfig();
 
         final StringPlaceholders.Builder builder = StringPlaceholders.builder();
 
@@ -275,7 +240,7 @@ public class TagGUI {
      * @param tags The list of plugin tags.
      */
     private void sortList(List<Tag> tags) {
-        final String sortTypeOption = this.plugin.getMenuConfig().getString("sort-type");
+        final String sortTypeOption = this.plugin.getFavouriteConfig().getString("sort-type");
 
         if (sortTypeOption != null && sortTypeOption.equalsIgnoreCase("NONE")) {
             return;
