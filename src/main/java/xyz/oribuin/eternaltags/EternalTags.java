@@ -47,11 +47,9 @@ public class EternalTags extends OriPlugin {
         new Expansion(this).register();
 
         // Register Menu Config
-        this.menuConfig = YamlConfiguration.loadConfiguration(FileUtils.createFile(this, "menus", "tag-menu.yml"));
-        this.favouriteConfig = YamlConfiguration.loadConfiguration(FileUtils.createFile(this, "menus", "favourites-menu.yml"));
+        this.loadMenus();
 
         final MessageManager msg = this.getManager(MessageManager.class);
-        // Register Commands
         new CmdTags(this).register(sender -> msg.send(sender, "player-only"), sender -> msg.send(sender, "invalid-permission"));
 
         // Register Listeners.
@@ -85,20 +83,27 @@ public class EternalTags extends OriPlugin {
 
     }
 
-    public FileConfiguration getMenuConfig() {
-        return menuConfig;
+    @Override
+    public void reload() {
+        super.reload();
+        this.loadMenus();
     }
 
-    public void setMenuConfig(FileConfiguration menuConfig) {
-        this.menuConfig = menuConfig;
+    /**
+     * Load all the plugin menus in the plugin.
+     */
+    private void loadMenus() {
+        this.menuConfig = YamlConfiguration.loadConfiguration(FileUtils.createFile(this, "menus", "tag-menu.yml"));
+        this.favouriteConfig = YamlConfiguration.loadConfiguration(FileUtils.createFile(this, "menus", "favourites-menu.yml"));
+    }
+
+    public FileConfiguration getMenuConfig() {
+        return menuConfig;
     }
 
     public FileConfiguration getFavouriteConfig() {
         return favouriteConfig;
     }
 
-    public void setFavouriteConfig(FileConfiguration favouriteConfig) {
-        this.favouriteConfig = favouriteConfig;
-    }
 
 }

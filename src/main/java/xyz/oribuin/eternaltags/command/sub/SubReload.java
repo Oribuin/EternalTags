@@ -16,6 +16,7 @@ import xyz.oribuin.orilibrary.util.FileUtils;
 public class SubReload extends SubCommand {
 
     private final EternalTags plugin = (EternalTags) this.getOriPlugin();
+    private final MessageManager msg = this.plugin.getManager(MessageManager.class);
 
     public SubReload(EternalTags plugin, CmdTags command) {
         super(plugin, command);
@@ -23,15 +24,9 @@ public class SubReload extends SubCommand {
 
     @Override
     public void executeArgument(CommandSender sender, String[] args) {
-
         this.plugin.saveDefaultConfig();
-        final MessageManager msg = this.plugin.getManager(MessageManager.class);
 
-        // Reload gui config
-        this.plugin.setMenuConfig(YamlConfiguration.loadConfiguration(FileUtils.createFile(this.plugin, "menus", "tag-menu.yml")));
-        this.plugin.setMenuConfig(YamlConfiguration.loadConfiguration(FileUtils.createFile(this.plugin, "menus", "tag-menu.yml")));
-
-        // Reload main config files
+        // Reload the plugin.
         this.plugin.reload();
 
         msg.send(sender, "reload");

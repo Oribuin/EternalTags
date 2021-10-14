@@ -20,6 +20,7 @@ mysql:
   username: Username
   password: Password
   ssl: true
+  tablename: eternaltags
 
 # Configure your tags here
 tags:
@@ -46,7 +47,6 @@ tags:
       - 'A tag that will cycle through all the'
       - 'colors of the rainbow.'
     permission: 'eternaltags.tag.animatedrainbow'
-    icon: RED_CONCRETE
   animatedGradient:
     name: 'AnimatedGradient'
     tag: '&7[<g#10:#ED213A:#93291E>AnimatedGradient&7]'
@@ -54,4 +54,3 @@ tags:
       - 'A tag that will cycle through all the'
       - 'colors of the gradient'
     permission: 'eternaltags.tag.animatedgradient'
-    order: 1

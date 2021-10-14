@@ -1,136 +1,41 @@
 package xyz.oribuin.eternaltags.manager;
 
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.obj.Tag;
-import xyz.oribuin.orilibrary.database.DatabaseConnector;
-import xyz.oribuin.orilibrary.database.MySQLConnector;
-import xyz.oribuin.orilibrary.database.SQLiteConnector;
-import xyz.oribuin.orilibrary.manager.Manager;
-import xyz.oribuin.orilibrary.util.FileUtils;
+import xyz.oribuin.orilibrary.manager.DataHandler;
 
 import javax.annotation.Nullable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-public class DataManager extends Manager {
+public class DataManager extends DataHandler {
 
     private final EternalTags plugin = (EternalTags) this.getPlugin();
     private final TagManager tagManager = this.plugin.getManager(TagManager.class);
-    private DatabaseConnector connector;
 
     private final Map<UUID, Tag> cachedUsers = new HashMap<>();
     private final Map<UUID, Set<Tag>> cachedFavourites = new HashMap<>();
 
-    public DataManager(final EternalTags plugin) {
+    public DataManager(EternalTags plugin) {
         super(plugin);
     }
 
     @Override
     public void enable() {
-        final FileConfiguration config = this.plugin.getConfig();
+        super.enable();
 
-        if (config.getBoolean("mysql.enabled")) {
-            // Define all the MySQL Values.
-            String hostName = config.getString("mysql.host");
-            int port = config.getInt("mysql.port");
-            String dbname = config.getString("mysql.dbname");
-            String username = config.getString("mysql.username");
-            String password = config.getString("mysql.password");
-            boolean ssl = config.getBoolean("mysql.ssl");
+        this.async(task -> this.getConnector().connect(connection -> {
+            final String baseTable = "CREATE TABLE IF NOT EXISTS " + this.getTableName() + "_tags (player VARCHAR(50), tagID TEXT, PRIMARY KEY(player))";
+            connection.prepareStatement(baseTable).executeUpdate();
 
-            // Connect to MySQL.
-            this.connector = new MySQLConnector(this.plugin, hostName, port, dbname, username, password, ssl);
-            this.plugin.getLogger().info("Using MySQL for Database ~ " + hostName + ":" + port);
-        } else {
-
-            // Create the database File
-            FileUtils.createFile(this.plugin, "eternaltags.db");
-
-            // Connect to SQLite
-            this.connector = new SQLiteConnector(this.plugin, "eternaltags.db");
-            this.getPlugin().getLogger().info("Using SQLite for Database ~ eternaltags.db");
-        }
-
-        this.async(task -> this.connector.connect(connection -> {
-            final String baseTable = "CREATE TABLE IF NOT EXISTS eternaltags_tags (player VARCHAR(50), tagID TEXT, PRIMARY KEY(player))";
-
-            try (PreparedStatement statement = connection.prepareStatement(baseTable)) {
-                statement.executeUpdate();
-            }
-
-            final String favouriteTable = "CREATE TABLE IF NOT EXISTS eternaltags_favourites (player VARCHAR(50), tagID TEXT)";
-            try (PreparedStatement statement = connection.prepareStatement(favouriteTable)) {
-                statement.executeUpdate();
-            }
-
-            this.cacheUsers();
-            this.cacheFavourites();
+            final String favouriteTable = "CREATE TABLE IF NOT EXISTS " + this.getTableName() + "_favourites (player VARCHAR(50), tagID TEXT)";
+            connection.prepareStatement(favouriteTable).executeUpdate();
         }));
-
-    }
-
-    private void cacheUsers() {
-        // Make sure tags are registered.
-        CompletableFuture.runAsync(tagManager::cacheTags).thenRunAsync(() -> {
-
-            this.cachedUsers.clear();
-            final String query = "SELECT * FROM eternaltags_tags";
-
-            // Get all users from the database.
-            this.connector.connect(connection -> {
-
-                try (PreparedStatement statement = connection.prepareStatement(query)) {
-                    final ResultSet result = statement.executeQuery();
-
-                    while (result.next()) {
-                        final String tagId = result.getString("tagID");
-                        final UUID player = UUID.fromString(result.getString("player"));
-
-                        // Check if tag is available before adding it to map
-                        final Tag tag = tagManager.getTags().stream().filter(x -> x.getId().equalsIgnoreCase(tagId)).findAny().orElse(null);
-
-                        this.cachedUsers.put(player, tag);
-                    }
-
-                }
-
-            });
-
-        });
-    }
-
-    private void cacheFavourites() {
-        this.async((t) -> {
-            this.cachedUsers.clear();
-
-            this.connector.connect(connection -> {
-                final String query = "SELECT * FROM eternaltags_favourites";
-
-                try (PreparedStatement statement = connection.prepareStatement(query)) {
-                    final ResultSet result = statement.executeQuery();
-
-                    // Ori and getting a collection of stuff literally never goes well but thats fine.
-                    while (result.next()) {
-                        final UUID uuid = UUID.fromString(result.getString("player"));
-                        final Set<Tag> favouritedTags = this.cachedFavourites.getOrDefault(uuid, new HashSet<>());
-
-                        // inb4 StackOverflowException or ConcurrentModificationException
-                        Optional<Tag> optional = tagManager.getTagFromID(result.getString("tagID"));
-                        optional.ifPresent(favouritedTags::add);
-                        this.cachedFavourites.put(uuid, favouritedTags);
-                    }
-                }
-            });
-
-        });
-
     }
 
     /**
@@ -146,13 +51,13 @@ public class DataManager extends Manager {
             return;
         }
 
-        // Save the tag if it doesnt exist in the config file.
+        // Save the tag if it doesn't exist in the config file.
         if (!tagManager.getTags().contains(tag))
             tagManager.createTag(tag);
 
         this.cachedUsers.put(uuid, tag);
-        final String query = "REPLACE INTO eternaltags_tags (player, tagID) VALUES (?, ?)";
-        this.async(task -> this.connector.connect(connection -> {
+        final String query = "REPLACE INTO " + this.getTableName() + "_tags (player, tagID) VALUES (?, ?)";
+        this.async(task -> this.getConnector().connect(connection -> {
 
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, uuid.toString());
@@ -173,8 +78,8 @@ public class DataManager extends Manager {
 
         entry.forEach(uuidTagEntry -> this.cachedUsers.put(uuidTagEntry.getKey(), tag));
 
-        this.async(task -> this.connector.connect(connection -> {
-            final String query = "UPDATE eternaltags_tags SET tagID = ?";
+        this.async(task -> this.getConnector().connect(connection -> {
+            final String query = "UPDATE " + this.getTableName() + "_tags SET tagID = ?";
 
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, tag.getId());
@@ -193,8 +98,8 @@ public class DataManager extends Manager {
     public void removeUser(final UUID uuid) {
         this.cachedUsers.remove(uuid);
 
-        final String query = "DELETE FROM eternaltags_tags WHERE player = ?";
-        this.async(task -> this.connector.connect(connection -> {
+        final String query = "DELETE FROM " + this.getTableName() + "_tags WHERE player = ?";
+        this.async(task -> this.getConnector().connect(connection -> {
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, uuid.toString());
                 statement.executeUpdate();
@@ -214,8 +119,8 @@ public class DataManager extends Manager {
         favourites.add(tag);
         this.cachedFavourites.put(uuid, favourites);
 
-        this.async(task -> this.connector.connect(connection -> {
-            final String query = "INSERT INTO eternaltags_favourites (player, tagID) VALUES (?, ?)";
+        this.async(task -> this.getConnector().connect(connection -> {
+            final String query = "INSERT INTO " + this.getTableName() + "_favourites (player, tagID) VALUES (?, ?)";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, uuid.toString());
                 statement.setString(2, tag.getId());
@@ -235,8 +140,8 @@ public class DataManager extends Manager {
         favourites.removeIf(x -> x.getId().equalsIgnoreCase(tag.getId()));
         this.cachedFavourites.put(uuid, favourites);
 
-        this.async(task -> this.connector.connect(connection -> {
-            final String query = "DELETE FROM eternaltags_favourites WHERE player = ? AND tagID = ?";
+        this.async(task -> this.getConnector().connect(connection -> {
+            final String query = "DELETE FROM " + this.getTableName() + "_favourites WHERE player = ? AND tagID = ?";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, uuid.toString());
                 statement.setString(2, tag.getId());
@@ -253,11 +158,57 @@ public class DataManager extends Manager {
      * @return The tag
      */
     public Tag getTag(UUID uuid) {
-        return this.cachedUsers.getOrDefault(uuid, null);
+        // get the user's cached tag.
+        if (this.cachedUsers.get(uuid) != null)
+            return this.cachedUsers.get(uuid);
+
+        // If the user's tag isnt cached, Cache it.
+        this.async(task -> this.getConnector().connect(connection -> {
+            final String query = "SELECT tagID FROM " + this.getTableName() + "_tags WHERE player = ?";
+
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setString(1, uuid.toString());
+                final ResultSet result = statement.executeQuery();
+                if (result.next()) {
+                    this.tagManager.getTagFromID(result.getString(1)).ifPresent(tag -> this.cachedUsers.put(uuid, tag));
+                }
+            }
+        }));
+
+        return this.cachedUsers.get(uuid);
     }
 
+    /**
+     * Get a user's current set favourite tags from the gui.
+     *
+     * @param uuid The UUID of the player.
+     * @return The set of favourite tags.
+     */
     public Set<Tag> getFavourites(UUID uuid) {
-        return this.cachedFavourites.getOrDefault(uuid, new HashSet<>());
+        if (this.cachedFavourites.get(uuid) != null)
+            return this.cachedFavourites.get(uuid);
+
+        final Set<Tag> tags = new HashSet<>();
+
+        this.async(task -> this.getConnector().connect(connection -> {
+
+            // Select all the favourite tags from the database set by the player.
+            final String query = "SELECT tagID FROM " + this.getTableName() + "_favourites WHERE player = ?";
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setString(1, uuid.toString());
+                final ResultSet result = statement.executeQuery();
+
+                while (result.next()) {
+                    // keep recaching the tags.
+                    Optional<Tag> optional = tagManager.getTagFromID(result.getString("tagID"));
+                    optional.ifPresent(tags::add);
+                    this.cachedFavourites.put(uuid, tags);
+                }
+            }
+
+        }));
+
+        return tags;
     }
 
     public Set<Tag> getFavourites(Player player) {
@@ -270,19 +221,11 @@ public class DataManager extends Manager {
 
     @Override
     public void disable() {
-        this.connector.closeConnection();
+        super.disable();
     }
 
     private void async(Consumer<BukkitTask> callback) {
         this.plugin.getServer().getScheduler().runTaskAsynchronously(plugin, callback);
-    }
-
-    public Map<UUID, Tag> getCachedUsers() {
-        return cachedUsers;
-    }
-
-    public Map<UUID, Set<Tag>> getCachedFavourites() {
-        return cachedFavourites;
     }
 
 }

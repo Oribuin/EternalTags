@@ -8,7 +8,6 @@ import xyz.oribuin.eternaltags.manager.DataManager;
 import xyz.oribuin.eternaltags.manager.TagManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 
-import javax.swing.*;
 import java.util.Optional;
 
 public class PlayerJoinListener implements Listener {
@@ -25,6 +24,9 @@ public class PlayerJoinListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onJoin(PlayerJoinEvent event) {
+        this.dataManager.getTag(event.getPlayer().getUniqueId());
+        this.dataManager.getFavourites(event.getPlayer());
+
         if (event.getPlayer().hasPlayedBefore()) {
             return;
         }
