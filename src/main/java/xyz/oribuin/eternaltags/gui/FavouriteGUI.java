@@ -40,7 +40,14 @@ public class FavouriteGUI {
         this.tagManager = this.plugin.getManager(TagManager.class);
         this.player = player;
 
-        this.playersTags = new ArrayList<>(data.getFavourites(player));
+        this.playersTags = new ArrayList<>();
+        data.getFavourites(player).forEach(tag -> {
+            final List<String> currentTags = this.playersTags.stream().map(Tag::getId).map(String::toLowerCase).collect(Collectors.toList());
+            if (currentTags.contains(tag.getId().toLowerCase()))
+                return;
+
+            this.playersTags.add(tag);
+        });
         this.sortList(playersTags);
     }
 
