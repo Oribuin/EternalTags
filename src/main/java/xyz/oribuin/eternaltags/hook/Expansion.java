@@ -46,6 +46,10 @@ public class Expansion extends PlaceholderExpansion {
                 return currentTag;
             case "tag_formatted":
                 return tag != null ? colorify(tag.getTag()) : formattedPlaceholder;
+            case "tag_stripped":
+                return tag != null ? tag.getTag() : "";
+            case "tag_stripped_formatted":
+                return tag != null ? tag.getTag() : formattedPlaceholder;
             case "tag_name":
                 return tag != null ? tag.getName() : formattedPlaceholder;
             case "tag_id":

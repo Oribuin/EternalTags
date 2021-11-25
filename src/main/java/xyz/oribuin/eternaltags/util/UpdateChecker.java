@@ -26,7 +26,6 @@ public class UpdateChecker {
             final BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
             final JsonObject object = new JsonParser().parse(reader).getAsJsonObject();
 
-
             return object.get("name").getAsString().substring(1);
         } catch (IOException ex) {
             ex.printStackTrace();

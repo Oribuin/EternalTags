@@ -74,6 +74,9 @@ public class CmdTags extends Command {
                 if (args[0].equalsIgnoreCase("create"))
                     tabComplete.add("<name>");
 
+                if (args[0].equalsIgnoreCase("view"))
+                    tabComplete.addAll(Arrays.asList("1", "5", "10", "15"));
+
                 if (args[0].equalsIgnoreCase("search") && sender instanceof Player)
                     tabComplete.addAll(tag.getPlayersTag((Player) sender)
                             .stream()
@@ -99,6 +102,9 @@ public class CmdTags extends Command {
                     tabComplete.addAll(tag.getTags().stream().map(Tag::getId).collect(Collectors.toList()));
 
                 if (args[0].equalsIgnoreCase("create"))
+                    tabComplete.add("<tag>");
+
+                if (args[0].equalsIgnoreCase("view"))
                     tabComplete.add("<tag>");
 
                 break;

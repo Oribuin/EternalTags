@@ -32,7 +32,6 @@ public class TagManager extends Manager {
     public void enable() {
         this.config = YamlConfiguration.loadConfiguration(this.getDataFile());
         this.section = this.config.getConfigurationSection("tags");
-
         this.cacheTags();
     }
 
@@ -76,12 +75,13 @@ public class TagManager extends Manager {
      * @param tag The tag.
      */
     public void createTag(Tag tag) {
-        final String id = tag.getId().toLowerCase();
+        final String id = tag.getId().toLowerCase().replace(".", "_");
 
         if (section == null) {
             this.section = this.config.createSection("tags");
             this.saveData();
         }
+
 
         this.section.set(id + ".name", tag.getName());
         this.section.set(id + ".tag", tag.getTag());

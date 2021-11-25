@@ -21,10 +21,10 @@ import java.util.Optional;
 )
 public class SubDelete extends SubCommand {
 
-    private final EternalTags plugin = (EternalTags) this.getOriPlugin();
+    private final EternalTags plugin;
 
-    public SubDelete(EternalTags plugin, CmdTags command) {
-        super(plugin, command);
+    public SubDelete(EternalTags plugin) {
+        this.plugin = plugin;
     }
 
     @Override

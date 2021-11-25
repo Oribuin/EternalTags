@@ -17,11 +17,12 @@ import xyz.oribuin.orilibrary.command.SubCommand;
 )
 public class SubClear extends SubCommand {
 
-    private final EternalTags plugin = (EternalTags) this.getOriPlugin();
-    private final MessageManager msg = this.plugin.getManager(MessageManager.class);
+    private final EternalTags plugin;
+    private final MessageManager msg ;
 
-    public SubClear(EternalTags plugin, CmdTags command) {
-        super(plugin, command);
+    public SubClear(EternalTags plugin) {
+        this.plugin = plugin;
+        this.msg = this.plugin.getManager(MessageManager.class);
     }
 
     @Override

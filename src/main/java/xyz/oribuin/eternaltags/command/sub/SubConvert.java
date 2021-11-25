@@ -6,7 +6,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import xyz.oribuin.eternaltags.EternalTags;
-import xyz.oribuin.eternaltags.command.CmdTags;
 import xyz.oribuin.eternaltags.manager.MessageManager;
 import xyz.oribuin.eternaltags.manager.TagManager;
 import xyz.oribuin.eternaltags.obj.Tag;
@@ -24,12 +23,14 @@ import java.util.stream.Collectors;
 )
 public class SubConvert extends SubCommand {
 
-    private final EternalTags plugin = (EternalTags) this.getOriPlugin();
-    private final MessageManager msg = this.plugin.getManager(MessageManager.class);
-    private final TagManager tagManager = this.plugin.getManager(TagManager.class);
+    private final EternalTags plugin;
+    private final MessageManager msg;
+    private final TagManager tagManager;
 
-    public SubConvert(EternalTags plugin, CmdTags command) {
-        super(plugin, command);
+    public SubConvert(EternalTags plugin) {
+        this.plugin = plugin;
+        this.msg = this.plugin.getManager(MessageManager.class);
+        this.tagManager = this.plugin.getManager(TagManager.class);
     }
 
     @Override

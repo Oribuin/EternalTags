@@ -6,6 +6,7 @@ import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.command.CmdTags;
 import xyz.oribuin.eternaltags.gui.TagGUI;
 import xyz.oribuin.eternaltags.manager.MessageManager;
+import xyz.oribuin.eternaltags.manager.TagManager;
 import xyz.oribuin.orilibrary.command.SubCommand;
 import xyz.oribuin.orilibrary.util.StringPlaceholders;
 
@@ -16,10 +17,10 @@ import xyz.oribuin.orilibrary.util.StringPlaceholders;
 )
 public class SubSearch extends SubCommand {
 
-    private final EternalTags plugin = (EternalTags) this.getOriPlugin();
+    private final EternalTags plugin;
 
-    public SubSearch(EternalTags plugin, CmdTags command) {
-        super(plugin, command);
+    public SubSearch(EternalTags plugin) {
+        this.plugin = plugin;
     }
 
     @Override

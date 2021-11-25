@@ -5,6 +5,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.command.CmdTags;
 import xyz.oribuin.eternaltags.manager.MessageManager;
+import xyz.oribuin.eternaltags.manager.TagManager;
 import xyz.oribuin.orilibrary.command.SubCommand;
 import xyz.oribuin.orilibrary.util.FileUtils;
 
@@ -15,11 +16,12 @@ import xyz.oribuin.orilibrary.util.FileUtils;
 )
 public class SubReload extends SubCommand {
 
-    private final EternalTags plugin = (EternalTags) this.getOriPlugin();
-    private final MessageManager msg = this.plugin.getManager(MessageManager.class);
+    private final EternalTags plugin;
+    private final MessageManager msg;
 
-    public SubReload(EternalTags plugin, CmdTags command) {
-        super(plugin, command);
+    public SubReload(EternalTags plugin) {
+        this.plugin = plugin;
+        this.msg = this.plugin.getManager(MessageManager.class);
     }
 
     @Override

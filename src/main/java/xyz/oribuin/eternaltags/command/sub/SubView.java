@@ -18,11 +18,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 )
 public class SubView extends SubCommand {
 
-    private final EternalTags plugin = (EternalTags) this.getOriPlugin();
-    private final MessageManager msg = this.plugin.getManager(MessageManager.class);
+    private final EternalTags plugin;
+    private final MessageManager msg;
 
-    public SubView(EternalTags plugin, CmdTags command) {
-        super(plugin, command);
+    public SubView(EternalTags plugin) {
+        this.plugin = plugin;
+        this.msg = this.plugin.getManager(MessageManager.class);
     }
 
     @Override
@@ -49,7 +50,7 @@ public class SubView extends SubCommand {
         final String argument = String.join(" ", args).substring(args[0].length() + args[1].length() + 2);
         AtomicInteger i = new AtomicInteger();
         Bukkit.getScheduler().runTaskTimerAsynchronously(this.plugin, (task) -> {
-            if (i.get() > amount) {
+            if (i.get() >= amount) {
                 task.cancel();
                 return;
             }

@@ -24,10 +24,10 @@ import java.util.Optional;
 )
 public class SubSet extends SubCommand {
 
-    private final EternalTags plugin = (EternalTags) this.getOriPlugin();
+    private final EternalTags plugin;
 
-    public SubSet(EternalTags plugin, CmdTags command) {
-        super(plugin, command);
+    public SubSet(EternalTags plugin) {
+        this.plugin = plugin;
     }
 
     @Override

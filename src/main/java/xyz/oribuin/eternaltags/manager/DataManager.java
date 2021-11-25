@@ -1,5 +1,6 @@
 package xyz.oribuin.eternaltags.manager;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import xyz.oribuin.eternaltags.EternalTags;
@@ -20,6 +21,7 @@ public class DataManager extends DataHandler {
 
     private final Map<UUID, Tag> cachedUsers = new HashMap<>();
     private final Map<UUID, Set<Tag>> cachedFavourites = new HashMap<>();
+    private boolean removeInaccessible = false;
 
     public DataManager(EternalTags plugin) {
         super(plugin);
@@ -28,6 +30,7 @@ public class DataManager extends DataHandler {
     @Override
     public void enable() {
         super.enable();
+        this.removeInaccessible = this.plugin.getConfig().getBoolean("remove-inaccessible-tags");
 
         this.async(task -> this.getConnector().connect(connection -> {
             final String baseTable = "CREATE TABLE IF NOT EXISTS " + this.getTableName() + "_tags (player VARCHAR(50), tagID TEXT, PRIMARY KEY(player))";
@@ -159,8 +162,19 @@ public class DataManager extends DataHandler {
      */
     public Tag getTag(UUID uuid) {
         // get the user's cached tag.
-        if (this.cachedUsers.get(uuid) != null)
-            return this.cachedUsers.get(uuid);
+        if (this.cachedUsers.get(uuid) != null) {
+            final Tag tag = this.cachedUsers.get(uuid);
+            final Player player = Bukkit.getPlayer(uuid);
+            if (player == null)
+                return tag;
+
+            if (removeInaccessible && !player.hasPermission(tag.getPermission())) {
+                this.removeUser(uuid);
+                return null;
+            }
+
+            return tag;
+        }
 
         // If the user's tag isnt cached, Cache it.
         this.async(task -> this.getConnector().connect(connection -> {

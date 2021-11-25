@@ -21,10 +21,10 @@ import java.util.Optional;
 )
 public class SubSetAll extends SubCommand {
 
-    private final EternalTags plugin = (EternalTags) this.getOriPlugin();
+    private final EternalTags plugin;
 
-    public SubSetAll(EternalTags plugin, CmdTags command) {
-        super(plugin, command);
+    public SubSetAll(EternalTags plugin) {
+        this.plugin = plugin;
     }
 
     @Override

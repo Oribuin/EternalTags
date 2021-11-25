@@ -1,3 +1,4 @@
+# EternalTags Config | Join support discord if you're having any issues.
 # Should the plugin use bstats metrics?
 metrics: true
 
@@ -10,6 +11,9 @@ default-tag: 'eternaltags'
 
 # This is the placeholder that will show instead of "None" for placeholder %eternaltags_tag_formatted%
 formatted_placeholder: 'None'
+
+# Clear a user's tag if they don't have access to it
+remove-inaccessible-tags: false
 
 # Enable if you want to save everything in MySQL
 mysql:

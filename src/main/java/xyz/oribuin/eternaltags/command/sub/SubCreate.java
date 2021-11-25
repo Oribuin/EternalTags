@@ -22,10 +22,10 @@ import java.util.List;
 )
 public class SubCreate extends SubCommand {
 
-    private final EternalTags plugin = (EternalTags) this.getOriPlugin();
+    private final EternalTags plugin;
 
-    public SubCreate(EternalTags plugin, CmdTags command) {
-        super(plugin, command);
+    public SubCreate(EternalTags plugin) {
+        this.plugin = plugin;
     }
 
     @Override
