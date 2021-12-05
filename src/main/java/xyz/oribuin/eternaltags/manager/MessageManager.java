@@ -116,6 +116,7 @@ public class MessageManager extends Manager {
         CONVERTED("converted-tags", "You have converted %total% Tags into EternalTags."),
 
         RELOAD("reload", "You have reloaded EternalTags!"),
+        NO_TAG("no-tags", "You do not have any tags to select."),
         DISABLED_WORLD("disabled-world", "&cYou cannot do this in this world."),
         INVALID_PERMISSION("invalid-permission", "&cYou do not have permission to execute this command."),
         INVALID_PLUGIN("invalid-plugin", "Please enter a valid plugin name that can be converted!"),

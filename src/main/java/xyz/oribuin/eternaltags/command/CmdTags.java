@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
                 SubConvert.class,
                 SubCreate.class,
                 SubDelete.class,
+                SubRandom.class,
                 SubReload.class,
                 SubSearch.class,
                 SubSet.class,
