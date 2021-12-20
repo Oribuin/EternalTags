@@ -114,6 +114,8 @@ public class TagGUI {
             event.setResult(Event.Result.DENY);
         });
 
+        gui.setPersonalClickAction(event -> gui.getDefaultClickFunction().accept(event));
+
         // Get all the border slots;
         final List<Integer> borderSlots = new ArrayList<>();
         for (int i = 45; i < 54; i++)

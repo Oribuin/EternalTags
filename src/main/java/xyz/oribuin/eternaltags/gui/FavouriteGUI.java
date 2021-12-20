@@ -95,12 +95,15 @@ public class FavouriteGUI {
             event.setResult(Event.Result.DENY);
         });
 
+        gui.setPersonalClickAction(e -> gui.getPersonalClickAction().accept(e));
+
         // Get all the border slots;
         final List<Integer> borderSlots = new ArrayList<>();
         for (int i = 45; i < 54; i++)
             borderSlots.add(i);
 
-        gui.setItems(borderSlots, fillerItem(), event -> {});
+        gui.setItems(borderSlots, fillerItem(), event -> {
+        });
 
         // Add previous page item
         gui.setItem(47, this.getGuiItem("previous-page", null, player), event -> {
@@ -123,7 +126,8 @@ public class FavouriteGUI {
         // Extra Items
         final ConfigurationSection section = config.getConfigurationSection("extra-items");
         if (section != null) {
-            section.getKeys(false).forEach(s -> gui.setItem(section.getInt(s + ".slot"), this.getGuiItem(s, null, player), event -> {}));
+            section.getKeys(false).forEach(s -> gui.setItem(section.getInt(s + ".slot"), this.getGuiItem(s, null, player), event -> {
+            }));
         }
 
         gui.open(player, 1);
