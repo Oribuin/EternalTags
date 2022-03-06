@@ -9,6 +9,7 @@ import xyz.oribuin.eternaltags.manager.ConfigurationManager;
 import xyz.oribuin.eternaltags.manager.ConversionManager;
 import xyz.oribuin.eternaltags.manager.DataManager;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
+import xyz.oribuin.eternaltags.manager.MenuManager;
 import xyz.oribuin.eternaltags.manager.PluginConversionManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 
@@ -44,9 +45,6 @@ public class EternalTags extends RosePlugin {
         // Register Plugin Listeners
         this.getServer().getPluginManager().registerEvents(new PlayerListeners(this), this);
 
-        // Register Listeners.
-        new PlayerListeners(this);
-
         // Initialize the API
         new EternalAPI(this);
     }
@@ -61,7 +59,8 @@ public class EternalTags extends RosePlugin {
         return Arrays.asList(
                 ConversionManager.class,
                 PluginConversionManager.class,
-                TagsManager.class
+                TagsManager.class,
+                MenuManager.class
         );
     }
 
