@@ -1,44 +1,34 @@
 package xyz.oribuin.eternaltags.manager;
 
-import org.bukkit.Bukkit;
+import dev.rosewood.rosegarden.RosePlugin;
+import dev.rosewood.rosegarden.database.DataMigration;
+import dev.rosewood.rosegarden.manager.AbstractDataManager;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
+import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.EternalTags;
+import xyz.oribuin.eternaltags.database.migration._1_CreateInitialTables;
+import xyz.oribuin.eternaltags.listener.PlayerListeners;
 import xyz.oribuin.eternaltags.obj.Tag;
-import xyz.oribuin.orilibrary.manager.DataHandler;
 
-import javax.annotation.Nullable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
-public class DataManager extends DataHandler {
-
-    private final EternalTags plugin = (EternalTags) this.getPlugin();
-    private final TagManager tagManager = this.plugin.getManager(TagManager.class);
+public class DataManager extends AbstractDataManager {
 
     private final Map<UUID, Tag> cachedUsers = new HashMap<>();
     private final Map<UUID, Set<Tag>> cachedFavourites = new HashMap<>();
-    private boolean removeInaccessible = false;
 
-    public DataManager(EternalTags plugin) {
+    public DataManager(RosePlugin plugin) {
         super(plugin);
-    }
-
-    @Override
-    public void enable() {
-        super.enable();
-        this.removeInaccessible = this.plugin.getConfig().getBoolean("remove-inaccessible-tags");
-
-        this.async(task -> this.getConnector().connect(connection -> {
-            final String baseTable = "CREATE TABLE IF NOT EXISTS " + this.getTableName() + "_tags (player VARCHAR(50), tagID TEXT, PRIMARY KEY(player))";
-            connection.prepareStatement(baseTable).executeUpdate();
-
-            final String favouriteTable = "CREATE TABLE IF NOT EXISTS " + this.getTableName() + "_favourites (player VARCHAR(50), tagID TEXT)";
-            connection.prepareStatement(favouriteTable).executeUpdate();
-        }));
     }
 
     /**
@@ -47,21 +37,10 @@ public class DataManager extends DataHandler {
      * @param uuid The player's uuid
      * @param tag  The tag
      */
-    public void updateUser(final UUID uuid, final @Nullable Tag tag) {
-
-        if (tag == null) {
-            this.removeUser(uuid);
-            return;
-        }
-
-        // Save the tag if it doesn't exist in the config file.
-        if (!tagManager.getTags().contains(tag))
-            tagManager.createTag(tag);
-
+    public void saveUser(UUID uuid, @NotNull Tag tag) {
         this.cachedUsers.put(uuid, tag);
-        final String query = "REPLACE INTO " + this.getTableName() + "_tags (player, tagID) VALUES (?, ?)";
-        this.async(task -> this.getConnector().connect(connection -> {
-
+        final String query = "REPLACE INTO " + this.getTablePrefix() + "tags (player, tagID) VALUES (?, ?)";
+        this.async(task -> this.databaseConnector.connect(connection -> {
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, uuid.toString());
                 statement.setString(2, tag.getId());
@@ -76,19 +55,16 @@ public class DataManager extends DataHandler {
      *
      * @param tag The tag.
      */
-    public void updateEveryone(Tag tag) {
-        Set<Map.Entry<UUID, Tag>> entry = new HashSet<>(this.cachedUsers.entrySet());
+    public void updateEveryone(Tag tag, List<Player> players) {
+        players.forEach(player -> this.cachedUsers.put(player.getUniqueId(), tag));
 
-        entry.forEach(uuidTagEntry -> this.cachedUsers.put(uuidTagEntry.getKey(), tag));
-
-        this.async(task -> this.getConnector().connect(connection -> {
-            final String query = "UPDATE " + this.getTableName() + "_tags SET tagID = ?";
+        this.async(task -> this.databaseConnector.connect(connection -> {
+            final String query = "UPDATE " + this.getTablePrefix() + "tags SET tagID = ?";
 
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, tag.getId());
                 statement.executeUpdate();
             }
-
         }));
 
     }
@@ -101,8 +77,8 @@ public class DataManager extends DataHandler {
     public void removeUser(final UUID uuid) {
         this.cachedUsers.remove(uuid);
 
-        final String query = "DELETE FROM " + this.getTableName() + "_tags WHERE player = ?";
-        this.async(task -> this.getConnector().connect(connection -> {
+        final String query = "DELETE FROM " + this.getTablePrefix() + "tags WHERE player = ?";
+        this.async(task -> this.databaseConnector.connect(connection -> {
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, uuid.toString());
                 statement.executeUpdate();
@@ -118,12 +94,12 @@ public class DataManager extends DataHandler {
      * @param tag  The tag being added
      */
     public void addFavourite(UUID uuid, Tag tag) {
-        final Set<Tag> favourites = this.getFavourites(uuid);
-        favourites.add(tag);
-        this.cachedFavourites.put(uuid, favourites);
+        Map<String, Tag> favourites = this.rosePlugin.getManager(TagsManager.class).getUsersFavourites(uuid);
+        favourites.put(tag.getId(), tag);
+        this.cachedFavourites.put(uuid, new HashSet<>(favourites.values()));
 
-        this.async(task -> this.getConnector().connect(connection -> {
-            final String query = "INSERT INTO " + this.getTableName() + "_favourites (player, tagID) VALUES (?, ?)";
+        this.async(task -> this.databaseConnector.connect(connection -> {
+            final String query = "INSERT INTO " + this.getTablePrefix() + "favourites (player, tagID) VALUES (?, ?)";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, uuid.toString());
                 statement.setString(2, tag.getId());
@@ -139,12 +115,13 @@ public class DataManager extends DataHandler {
      * @param tag  The tag being removed.
      */
     public void removeFavourite(UUID uuid, Tag tag) {
-        final Set<Tag> favourites = this.getFavourites(uuid);
-        favourites.removeIf(x -> x.getId().equalsIgnoreCase(tag.getId()));
-        this.cachedFavourites.put(uuid, favourites);
 
-        this.async(task -> this.getConnector().connect(connection -> {
-            final String query = "DELETE FROM " + this.getTableName() + "_favourites WHERE player = ? AND tagID = ?";
+        final Map<String, Tag> favourites = this.rosePlugin.getManager(TagsManager.class).getUsersFavourites(uuid);
+        favourites.remove(tag.getId());
+        this.cachedFavourites.put(uuid, new HashSet<>(favourites.values()));
+
+        this.async(task -> this.databaseConnector.connect(connection -> {
+            final String query = "DELETE FROM " + this.getTablePrefix() + "favourites WHERE player = ? AND tagID = ?";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, uuid.toString());
                 statement.setString(2, tag.getId());
@@ -155,91 +132,64 @@ public class DataManager extends DataHandler {
     }
 
     /**
-     * Get a users current tag.
+     * Load & Cache a user's current active tag.
      *
      * @param uuid The player's uuid
-     * @return The tag
      */
-    public Tag getTag(UUID uuid) {
-        // get the user's cached tag.
-        if (this.cachedUsers.get(uuid) != null) {
-            final Tag tag = this.cachedUsers.get(uuid);
-            final Player player = Bukkit.getPlayer(uuid);
-            if (player == null)
-                return tag;
-
-            if (removeInaccessible && !player.hasPermission(tag.getPermission())) {
-                this.removeUser(uuid);
-                return null;
-            }
-
-            return tag;
-        }
-
-        // If the user's tag isnt cached, Cache it.
-        this.async(task -> this.getConnector().connect(connection -> {
-            final String query = "SELECT tagID FROM " + this.getTableName() + "_tags WHERE player = ?";
+    public void loadUser(UUID uuid) {
+        this.async(task -> this.databaseConnector.connect(connection -> {
+            final String query = "SELECT tagID FROM " + this.getTablePrefix() + "tags WHERE player = ?";
 
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, uuid.toString());
                 final ResultSet result = statement.executeQuery();
                 if (result.next()) {
-                    this.tagManager.getTagFromID(result.getString(1)).ifPresent(tag -> this.cachedUsers.put(uuid, tag));
+                    this.rosePlugin.getManager(TagsManager.class).matchTagFromID(result.getString(1)).ifPresent(tag -> this.cachedUsers.put(uuid, tag));
                 }
             }
         }));
-
-        return this.cachedUsers.get(uuid);
     }
 
     /**
-     * Get a user's current set favourite tags from the gui.
+     * Load a user's favourite tags from the database.
      *
-     * @param uuid The UUID of the player.
-     * @return The set of favourite tags.
+     * @param uuid The player's UUID
      */
-    public Set<Tag> getFavourites(UUID uuid) {
-        if (this.cachedFavourites.get(uuid) != null)
-            return this.cachedFavourites.get(uuid);
-
+    public void loadFavourites(UUID uuid) {
         final Set<Tag> tags = new HashSet<>();
-
-        this.async(task -> this.getConnector().connect(connection -> {
+        this.async(task -> this.databaseConnector.connect(connection -> {
 
             // Select all the favourite tags from the database set by the player.
-            final String query = "SELECT tagID FROM " + this.getTableName() + "_favourites WHERE player = ?";
+            final String query = "SELECT tagID FROM " + this.getTablePrefix() + "favourites WHERE player = ?";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, uuid.toString());
                 final ResultSet result = statement.executeQuery();
 
+                final TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
                 while (result.next()) {
-                    // keep recaching the tags.
-                    Optional<Tag> optional = tagManager.getTagFromID(result.getString("tagID"));
-                    optional.ifPresent(tags::add);
+                    manager.matchTagFromID(result.getString("tagID")).ifPresent(tags::add);
                     this.cachedFavourites.put(uuid, tags);
                 }
             }
 
         }));
-
-        return tags;
-    }
-
-    public Set<Tag> getFavourites(Player player) {
-        return this.getFavourites(player.getUniqueId())
-                .stream()
-                .filter(tag -> player.hasPermission(tag.getPermission()))
-                .collect(Collectors.toSet());
-
     }
 
     @Override
-    public void disable() {
-        super.disable();
+    public List<Class<? extends DataMigration>> getDataMigrations() {
+        return Collections.singletonList(_1_CreateInitialTables.class);
     }
 
     private void async(Consumer<BukkitTask> callback) {
-        this.plugin.getServer().getScheduler().runTaskAsynchronously(plugin, callback);
+        this.rosePlugin.getServer().getScheduler().runTaskAsynchronously(rosePlugin, callback);
+    }
+
+    public Map<UUID, Tag> getCachedUsers() {
+        return cachedUsers;
+    }
+
+    public Map<UUID, Set<Tag>> getCachedFavourites() {
+        return cachedFavourites;
     }
 
 }
