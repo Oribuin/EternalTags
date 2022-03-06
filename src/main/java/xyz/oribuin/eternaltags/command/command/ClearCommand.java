@@ -39,7 +39,7 @@ public class ClearCommand extends RoseCommand {
                 return;
 
             manager.clearTag(player.getUniqueId());
-            if (!silent) {
+            if (silent != null && !silent) {
                 locale.sendMessage(player, "command-clear-cleared");
             }
 

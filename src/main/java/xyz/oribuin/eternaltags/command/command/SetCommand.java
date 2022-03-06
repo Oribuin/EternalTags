@@ -45,7 +45,7 @@ public class SetCommand extends RoseCommand {
                 return;
 
             manager.setTag(player.getUniqueId(), tag);
-            if (!silent) {
+            if (silent != null && !silent) {
                 locale.sendMessage(player, "command-set-changed", StringPlaceholders.single("tag", tag.getTag()));
             }
 
