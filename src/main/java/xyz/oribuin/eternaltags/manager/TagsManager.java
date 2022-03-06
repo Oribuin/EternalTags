@@ -117,11 +117,11 @@ public class TagsManager extends Manager {
             return false;
 
         this.cachedTags.put(id, tag);
-        this.section.set(id + ".name", tag.getName());
-        this.section.set(id + ".tag", tag.getTag());
-        this.section.set(id + ".description", tag.getDescription());
-        this.section.set(id + ".permission", tag.getPermission());
-        this.section.set(id + ".order", tag.getOrder());
+        this.config.set("tags." + id + ".name", tag.getName());
+        this.config.set("tags." + id + ".tag", tag.getTag());
+        this.config.set("tags." + id + ".description", tag.getDescription());
+        this.config.set("tags." + id + ".permission", tag.getPermission());
+        this.config.set("tags." + id + ".order", tag.getOrder());
         this.config.save();
         return true;
     }
@@ -144,11 +144,11 @@ public class TagsManager extends Manager {
         this.cachedTags.putAll(tags);
 
         CompletableFuture.runAsync(() -> tags.forEach((id, tag) -> {
-            this.section.set(id + ".name", tag.getName());
-            this.section.set(id + ".tag", tag.getTag());
-            this.section.set(id + ".description", tag.getDescription());
-            this.section.set(id + ".permission", tag.getPermission());
-            this.section.set(id + ".order", tag.getOrder());
+            this.config.set("tags." + id + ".name", tag.getName());
+            this.config.set("tags." + id + ".tag", tag.getTag());
+            this.config.set("tags." + id + ".description", tag.getDescription());
+            this.config.set("tags." + id + ".permission", tag.getPermission());
+            this.config.set("tags." + id + ".order", tag.getOrder());
         })).thenRun(() -> this.config.save());
     }
 
@@ -168,7 +168,7 @@ public class TagsManager extends Manager {
             return false;
 
         this.cachedTags.remove(id);
-        this.section.set(id, null);
+        this.config.set("tags." + id, null);
         this.config.save();
         return true;
     }

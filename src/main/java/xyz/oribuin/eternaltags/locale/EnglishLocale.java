@@ -75,6 +75,7 @@ public class EnglishLocale implements Locale {
 
             this.put("#12", "Help Command");
             this.put("command-help-description", "Displays the help menu.");
+            this.put("command-help-list-description", "&8 - #00B4DB/%cmd% %subcmd% %args% &7- %desc%");
 
             this.put("#13", "Plugin Error Messages");
             this.put("no-tags", "You currently do not own any tags.");

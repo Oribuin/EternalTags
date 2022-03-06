@@ -6,6 +6,7 @@ import xyz.oribuin.eternaltags.hook.Expansion;
 import xyz.oribuin.eternaltags.listener.PlayerListeners;
 import xyz.oribuin.eternaltags.manager.CommandManager;
 import xyz.oribuin.eternaltags.manager.ConfigurationManager;
+import xyz.oribuin.eternaltags.manager.ConversionManager;
 import xyz.oribuin.eternaltags.manager.DataManager;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.PluginConversionManager;
@@ -37,7 +38,6 @@ public class EternalTags extends RosePlugin {
             return;
         }
 
-
         // Register PlaceholderAPI Expansion
         new Expansion(this).register();
 
@@ -59,6 +59,7 @@ public class EternalTags extends RosePlugin {
     @Override
     protected List<Class<? extends Manager>> getManagerLoadPriority() {
         return Arrays.asList(
+                ConversionManager.class,
                 PluginConversionManager.class,
                 TagsManager.class
         );
