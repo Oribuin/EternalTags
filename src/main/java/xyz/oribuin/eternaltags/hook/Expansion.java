@@ -1,26 +1,28 @@
 package xyz.oribuin.eternaltags.hook;
 
+import dev.rosewood.rosegarden.utils.HexUtils;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.EternalTags;
-import xyz.oribuin.eternaltags.manager.DataManager;
-import xyz.oribuin.eternaltags.manager.TagManager;
+import xyz.oribuin.eternaltags.manager.ConfigurationManager;
+import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
+import xyz.oribuin.eternaltags.util.TagsUtil;
 
-import static xyz.oribuin.orilibrary.util.HexUtils.colorify;
+import java.util.Collections;
+import java.util.Optional;
 
 public class Expansion extends PlaceholderExpansion {
 
     private final EternalTags plugin;
-    private final TagManager tag;
-    private final DataManager data;
+    private final TagsManager manager;
+    private final String formattedPlaceholder;
 
     public Expansion(final EternalTags plugin) {
         this.plugin = plugin;
-        this.tag = plugin.getManager(TagManager.class);
-        this.data = plugin.getManager(DataManager.class);
+        this.manager = plugin.getManager(TagsManager.class);
+        this.formattedPlaceholder = ConfigurationManager.Setting.FORMATTED_PLACEHOLDER.getString();
     }
 
     @Override
@@ -31,38 +33,33 @@ public class Expansion extends PlaceholderExpansion {
 
         if (args.length == 2 && args[0].equalsIgnoreCase("get")) {
             final String tagId = String.join(" ", args).substring(args[0].length() + 1);
-            return this.tag.getTags().stream().filter(x -> x.getId().equalsIgnoreCase(tagId)).map(Tag::getTag).findAny().orElse("");
+            return this.manager.matchTagFromID(tagId).map(Tag::getTag).orElse("");
         }
 
-        final Tag tag = this.data.getTag(player.getUniqueId());
-        final String currentTag = colorify(tag != null ? tag.getTag() : "");
-
-        final String formattedPlaceholder = colorify(this.plugin.getConfig().get("formatted_placeholder") != null
-                ? this.plugin.getConfig().getString("formatted_placeholder")
-                : "None");
+        final Optional<Tag> activeTag = this.manager.getUsersTag(player.getUniqueId());
 
         switch (params.toLowerCase()) {
             case "tag":
-                return currentTag;
+                return HexUtils.colorify(activeTag.map(Tag::getTag).orElse(""));
             case "tag_formatted":
-                return tag != null ? colorify(tag.getTag()) : formattedPlaceholder;
+                return HexUtils.colorify(activeTag.map(Tag::getTag).orElse(formattedPlaceholder));
             case "tag_stripped":
-                return tag != null ? tag.getTag() : "";
+                return activeTag.map(Tag::getTag).orElse("");
             case "tag_stripped_formatted":
-                return tag != null ? tag.getTag() : formattedPlaceholder;
+                return activeTag.map(Tag::getTag).orElse(formattedPlaceholder);
             case "tag_name":
-                return tag != null ? tag.getName() : formattedPlaceholder;
+                return activeTag.map(Tag::getName).orElse(formattedPlaceholder);
             case "tag_id":
-                return tag != null ? tag.getId() : formattedPlaceholder;
+                return activeTag.map(Tag::getId).orElse(formattedPlaceholder);
             case "tag_permission":
-                return tag != null ? tag.getPermission() : formattedPlaceholder;
+                return activeTag.map(Tag::getPermission).orElse(formattedPlaceholder);
             case "tag_description":
-                return tag != null ? String.join(" ", tag.getDescription()) : formattedPlaceholder;
+                return TagsUtil.formatList(activeTag.map(Tag::getDescription).orElse(Collections.singletonList(formattedPlaceholder)));
             case "total":
-                return String.valueOf(this.tag.getTags().size());
+                return String.valueOf(this.manager.getCachedTags().size());
             case "unlocked":
                 if (player.getPlayer() != null)
-                    return String.valueOf(this.tag.getPlayersTag((Player) player).size());
+                    return String.valueOf(this.manager.getPlayersTags(player.getPlayer()).size());
                 else
                     return "0";
             default:

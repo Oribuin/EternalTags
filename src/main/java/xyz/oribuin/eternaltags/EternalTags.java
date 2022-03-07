@@ -1,109 +1,67 @@
 package xyz.oribuin.eternaltags;
 
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-import xyz.oribuin.eternaltags.command.CmdTags;
+import dev.rosewood.rosegarden.RosePlugin;
+import dev.rosewood.rosegarden.manager.Manager;
 import xyz.oribuin.eternaltags.hook.Expansion;
-import xyz.oribuin.eternaltags.listener.PlayerJoinListener;
+import xyz.oribuin.eternaltags.listener.PlayerListeners;
+import xyz.oribuin.eternaltags.manager.CommandManager;
+import xyz.oribuin.eternaltags.manager.ConfigurationManager;
+import xyz.oribuin.eternaltags.manager.ConversionManager;
 import xyz.oribuin.eternaltags.manager.DataManager;
-import xyz.oribuin.eternaltags.manager.MessageManager;
-import xyz.oribuin.eternaltags.manager.TagManager;
-import xyz.oribuin.eternaltags.util.Metrics;
-import xyz.oribuin.eternaltags.util.UpdateChecker;
-import xyz.oribuin.orilibrary.OriPlugin;
-import xyz.oribuin.orilibrary.util.FileUtils;
-import xyz.oribuin.orilibrary.util.HexUtils;
+import xyz.oribuin.eternaltags.manager.LocaleManager;
+import xyz.oribuin.eternaltags.manager.MenuManager;
+import xyz.oribuin.eternaltags.manager.PluginConversionManager;
+import xyz.oribuin.eternaltags.manager.TagsManager;
 
-public class EternalTags extends OriPlugin {
+import java.util.Arrays;
+import java.util.List;
 
-    private FileConfiguration menuConfig;
-    private FileConfiguration favouriteConfig;
+public class EternalTags extends RosePlugin {
+
+    private static EternalTags instance;
+
+    public static EternalTags getInstance() {
+        return instance;
+    }
+
+    public EternalTags() {
+        super(91842, 11508, ConfigurationManager.class, DataManager.class, LocaleManager.class, CommandManager.class);
+        instance = this;
+    }
 
     @Override
-    public void enablePlugin() {
+    public void enable() {
 
-        // Check if server has PlaceholderAPI, No sure why it wouldn't though.
-        if (!hasPlugin("PlaceholderAPI"))
+        // Make sure the server has PlaceholderAPI
+        if (!this.getServer().getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            this.getLogger().severe("Please install PlaceholderAPI onto your server to use this plugin.");
+            this.getServer().getPluginManager().disablePlugin(this);
             return;
-
-        // Add bstats metrics
-        if (this.getConfig().getBoolean("metrics")) {
-            new Metrics(this, 11508);
-        }
-
-        // Load all plugin manages asynchronously
-        this.getServer().getScheduler().runTaskAsynchronously(this, () -> {
-            this.getManager(TagManager.class);
-            this.getManager(DataManager.class);
-            this.getManager(MessageManager.class);
-        });
-
-        // Check for plugin updates
-        if (this.getConfig().getBoolean("check-updates")) {
-            this.checkUpdates();
         }
 
         // Register PlaceholderAPI Expansion
         new Expansion(this).register();
 
-        // Register Menu Config
-        this.loadMenus();
-
-        final MessageManager msg = this.getManager(MessageManager.class);
-        new CmdTags(this).register(sender -> msg.send(sender, "player-only"), sender -> msg.send(sender, "invalid-permission"));
-
-        // Register Listeners.
-        new PlayerJoinListener(this);
+        // Register Plugin Listeners
+        this.getServer().getPluginManager().registerEvents(new PlayerListeners(this), this);
 
         // Initialize the API
         new EternalAPI(this);
     }
 
     @Override
-    public void disablePlugin() {
+    public void disable() {
         // Unused
     }
 
-    /**
-     * Check for any plugin updates.
-     */
-    public void checkUpdates() {
-        this.getLogger().info(HexUtils.colorify("&aChecking for plugin updates..."));
-
-        if (UpdateChecker.getLatestVersion() != null) {
-            if (UpdateChecker.isUpdateAvailable(UpdateChecker.getLatestVersion(), this.getDescription().getVersion())) {
-                this.getLogger().info(HexUtils.colorify("&aA new update is available for EternalTags (&c" + UpdateChecker.getLatestVersion() + "&a), You are on v" + this.getDescription().getVersion()));
-                return;
-            }
-
-            this.getLogger().info(HexUtils.colorify("&aYou are on the latest version of EternalTags!"));
-        } else {
-            this.getLogger().info(HexUtils.colorify("&cChecking for update failed, Could not get latest version..."));
-        }
-
-    }
-
     @Override
-    public void reload() {
-        super.reload();
-        this.loadMenus();
+    protected List<Class<? extends Manager>> getManagerLoadPriority() {
+        return Arrays.asList(
+                ConversionManager.class,
+                PluginConversionManager.class,
+                TagsManager.class,
+                MenuManager.class
+        );
     }
-
-    /**
-     * Load all the plugin menus in the plugin.
-     */
-    private void loadMenus() {
-        this.menuConfig = YamlConfiguration.loadConfiguration(FileUtils.createFile(this, "menus", "tag-menu.yml"));
-        this.favouriteConfig = YamlConfiguration.loadConfiguration(FileUtils.createFile(this, "menus", "favourites-menu.yml"));
-    }
-
-    public FileConfiguration getMenuConfig() {
-        return menuConfig;
-    }
-
-    public FileConfiguration getFavouriteConfig() {
-        return favouriteConfig;
-    }
-
 
 }

@@ -1,9 +1,10 @@
 package xyz.oribuin.eternaltags;
 
 import org.bukkit.OfflinePlayer;
-import xyz.oribuin.eternaltags.manager.DataManager;
-import xyz.oribuin.eternaltags.manager.TagManager;
+import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
+
+import java.util.Optional;
 
 /**
  * @author Oribuin
@@ -12,13 +13,11 @@ import xyz.oribuin.eternaltags.obj.Tag;
 public class EternalAPI {
 
     private static EternalAPI instance;
-    private final DataManager dataManager;
-    private final TagManager tagManager;
+    private final TagsManager tagManager;
 
     public EternalAPI(final EternalTags plugin) {
         instance = this;
-        this.dataManager = plugin.getManager(DataManager.class);
-        this.tagManager = plugin.getManager(TagManager.class);
+        this.tagManager = plugin.getManager(TagsManager.class);
     }
 
     /**
@@ -27,8 +26,13 @@ public class EternalAPI {
      * @param player The offline player.
      * @return The [Tag] belonging to the player, This tag is nullable
      */
+    @Deprecated
     public Tag getUserTag(OfflinePlayer player) {
-        return this.dataManager.getTag(player.getUniqueId());
+        return null;
+    }
+
+    public Optional<Tag> getUser(OfflinePlayer player) {
+        return this.tagManager.getUsersTag(player.getUniqueId());
     }
 
     /**
@@ -38,14 +42,10 @@ public class EternalAPI {
      * @param tag    The tag, Set this to null to remove the tag.
      */
     public void setTag(OfflinePlayer player, Tag tag) {
-        this.dataManager.updateUser(player.getUniqueId(), tag);
+        this.tagManager.setTag(player.getUniqueId(), tag);
     }
 
-    public DataManager getDataManager() {
-        return dataManager;
-    }
-
-    public TagManager getTagManager() {
+    public TagsManager getTagManager() {
         return tagManager;
     }
 
