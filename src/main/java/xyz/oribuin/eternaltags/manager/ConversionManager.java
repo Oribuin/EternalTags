@@ -1,6 +1,5 @@
 package xyz.oribuin.eternaltags.manager;
 
-import com.google.common.collect.BiMap;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import dev.rosewood.rosegarden.manager.Manager;

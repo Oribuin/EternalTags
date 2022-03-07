@@ -6,9 +6,7 @@ import dev.rosewood.rosegarden.manager.AbstractDataManager;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
-import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.database.migration._1_CreateInitialTables;
-import xyz.oribuin.eternaltags.listener.PlayerListeners;
 import xyz.oribuin.eternaltags.obj.Tag;
 
 import java.sql.PreparedStatement;
