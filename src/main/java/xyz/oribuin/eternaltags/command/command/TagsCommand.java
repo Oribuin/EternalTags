@@ -5,6 +5,9 @@ import dev.rosewood.rosegarden.command.command.BaseCommand;
 import dev.rosewood.rosegarden.command.framework.CommandContext;
 import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
+import org.bukkit.entity.Player;
+import xyz.oribuin.eternaltags.manager.LocaleManager;
+import xyz.oribuin.eternaltags.manager.MenuManager;
 
 public class TagsCommand extends BaseCommand {
 
@@ -14,7 +17,15 @@ public class TagsCommand extends BaseCommand {
 
     @RoseExecutable
     public void execute(CommandContext context) {
-        // TODO
+        final LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
+
+        // Make sure the sender is a player.
+        if (!(context.getSender() instanceof Player)) {
+            locale.sendMessage(context.getSender(), "only-player");
+            return;
+        }
+
+        this.rosePlugin.getManager(MenuManager.class).matchMenu("tags-gui").ifPresent(oriGUI -> oriGUI.createGUI((Player) context.getSender(), null));
     }
 
     @Override

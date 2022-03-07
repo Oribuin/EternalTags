@@ -1,4 +1,4 @@
-package xyz.oribuin.eternaltags.command.command;
+package xyz.oribuin.eternaltags.command.disabled;
 
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.command.framework.CommandContext;
@@ -43,23 +43,23 @@ public class ConvertCommand extends RoseCommand {
         }
 
         int total = manager.convertPlugin(plugin).size();
-        locale.sendMessage(sender, "command-convert,converted", StringPlaceholders.single("total", total));
+        locale.sendMessage(sender, "command-convert-converted", StringPlaceholders.single("total", total));
     }
 
 
     @Override
     protected String getDefaultName() {
-        return "clear";
+        return "convert";
     }
 
     @Override
     public String getDescriptionKey() {
-        return "command-clear-description";
+        return "command-convert-description";
     }
 
     @Override
     public String getRequiredPermission() {
-        return "eternaltags.clear";
+        return "eternaltags.convert";
     }
 
     @Override

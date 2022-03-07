@@ -20,9 +20,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class TagsGUI extends OriGUI {
+public class FavouritesGUI extends OriGUI {
 
-    public TagsGUI(RosePlugin rosePlugin) {
+    public FavouritesGUI(RosePlugin rosePlugin) {
         super(rosePlugin);
     }
 
@@ -62,17 +62,17 @@ public class TagsGUI extends OriGUI {
         }
 
         // Add favourites tag option
-        if (this.get("favorite-tags.enabled", true)) {
-            this.put(gui, "favorite-tags", player, event -> ((Player) event.getWhoClicked()).chat("/eternaltags:tags favorite"));
+        if (this.get("main-menu.enabled", true)) {
+            this.put(gui, "main-menu", player, event -> ((Player) event.getWhoClicked()).chat("/eternaltags:tags"));
         }
 
         // Add all the tags to the gui
-        this.getTags(player, keyword).forEach(tag -> {
+        this.getTags(player).forEach(tag -> {
             gui.addPageItem(this.createTagItem(tag, "tag-item", player), event -> {
                 final Player whoClicked = (Player) event.getWhoClicked();
                 if (event.isShiftClick()) {
                     whoClicked.chat("/eternaltags:tags favorite " + tag.getId());
-                    this.createGUI(player, keyword);
+                    this.createGUI(player, null);
                     return;
                 }
 
@@ -88,35 +88,15 @@ public class TagsGUI extends OriGUI {
     /**
      * Get a list of tags that should be added to the GUI
      *
-     * @param player  The player
-     * @param keyword Any searching keywords.
+     * @param player The player
      * @return The list of tags
      */
-    private List<Tag> getTags(Player player, @Nullable String keyword) {
+    private List<Tag> getTags(Player player) {
         final TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
 
-        List<Tag> tags = new ArrayList<>();
-        if (this.get("favorite-first", true)) {
-            tags = manager.getPlayersTags(player).stream().filter(tag -> manager.isFavourite(player.getUniqueId(), tag)).collect(Collectors.toList());
-            this.sortTags(tags);
-        }
-
-        List<Tag> finalTags = tags;
-        final List<Tag> otherTags = manager.getPlayersTags(player).stream()
-                .filter(tag -> !finalTags.contains(tag))
+        return manager.getPlayersTags(player).stream()
+                .filter(tag -> manager.isFavourite(player.getUniqueId(), tag))
                 .collect(Collectors.toList());
-
-        this.sortTags(otherTags);
-        finalTags.addAll(otherTags);
-
-        if (this.get("add-all-tags", false)) {
-            otherTags.addAll(manager.getCachedTags().values().stream().filter(tag -> !player.hasPermission(tag.getPermission())).collect(Collectors.toList()));
-        }
-
-        if (keyword != null)
-            finalTags.removeIf(tag -> !tag.getName().toLowerCase().contains(keyword.toLowerCase()));
-
-        return finalTags;
     }
 
     /**
@@ -145,16 +125,12 @@ public class TagsGUI extends OriGUI {
     public @NotNull Map<String, Object> getRequiredValues() {
         return new LinkedHashMap<String, Object>() {{
             this.put("#0", "Configure the name at the top of the gui.");
-            this.put("menu-name", "EternalTags | %page%/%total%");
+            this.put("menu-name", "Favorite Tags | %page%/%total%");
             this.put("#1", "Available Options: ALPHABETICAL, CUSTOM, NONE, RANDOM");
             this.put("sort-type", SortType.ALPHABETICAL.name());
-            this.put("#2", "Should favourite tags be put at the start of the gui?");
-            this.put("favorites-first", true);
-            this.put("#3", "Should all tags be added to the gui?");
-            this.put("add-all-tags", false);
 
             // Tag Item
-            this.put("#4", "The display item for tags");
+            this.put("#2", "The display item for tags");
             this.put("tag-item.material", Material.NAME_TAG.name());
             this.put("tag-item.amount", 1);
             this.put("tag-item.name", "%tag%");
@@ -168,19 +144,19 @@ public class TagsGUI extends OriGUI {
             this.put("tag-item.glow", true);
 
             // Next Page Item
-            this.put("#5", "The display item for the next page button");
+            this.put("#3", "The display item for the next page button");
             this.put("next-page.material", Material.PAPER.name());
             this.put("next-page.name", "#00B4DB&lNext Page");
             this.put("next-page.slot", 52);
 
             // Previous Page Item
-            this.put("#6", "The display item for the next page button");
+            this.put("#4", "The display item for the next page button");
             this.put("previous-page.material", Material.PAPER.name());
             this.put("previous-page.name", "#00B4DB&lPrevious Page");
             this.put("previous-page.slot", 46);
 
             // Clear Tag Item
-            this.put("#7", "The display item for clearing active tag.");
+            this.put("#5", "The display item for clearing active tag.");
             this.put("clear-tag.enabled", true);
             this.put("clear-tag.slot", 50);
             this.put("clear-tag.material", Material.PLAYER_HEAD.name());
@@ -194,18 +170,18 @@ public class TagsGUI extends OriGUI {
             this.put("clear-tag.texture", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZTljZGI5YWYzOGNmNDFkYWE1M2JjOGNkYTc2NjVjNTA5NjMyZDE0ZTY3OGYwZjE5ZjI2M2Y0NmU1NDFkOGEzMCJ9fX0=");
 
             // Favourites Tag Item
-            this.put("#8", "The display item for viewing favourite tags.");
-            this.put("favorite-tags.enabled", true);
-            this.put("favorite-tags.slot", 48);
-            this.put("favorite-tags.material", Material.PLAYER_HEAD.name());
-            this.put("favorite-tags.name", "#00B4DB&lFavorite Tags");
-            this.put("favorite-tags.lore", Arrays.asList(
-                    " &f| &7Click to view all your",
-                    " &f| &7favorite tags in one menu."
+            this.put("#6", "The display item for viewing favourite tags.");
+            this.put("main-menu.enabled", true);
+            this.put("main-menu.slot", 48);
+            this.put("main-menu.material", Material.PLAYER_HEAD.name());
+            this.put("main-menu.name", "#00B4DB&lMain Menu");
+            this.put("main-menu.lore", Arrays.asList(
+                    " &f| &7Click to go back to",
+                    " &f| &7the main tags menu."
             ));
-            this.put("favorite-tags.texture", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZDVjNmRjMmJiZjUxYzM2Y2ZjNzcxNDU4NWE2YTU2ODNlZjJiMTRkNDdkOGZmNzE0NjU0YTg5M2Y1ZGE2MjIifX19");
+            this.put("main-menu.texture", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmQ2OWUwNmU1ZGFkZmQ4NGU1ZjNkMWMyMTA2M2YyNTUzYjJmYTk0NWVlMWQ0ZDcxNTJmZGM1NDI1YmMxMmE5In19fQ==");
 
-            this.put("#9", "The border item at the bottom of the gui.");
+            this.put("#7", "The border item at the bottom of the gui.");
             this.put("border-item.enabled", true);
             this.put("border-item.material", Material.GRAY_STAINED_GLASS_PANE.name());
         }};
@@ -218,7 +194,7 @@ public class TagsGUI extends OriGUI {
 
     @Override
     public @NotNull String getMenuName() {
-        return "tags-gui";
+        return "favorites-gui";
     }
 
     @Override

@@ -30,7 +30,7 @@ dependencies {
 
     implementation 'com.zaxxer:HikariCP:5.0.1'
     implementation 'dev.rosewood:rosegarden:1.1.0.24-SNAPSHOT'
-    implementation 'xyz.oribuin:ori-gui:1.0.7'
+    implementation 'xyz.oribuin:ori-gui:1.0.8'
 }
 
 shadowJar {

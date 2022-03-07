@@ -4,10 +4,12 @@ import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.command.framework.CommandContext;
 import dev.rosewood.rosegarden.command.framework.RoseCommand;
 import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
+import dev.rosewood.rosegarden.command.framework.annotation.Optional;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import org.bukkit.entity.Player;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
+import xyz.oribuin.eternaltags.manager.MenuManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 
@@ -21,13 +23,13 @@ public class FavoriteCommand extends RoseCommand {
     }
 
     @RoseExecutable
-    public void execute(CommandContext context, Tag tag) {
+    public void execute(CommandContext context, @Optional Tag tag) {
         final LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
         final TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
         Player sender = (Player) context.getSender();
 
         if (tag == null) {
-            locale.sendMessage(sender, "tag-doesnt-exist");
+            this.rosePlugin.getManager(MenuManager.class).matchMenu("favorites-gui").ifPresent(gui -> gui.createGUI(sender, null));
             return;
         }
 
@@ -41,7 +43,7 @@ public class FavoriteCommand extends RoseCommand {
         String on = locale.getLocaleMessage("command-favorite-on");
         String off = locale.getLocaleMessage("command-favorite-off");
 
-        locale.sendMessage(sender, "command-favorite-toggled", StringPlaceholders.builder("tag", tag.getTag()).addPlaceholder("toggled", !isFavourite ? off : on).build());
+        locale.sendMessage(sender, "command-favorite-toggled", StringPlaceholders.builder("tag", tag.getTag()).addPlaceholder("toggled", !isFavourite ? on : off).build());
     }
 
 

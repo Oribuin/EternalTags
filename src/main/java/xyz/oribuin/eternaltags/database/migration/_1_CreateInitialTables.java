@@ -21,8 +21,7 @@ public class _1_CreateInitialTables extends DataMigration {
 
         connection.createStatement().executeUpdate("CREATE TABLE " + tablePrefix + "favourites (" +
                 "player VARCHAR(36), " +
-                "tagID TEXT, " +
-                "PRIMARY KEY(player))");
+                "tagID TEXT)");
 
     }
 }

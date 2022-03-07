@@ -1,5 +1,6 @@
 package xyz.oribuin.eternaltags.locale;
 
+import dev.rosewood.rosegarden.command.framework.CommandMessages;
 import dev.rosewood.rosegarden.locale.Locale;
 
 import java.util.LinkedHashMap;
@@ -21,13 +22,13 @@ public class EnglishLocale implements Locale {
     public Map<String, Object> getDefaultLocaleValues() {
         return new LinkedHashMap<String, Object>() {{
             this.put("#0", "Plugin Message Prefix");
-            this.put("prefix", "&7[<g:#00B4DB:#0083B0>&lEternalTags &8| &f");
+            this.put("prefix", "<g:#00B4DB:#0083B0>&lEternalTags &8| &f");
 
             this.put("#1", "Generic Command Messages");
             this.put("no-permission", "You don't have permission for that.");
             this.put("only-player", "This command can only be executed by a player.");
             this.put("only-console", "This command can only be executed by console.");
-            this.put("unknown-command", "Unknown command, use &b/#99ff99%cmd%&f help for more info");
+            this.put("unknown-command", "Unknown command, use #00B4DB/%cmd%&f help for more info");
 
             this.put("#2", "Clear Command");
             this.put("command-clear-description", "Clears your active tag.");
@@ -50,7 +51,7 @@ public class EnglishLocale implements Locale {
 
             this.put("#6", "Favorite Command");
             this.put("command-favorite-description", "Toggles a tag as a favourite.");
-            this.put("command-favorite-toggled", "You have toggled the tag %tag% &f%toggled%!");
+            this.put("command-favorite-toggled", "You have toggled the tag %tag% &fas a favorite %toggled%!");
             this.put("command-favorite-on", "on");
             this.put("command-favorite-off", "off");
 
@@ -74,6 +75,7 @@ public class EnglishLocale implements Locale {
             this.put("command-setall-changed", "You have changed everyone's tag to %tag%");
 
             this.put("#12", "Help Command");
+            this.put("command-help-title", "&fAvailable Commands:");
             this.put("command-help-description", "Displays the help menu.");
             this.put("command-help-list-description", "&8 - #00B4DB/%cmd% %subcmd% %args% &7- %desc%");
 

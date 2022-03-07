@@ -6,6 +6,8 @@ import dev.rosewood.rosegarden.command.framework.RoseCommand;
 import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import dev.rosewood.rosegarden.command.framework.types.GreedyString;
+import org.bukkit.entity.Player;
+import xyz.oribuin.eternaltags.manager.MenuManager;
 
 public class SearchCommand extends RoseCommand {
 
@@ -15,7 +17,7 @@ public class SearchCommand extends RoseCommand {
 
     @RoseExecutable
     public void execute(CommandContext context, GreedyString keyword) {
-        context.getSender().sendMessage("TODO");
+        this.rosePlugin.getManager(MenuManager.class).matchMenu("tags-gui").ifPresent(oriGUI -> oriGUI.createGUI((Player) context.getSender(), keyword.get()));
     }
 
 
