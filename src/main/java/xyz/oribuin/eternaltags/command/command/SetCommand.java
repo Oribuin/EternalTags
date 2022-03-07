@@ -60,6 +60,11 @@ public class SetCommand extends RoseCommand {
 
         final Player pl = (Player) sender;
 
+        if (!pl.hasPermission(tag.getPermission())) {
+            locale.sendMessage(pl, "command-set-no-permission");
+            return;
+        }
+
         final TagEquipEvent event = new TagEquipEvent(pl, tag);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled())

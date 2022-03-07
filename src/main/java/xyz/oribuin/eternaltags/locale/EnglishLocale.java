@@ -1,6 +1,5 @@
 package xyz.oribuin.eternaltags.locale;
 
-import dev.rosewood.rosegarden.command.framework.CommandMessages;
 import dev.rosewood.rosegarden.locale.Locale;
 
 import java.util.LinkedHashMap;
@@ -51,6 +50,7 @@ public class EnglishLocale implements Locale {
 
             this.put("#6", "Favorite Command");
             this.put("command-favorite-description", "Toggles a tag as a favourite.");
+            this.put("command-favorite-no-permission", "You do not have permission to favorite this tag.");
             this.put("command-favorite-toggled", "You have toggled the tag %tag% &fas a favorite %toggled%!");
             this.put("command-favorite-on", "on");
             this.put("command-favorite-off", "off");
@@ -69,6 +69,7 @@ public class EnglishLocale implements Locale {
             this.put("command-set-description", "Change your current active tag.");
             this.put("command-set-changed", "Your active tag has been changed to %tag%&f!");
             this.put("command-set-changed-other", "You have changed %player%'s active tag to %tag%&f!");
+            this.put("command-set-no-permission", "You do not have permission to use this tag.");
 
             this.put("#11", "Set All Command");
             this.put("command-setall-description", "Change all player's active tag.");
