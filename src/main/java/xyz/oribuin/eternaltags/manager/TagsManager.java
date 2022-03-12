@@ -181,11 +181,12 @@ public class TagsManager extends Manager {
      */
     public Optional<Tag> getUsersTag(UUID uuid) {
         Tag tag = this.rosePlugin.getManager(DataManager.class).getCachedUsers().get(uuid);
+        Player player = Bukkit.getPlayer(uuid);
         if (tag == null)
-            return this.getDefaultTag();
+            return this.getDefaultTag(player);
 
-        if (this.removeInaccessible && Bukkit.getPlayer(uuid) != null && !Objects.requireNonNull(Bukkit.getPlayer(uuid)).hasPermission(tag.getPermission()))
-            return this.getDefaultTag();
+        if (this.removeInaccessible && player != null && !player.hasPermission(tag.getPermission()))
+            return this.getDefaultTag(player);
 
         return Optional.of(tag);
     }
@@ -239,10 +240,10 @@ public class TagsManager extends Manager {
         // I could return this.getTag(player.getUniqueId()); but its *slightly* more efficient for the removeInaccessible option
         Tag tag = this.rosePlugin.getManager(DataManager.class).getCachedUsers().get(player.getUniqueId());
         if (tag == null)
-            return this.getDefaultTag();
+            return this.getDefaultTag(player);
 
         if (this.removeInaccessible && !player.hasPermission(tag.getPermission()))
-            return this.getDefaultTag();
+            return this.getDefaultTag(player);
 
         return Optional.of(tag);
     }
@@ -297,15 +298,17 @@ public class TagsManager extends Manager {
     }
 
     /**
-     * Get the default plugin tag.
-     *
+     * @param player The player
      * @return The default tag.
      */
-    public Optional<Tag> getDefaultTag() {
+    public Optional<Tag> getDefaultTag(Player player) {
         String defaultTagID = ConfigurationManager.Setting.DEFAULT_TAG.getString();
 
         if (defaultTagID == null || defaultTagID.equalsIgnoreCase("none"))
             return Optional.empty();
+
+        if (defaultTagID.equalsIgnoreCase("random") && player != null)
+            return this.getRandomTag(player);
 
         return this.matchTagFromID(defaultTagID);
     }
