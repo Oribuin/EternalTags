@@ -33,7 +33,7 @@ public class FavoriteCommand extends RoseCommand {
             return;
         }
 
-        if (sender.hasPermission(tag.getPermission())) {
+        if (!sender.hasPermission(tag.getPermission())) {
             locale.sendMessage(sender, "command-favorite-no-permission");
             return;
         }

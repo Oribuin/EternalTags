@@ -87,7 +87,7 @@ public class EnglishLocale implements Locale {
             this.put("#14", "Argument Handler Error Messages");
             this.put("argument-handler-player", "Please provide an online username.");
             this.put("argument-handler-plugins", "Please provide a valid input for valid plugins.");
-            this.put("argument-handler-tags", "Please provide a valid input for valid plugins.");
+            this.put("argument-handler-tags", "Please provide a valid input for a tag.");
         }};
     }
 }
