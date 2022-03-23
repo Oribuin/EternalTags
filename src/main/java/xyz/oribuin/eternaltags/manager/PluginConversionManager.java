@@ -2,11 +2,13 @@ package xyz.oribuin.eternaltags.manager;
 
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.manager.Manager;
+import xyz.oribuin.eternaltags.conversion.AlonsoConversion;
+import xyz.oribuin.eternaltags.conversion.CIFYConversion;
 import xyz.oribuin.eternaltags.conversion.ConversionPlugin;
+import xyz.oribuin.eternaltags.conversion.DeluxeConversion;
 import xyz.oribuin.eternaltags.conversion.ValidPlugin;
 import xyz.oribuin.eternaltags.obj.Tag;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,14 +30,16 @@ public class PluginConversionManager extends Manager {
      * @return The conversion function.
      */
     public ConversionPlugin getPlugin(ValidPlugin plugin) {
-        ConversionPlugin pl = null;
-        try {
-            pl = plugin.getConversionClass().getConstructor(this.rosePlugin.getClass()).newInstance(this.rosePlugin);
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            e.printStackTrace();
+        switch (plugin) {
+            case DELUXETAGS:
+                return new DeluxeConversion(this.rosePlugin);
+            case CIFYTAGS:
+                return new CIFYConversion(this.rosePlugin);
+            case ALONSOTAGS:
+                return new AlonsoConversion(this.rosePlugin);
+            default:
+                return null;
         }
-
-        return pl;
     }
 
     /**

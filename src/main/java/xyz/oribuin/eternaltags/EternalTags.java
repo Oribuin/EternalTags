@@ -58,9 +58,9 @@ public class EternalTags extends RosePlugin {
     protected List<Class<? extends Manager>> getManagerLoadPriority() {
         return Arrays.asList(
                 ConversionManager.class,
-                PluginConversionManager.class,
                 TagsManager.class,
-                MenuManager.class
+                MenuManager.class,
+                PluginConversionManager.class
         );
     }
 

@@ -142,7 +142,7 @@ public class TagsGUI extends OriGUI {
     }
 
     @Override
-    public @NotNull Map<String, Object> getRequiredValues() {
+    public @NotNull Map<String, Object> getDefaultValues() {
         return new LinkedHashMap<String, Object>() {{
             this.put("#0", "Configure the name at the top of the gui.");
             this.put("menu-name", "EternalTags | %page%/%total%");

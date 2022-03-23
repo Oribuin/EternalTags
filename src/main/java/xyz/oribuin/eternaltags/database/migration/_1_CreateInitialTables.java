@@ -14,12 +14,12 @@ public class _1_CreateInitialTables extends DataMigration {
 
     @Override
     public void migrate(DatabaseConnector connector, Connection connection, String tablePrefix) throws SQLException {
-        connection.createStatement().execute("CREATE TABLE " + tablePrefix + "tags (" +
+        connection.createStatement().execute("CREATE TABLE IF NOT EXISTS " + tablePrefix + "tags (" +
                 "player VARCHAR(36), " +
                 "tagID TEXT, " +
                 "PRIMARY KEY(player))");
 
-        connection.createStatement().executeUpdate("CREATE TABLE " + tablePrefix + "favourites (" +
+        connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS " + tablePrefix + "favourites (" +
                 "player VARCHAR(36), " +
                 "tagID TEXT)");
 

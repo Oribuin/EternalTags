@@ -28,7 +28,7 @@ public class ConversionManager extends Manager {
     }
 
     public void reload() {
-        this.rosePlugin.getLogger().info("Checking plugin needs to be converted.");
+        this.rosePlugin.getLogger().info("Checking if plugin needs to be converted.");
         if (!this.shouldConvert())
             return;
 
@@ -58,8 +58,14 @@ public class ConversionManager extends Manager {
         // Load all the old options, so we're not fucking people over.
         final CommentedFileConfiguration newConfig = this.rosePlugin.getManager(ConfigurationManager.class).getConfig();
 
-        this.getRemappedOptions().forEach((s, s2) -> newConfig.set(s2, this.configOptions.get(s)));
+        // load all the old config options.
+        for (String path : this.oldConfig.getKeys(false)) {
+            final String remappedPath = this.getRemappedOptions().get(path);
+            if (remappedPath != null)
+                this.configOptions.put(remappedPath, this.oldConfig.get(path));
+        }
 
+        this.getRemappedOptions().forEach((s, s2) -> newConfig.set(s2, this.configOptions.get(s)));
         newConfig.save();
 
         // Convert tags.

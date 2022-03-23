@@ -36,7 +36,6 @@ public class TagsManager extends Manager {
 
     private boolean removeInaccessible;
     private CommentedFileConfiguration config;
-    private CommentedConfigurationSection section;
 
     public TagsManager(RosePlugin plugin) {
         super(plugin);
@@ -57,11 +56,15 @@ public class TagsManager extends Manager {
 
         this.config = CommentedFileConfiguration.loadConfiguration(file);
         if (newFile) {
-            this.getDefaultTags().forEach((s, o) -> this.config.set("tags." + s, o));
+            this.getDefaultTags().forEach((path, object) -> {
+                if (path.startsWith("#"))
+                    this.config.addPathedComments(path, object.toString());
+                else
+                    this.config.set(path, object);
+            });
+
             this.config.save();
         }
-
-        this.section = this.config.getConfigurationSection("tags");
 
         // Load plugin tags.
         this.loadTags();
@@ -80,22 +83,28 @@ public class TagsManager extends Manager {
         this.config.reloadConfig();
 
         this.cachedTags.clear();
-        for (String key : section.getKeys(false)) {
-            String name = section.getString(key + ".name");
-            String tag = section.getString(key + ".tag");
+        CommentedConfigurationSection tagSection = this.config.getConfigurationSection("tags");
+        if (tagSection == null) {
+            this.rosePlugin.getLogger().severe("Couldn't find tags configuration section.");
+            return;
+        }
+
+        for (String key : tagSection.getKeys(false)) {
+            String name = tagSection.getString(key + ".name");
+            String tag = tagSection.getString(key + ".tag");
             final Tag obj = new Tag(key, name, tag);
-            List<String> description = section.get(key + ".description") instanceof String
-                    ? Collections.singletonList(section.getString(key + ".description"))
-                    : section.getStringList(key + ".description");
+            List<String> description = tagSection.get(key + ".description") instanceof String
+                    ? Collections.singletonList(tagSection.getString(key + ".description"))
+                    : tagSection.getStringList(key + ".description");
 
             obj.setDescription(description);
-            if (section.getString(key + ".permission") != null)
-                obj.setPermission(section.getString(key + ".permission"));
+            if (tagSection.getString(key + ".permission") != null)
+                obj.setPermission(tagSection.getString(key + ".permission"));
 
-            if (section.getString(key + ".order") != null)
-                obj.setOrder(section.getInt(key + ".order"));
+            if (tagSection.getString(key + ".order") != null)
+                obj.setOrder(tagSection.getInt(key + ".order"));
 
-            final String iconName = section.getString(key + ".icon");
+            final String iconName = tagSection.getString(key + ".icon");
             if (iconName != null)
                 obj.setIcon(Material.matchMaterial(iconName) != null ? Material.matchMaterial(iconName) : Material.NAME_TAG);
 
@@ -356,36 +365,37 @@ public class TagsManager extends Manager {
         return new LinkedHashMap<String, Object>() {{
 
             // First Tag
-            this.put("eternaltags.name", "EternalTags");
-            this.put("eternaltags.tag", "&7[#99ff99&lEternalTags&7]");
-            this.put("eternaltags.description", Collections.singletonList("The default EternalTags Tag."));
-            this.put("eternaltags.permission", "eternaltags.tag.eternaltags");
-            this.put("eternaltags.order", 1);
-            this.put("eternaltags.icon", "NAME_TAG");
+            this.put("#0", "Configure the plugin tags here.");
+            this.put("tags.eternaltags.name", "EternalTags");
+            this.put("tags.eternaltags.tag", "&7[#99ff99&lEternalTags&7]");
+            this.put("tags.eternaltags.description", Collections.singletonList("The default EternalTags Tag."));
+            this.put("tags.eternaltags.permission", "eternaltags.tag.eternaltags");
+            this.put("tags.eternaltags.order", 1);
+            this.put("tags.eternaltags.icon", "NAME_TAG");
 
             // Gradient Tag
-            this.put("gradient.name", "Gradient");
-            this.put("gradient.tag", "&7[<g:#ED213A:#93291E>Gradient&7]");
-            this.put("gradient.description", Collections.singletonList("An automagically formatted gradient."));
-            this.put("gradient.permission", "eternaltags.tag.gradient");
+            this.put("tags.gradient.name", "Gradient");
+            this.put("tags.gradient.tag", "&7[<g:#ED213A:#93291E>Gradient&7]");
+            this.put("tags.gradient.description", Collections.singletonList("An automagically formatted gradient."));
+            this.put("tags.gradient.permission", "eternaltags.tag.gradient");
 
             // Rainbow Tag.
-            this.put("rainbow.name", "Rainbow");
-            this.put("rainbow.tag", "&7[<r:0.7>EternalTags&7]");
-            this.put("rainbow.description", Collections.singletonList("An automagically formatted rainbow."));
-            this.put("rainbow.permission", "eternaltags.tag.rainbow");
+            this.put("tags.rainbow.name", "Rainbow");
+            this.put("tags.rainbow.tag", "&7[<r:0.7>EternalTags&7]");
+            this.put("tags.rainbow.description", Collections.singletonList("An automagically formatted rainbow."));
+            this.put("tags.rainbow.permission", "eternaltags.tag.rainbow");
 
             // Animated Rainbow Tag
-            this.put("automatic-rainbow.name", "Animated Rainbow");
-            this.put("automatic-rainbow.tag", "&7[<r#15:0.7>Rainbow&7]");
-            this.put("automatic-rainbow.description", Arrays.asList("An rainbow tag that", "will update with every", "message that you send."));
-            this.put("automatic-rainbow.permission", "eternaltags.tag.animated-rainbow");
+            this.put("tags.automatic-rainbow.name", "Animated Rainbow");
+            this.put("tags.automatic-rainbow.tag", "&7[<r#15:0.7>Rainbow&7]");
+            this.put("tags.automatic-rainbow.description", Arrays.asList("An rainbow tag that", "will update with every", "message that you send."));
+            this.put("tags.automatic-rainbow.permission", "eternaltags.tag.animated-rainbow");
 
             // Animated Gradient Tag
-            this.put("automatic-gradient.name", "Animated Gradient");
-            this.put("automatic-gradient.tag", "&7[<g#15:#ED213A:#93291E>Gradient&7]");
-            this.put("automatic-gradient.description", Arrays.asList("A gradient tag that", "will update with every", "message that you send."));
-            this.put("automatic-gradient.permission", "eternaltags.tag.animated-gradient");
+            this.put("tags.automatic-gradient.name", "Animated Gradient");
+            this.put("tags.automatic-gradient.tag", "&7[<g#15:#ED213A:#93291E>Gradient&7]");
+            this.put("tags.automatic-gradient.description", Arrays.asList("A gradient tag that", "will update with every", "message that you send."));
+            this.put("tags.automatic-gradient.permission", "eternaltags.tag.animated-gradient");
         }};
     }
 

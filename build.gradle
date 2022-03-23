@@ -4,7 +4,7 @@ plugins {
 }
 
 group "xyz.oribuin"
-version "1.1.0"
+version "1.1.0-pre2"
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 
@@ -29,8 +29,8 @@ dependencies {
     compileOnly "me.clip:placeholderapi:2.10.9"
 
     implementation 'com.zaxxer:HikariCP:5.0.1'
-    implementation 'dev.rosewood:rosegarden:1.1.0.24-SNAPSHOT'
-    implementation 'xyz.oribuin:ori-gui:1.0.8'
+    implementation 'dev.rosewood:rosegarden:1.1.0.29-SNAPSHOT'
+    implementation 'xyz.oribuin:ori-gui:1.0.11'
 }
 
 shadowJar {

@@ -4,24 +4,18 @@ import java.util.Arrays;
 import java.util.Optional;
 
 public enum ValidPlugin {
-    ALFONSOTAGS("AlfonsoTags", AlfonsoConversion.class),
-    CIFYTAGS("CIFYTags", CIFYConversion.class),
-    DELUXETAGS("DeluxeTags", DeluxeConversion.class);
+    ALONSOTAGS("AlonsoTags"),
+    CIFYTAGS("CIFYTags"),
+    DELUXETAGS("DeluxeTags");
 
     private final String display;
-    private final Class<? extends ConversionPlugin> conversionClass;
 
-    ValidPlugin(String display, Class<? extends ConversionPlugin> conversionClass) {
+    ValidPlugin(String display) {
         this.display = display;
-        this.conversionClass = conversionClass;
     }
 
     public String getDisplay() {
         return display;
-    }
-
-    public Class<? extends ConversionPlugin> getConversionClass() {
-        return conversionClass;
     }
 
     /**

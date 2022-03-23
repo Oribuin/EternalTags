@@ -1,4 +1,4 @@
-package xyz.oribuin.eternaltags.command.disabled;
+package xyz.oribuin.eternaltags.command.command;
 
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.command.framework.CommandContext;

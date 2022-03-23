@@ -14,11 +14,11 @@ import java.util.Map;
 import java.util.Optional;
 
 // God this plugin sucks to configure in terms of config readability
-public class AlfonsoConversion extends ConversionPlugin {
+public class AlonsoConversion extends ConversionPlugin {
 
     private final TagsManager manager;
 
-    public AlfonsoConversion(RosePlugin plugin) {
+    public AlonsoConversion(RosePlugin plugin) {
         super(plugin);
         this.manager = this.getPlugin().getManager(TagsManager.class);
     }
@@ -26,8 +26,10 @@ public class AlfonsoConversion extends ConversionPlugin {
     @Override
     public Map<String, Tag> getPluginTags() {
         final Map<String, Tag> convertedTags = new HashMap<>();
+
         final FileConfiguration config = YamlConfiguration.loadConfiguration(this.getTagsFile());
         final ConfigurationSection section = config.getConfigurationSection("Tags");
+
         if (section == null)
             return convertedTags;
 
@@ -60,7 +62,7 @@ public class AlfonsoConversion extends ConversionPlugin {
 
     @Override
     public String getPluginName() {
-        return "AlfonsoTags";
+        return "AlonsoTags";
     }
 
     @Override

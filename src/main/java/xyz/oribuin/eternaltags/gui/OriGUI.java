@@ -5,14 +5,17 @@ import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import me.clip.placeholderapi.PlaceholderAPI;
+import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.oribuin.eternaltags.obj.Tag;
+import xyz.oribuin.eternaltags.util.BukkitColour;
 import xyz.oribuin.eternaltags.util.TagsUtil;
 import xyz.oribuin.gui.Item;
 import xyz.oribuin.gui.PaginatedGui;
@@ -47,7 +50,7 @@ public abstract class OriGUI {
      * @return The map of required values
      */
     @NotNull
-    public abstract Map<String, Object> getRequiredValues();
+    public abstract Map<String, Object> getDefaultValues();
 
     /**
      * Get the amount of rows for the gui.
@@ -165,6 +168,13 @@ public abstract class OriGUI {
         List<String> lore = this.get(path + ".lore", new ArrayList<>());
         lore = lore.stream().map(s -> this.format(viewer, s, plc)).collect(Collectors.toList());
 
+        ItemFlag[] flags = new ItemFlag[]{};
+        if (this.get(path + ".flags", null) != null)
+            flags = this.get(path + ".flags", new ArrayList<String>()).stream()
+                    .map(String::toLowerCase)
+                    .map(ItemFlag::valueOf)
+                    .toArray(ItemFlag[]::new);
+
         return new Item.Builder(material)
                 .setName(this.format(viewer, this.get(path + ".name", null), plc))
                 .setLore(lore)
@@ -172,6 +182,7 @@ public abstract class OriGUI {
                 .glow(this.get(path + ".glow", false))
                 .setTexture(this.get(path + ".texture", null))
                 .setModel(this.get(path + ".model-data", -1))
+                .setFlags(flags)
                 .create();
     }
 
@@ -198,6 +209,22 @@ public abstract class OriGUI {
         List<String> lore = this.get(path + ".lore", new ArrayList<>());
         lore = lore.stream().map(s -> this.format(viewer, s, placeholders)).collect(Collectors.toList());
 
+        ItemFlag[] flags = new ItemFlag[]{};
+        if (this.get(path + ".flags", null) != null)
+            flags = this.get(path + ".flags", new ArrayList<String>()).stream()
+                    .map(String::toLowerCase)
+                    .map(ItemFlag::valueOf)
+                    .toArray(ItemFlag[]::new);
+
+        String potionColor = this.get(path + ".potion-color", null);
+        Color color = null;
+        if (potionColor != null) {
+            if (potionColor.startsWith("#"))
+                color = this.hexToColor(potionColor);
+            else
+                color = BukkitColour.match(potionColor).orElse(BukkitColour.AQUA).get();
+        }
+
         return new Item.Builder(material)
                 .setName(this.format(viewer, this.get(path + ".name", null), placeholders))
                 .setLore(lore)
@@ -205,6 +232,8 @@ public abstract class OriGUI {
                 .glow(this.get(path + ".glow", false))
                 .setTexture(this.get(path + ".texture", null))
                 .setModel(this.get(path + ".model-data", -1))
+                .setFlags(flags)
+                .setPotionColor(color)
                 .create();
     }
 
@@ -231,7 +260,7 @@ public abstract class OriGUI {
      */
     public final OriGUI loadConfiguration() {
         final File folder = new File(this.rosePlugin.getDataFolder(), "menus");
-
+        boolean newFile = false;
         if (!folder.exists())
             folder.mkdir();
 
@@ -239,19 +268,21 @@ public abstract class OriGUI {
         try {
             if (!file.exists()) {
                 file.createNewFile();
+                newFile = true;
             }
         } catch (IOException ex) {
             ex.printStackTrace();
         }
 
         this.config = CommentedFileConfiguration.loadConfiguration(file);
-        this.getRequiredValues().forEach((path, object) -> {
-
-            if (path.startsWith("#"))
-                this.config.addPathedComments(path, object.toString());
-            else if (this.config.get(path) == null)
-                this.config.set(path, object);
-        });
+        if (newFile) {
+            this.getDefaultValues().forEach((path, object) -> {
+                if (path.startsWith("#"))
+                    this.config.addPathedComments(path, object.toString());
+                else
+                    this.config.set(path, object);
+            });
+        }
 
         this.config.save();
         return this;
@@ -322,6 +353,26 @@ public abstract class OriGUI {
                 .addPlaceholder("next", gui.getNextPage())
                 .addPlaceholder("total", gui.getTotalPages())
                 .build();
+    }
+
+    /**
+     * Convert a hex code to a color
+     *
+     * @param hex The hex code
+     * @return The bukkit color
+     */
+    private Color hexToColor(String hex) {
+        if (hex == null)
+            return Color.AQUA;
+
+        java.awt.Color hexColor;
+        try {
+            hexColor = java.awt.Color.decode(hex);
+        } catch (NumberFormatException ex) {
+            return Color.AQUA;
+        }
+
+        return Color.fromRGB(hexColor.getRed(), hexColor.getGreen(), hexColor.getBlue());
     }
 
 
