@@ -27,7 +27,8 @@ repositories {
 dependencies {
     compileOnly 'org.spigotmc:spigot:1.17'
     compileOnly "me.clip:placeholderapi:2.10.9"
-
+    compileOnly 'org.jetbrains:annotations:23.0.0'
+    
     implementation 'com.zaxxer:HikariCP:5.0.1'
     implementation 'dev.rosewood:rosegarden:1.1.0.29-SNAPSHOT'
     implementation 'xyz.oribuin:ori-gui:1.0.11'
