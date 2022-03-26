@@ -65,6 +65,17 @@ public class ConversionManager extends Manager {
                 this.configOptions.put(remappedPath, this.oldConfig.get(path));
         }
 
+        // Transfer over mysql settings.
+        final ConfigurationSection mysqlSection = this.oldConfig.getConfigurationSection("mysql");
+        if (mysqlSection != null) {
+            for (String path : mysqlSection.getKeys(false)) {
+                final String remappedPath = this.getRemappedOptions().get("mysql." + path);
+                if (remappedPath != null) {
+                    this.configOptions.put(remappedPath, mysqlSection.get(path));
+                }
+            }
+        }
+
         this.getRemappedOptions().forEach((s, s2) -> newConfig.set(s2, this.configOptions.get(s)));
         newConfig.save();
 
