@@ -179,10 +179,10 @@ public abstract class OriGUI {
                 .setName(this.format(viewer, this.get(path + ".name", null), plc))
                 .setLore(lore)
                 .setAmount(Math.max(this.get(path + ".amount", 1), 1))
+                .setFlags(flags)
                 .glow(this.get(path + ".glow", false))
                 .setTexture(this.get(path + ".texture", null))
                 .setModel(this.get(path + ".model-data", -1))
-                .setFlags(flags)
                 .create();
     }
 
@@ -229,10 +229,10 @@ public abstract class OriGUI {
                 .setName(this.format(viewer, this.get(path + ".name", null), placeholders))
                 .setLore(lore)
                 .setAmount(Math.max(this.get(path + ".amount", 1), 1))
+                .setFlags(flags)
                 .glow(this.get(path + ".glow", false))
                 .setTexture(this.get(path + ".texture", null))
                 .setModel(this.get(path + ".model-data", -1))
-                .setFlags(flags)
                 .setPotionColor(color)
                 .create();
     }

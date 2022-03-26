@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
@@ -316,8 +315,12 @@ public class TagsManager extends Manager {
         if (defaultTagID == null || defaultTagID.equalsIgnoreCase("none"))
             return Optional.empty();
 
-        if (defaultTagID.equalsIgnoreCase("random") && player != null)
-            return this.getRandomTag(player);
+        if (defaultTagID.equalsIgnoreCase("random") && player != null) {
+            Optional<Tag> randomTag = this.getRandomTag(player);
+            randomTag.ifPresent(tag -> this.setTag(player.getUniqueId(), tag));
+
+            return randomTag;
+        }
 
         return this.matchTagFromID(defaultTagID);
     }

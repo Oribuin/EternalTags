@@ -10,7 +10,7 @@ public class ConfigurationManager extends AbstractConfigurationManager {
 
     public enum Setting implements RoseSetting {
         // Tag Settings
-        DEFAULT_TAG("default-tag", "none", "The tag that will show when player does not have an active tag.", "Set to 'none' to disable."),
+        DEFAULT_TAG("default-tag", "none", "The tag that will show when player does not have an active tag.", "Set to 'none' to disable.", "Set to 'random' to apply a random tag"),
         FORMATTED_PLACEHOLDER("formatted-placeholder", "None", "The placeholder that will show when the player has no active tag."),
         REMOVE_TAGS("remove-inaccessible-tags", false, "Should a tag be automatically removed if the player doesn't have permission to use it?");
 
