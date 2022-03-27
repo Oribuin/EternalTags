@@ -8,8 +8,8 @@ import java.util.List;
 public class Tag {
 
     private final String id;
-    private final String name;
-    private final String tag;
+    private String name;
+    private String tag;
     private String permission;
     private List<String> description;
     private int order;
@@ -33,8 +33,16 @@ public class Tag {
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getTag() {
         return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
     }
 
     public String getPermission() {

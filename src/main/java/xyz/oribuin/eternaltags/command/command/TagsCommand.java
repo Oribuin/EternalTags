@@ -20,12 +20,14 @@ public class TagsCommand extends BaseCommand {
         final LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
 
         // Make sure the sender is a player.
-        if (!(context.getSender() instanceof Player)) {
+        if (!(context.getSender() instanceof Player player)) {
             locale.sendMessage(context.getSender(), "only-player");
             return;
         }
 
-        this.rosePlugin.getManager(MenuManager.class).matchMenu("tags-gui").ifPresent(oriGUI -> oriGUI.createGUI((Player) context.getSender(), null));
+        this.rosePlugin.getManager(MenuManager.class).matchMenu("tags-gui")
+                .ifPresent(oriGUI -> oriGUI.createGUI(player, null));
+
     }
 
     @Override

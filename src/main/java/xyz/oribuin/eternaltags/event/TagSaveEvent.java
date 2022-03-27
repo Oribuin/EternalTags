@@ -5,13 +5,13 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import xyz.oribuin.eternaltags.obj.Tag;
 
-public class TagCreateEvent extends Event implements Cancellable {
+public class TagSaveEvent extends Event implements Cancellable {
 
     private static final HandlerList list = new HandlerList();
     private final Tag tag;
     private boolean cancelled = false;
 
-    public TagCreateEvent(Tag tag) {
+    public TagSaveEvent(Tag tag) {
         super(false);
         this.tag = tag;
     }

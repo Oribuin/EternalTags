@@ -19,7 +19,7 @@ public class EnglishLocale implements Locale {
 
     @Override
     public Map<String, Object> getDefaultLocaleValues() {
-        return new LinkedHashMap<String, Object>() {{
+        return new LinkedHashMap<>() {{
             this.put("#0", "Plugin Message Prefix");
             this.put("prefix", "<g:#00B4DB:#0083B0>&lEternalTags &8| &f");
 
@@ -41,12 +41,12 @@ public class EnglishLocale implements Locale {
 
             this.put("#4", "Create Command");
             this.put("command-create-description", "Creates a new tag ingame.");
-            this.put("command-create-created", "You have successfully created a new tag, [%tag%&f]!");
+            this.put("command-create-created", "You have successfully created a new tag, %tag%&f!");
             this.put("command-create-tag-exists", "This tag already exists.");
 
             this.put("#5", "Delete Command");
             this.put("command-delete-description", "Deletes a tag from the config.");
-            this.put("command-delete-deleted", "You have successfully deleted the tag, [%tag%]&f!");
+            this.put("command-delete-deleted", "You have successfully deleted the tag, %tag%&f!");
 
             this.put("#6", "Favorite Command");
             this.put("command-favorite-description", "Toggles a tag as a favourite.");
@@ -79,15 +79,29 @@ public class EnglishLocale implements Locale {
             this.put("command-help-title", "&fAvailable Commands:");
             this.put("command-help-description", "Displays the help menu.");
             this.put("command-help-list-description", "&8 - #00B4DB/%cmd% %subcmd% %args% &7- %desc%");
+            this.put("command-help-list-description-no-args", "&8 - #00B4DB/%cmd% %subcmd% &7- %desc%");
 
-            this.put("#13", "Plugin Error Messages");
+            this.put("#13", "Edit Command");
+            this.put("command-edit-description", "Edit any tag's message");
+            this.put("command-edit-edited", "You have changed the tag, %tag%&f!");
+
+//            this.put("#13", "List Command");
+//            this.put("command-list-description", "Shows all your active tags in the chat.");
+//            this.put("command-list-header", "View all your tags in the chat");
+//            this.put("command-list-format", "&8- %tag% &7- %description%");
+//            this.put("command-list-left-arrow", "#00B4DB«  &f");
+//            this.put("command-list-separator", "&f(#00B4DB%page%&f/#00B4DB%total%&f)");
+//            this.put("command-list-right-arrow", "&f  #00B4DB«");
+
+            this.put("#14", "Plugin Error Messages");
             this.put("no-tags", "You currently do not own any tags.");
             this.put("tag-doesnt-exist", "The tag you have provided doesn't exist.");
 
-            this.put("#14", "Argument Handler Error Messages");
+            this.put("#15", "Argument Handler Error Messages");
             this.put("argument-handler-player", "Please provide an online username.");
             this.put("argument-handler-plugins", "Please provide a valid input for valid plugins.");
-            this.put("argument-handler-tags", "Please provide a valid input for a tag.");
+            this.put("argument-handler-tags", "%input% is not a valid tag id.");
+            this.put("argument-handler-edit-option", "Please provide a valid tag value option.");
         }};
     }
 }

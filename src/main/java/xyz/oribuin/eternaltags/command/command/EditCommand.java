@@ -5,56 +5,44 @@ import dev.rosewood.rosegarden.command.framework.CommandContext;
 import dev.rosewood.rosegarden.command.framework.RoseCommand;
 import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
-import dev.rosewood.rosegarden.command.framework.types.GreedyString;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
-import org.bukkit.command.CommandSender;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
+import xyz.oribuin.eternaltags.obj.EditOption;
 import xyz.oribuin.eternaltags.obj.Tag;
 
 import java.util.Collections;
 
-public class CreateCommand extends RoseCommand {
+public class EditCommand extends RoseCommand {
 
-    public CreateCommand(RosePlugin rosePlugin, RoseCommandWrapper parent) {
+    public EditCommand(RosePlugin rosePlugin, RoseCommandWrapper parent) {
         super(rosePlugin, parent);
     }
 
     @RoseExecutable
-    public void execute(CommandContext context, String name, GreedyString tag) {
+    public void execute(CommandContext context, Tag tag, EditOption option, String value) {
         final LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
         final TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
-        CommandSender sender = context.getSender();
 
-        if (manager.checkTagExists(name)) {
-            locale.sendMessage(sender, "command-create-tag-exists");
-            return;
-        }
+        option.getAction().accept(tag, value);
 
-        final String id = name.toLowerCase().replace(".", "_");
-
-        Tag newTag = new Tag(id , name, tag.get());
-        newTag.setDescription(Collections.singletonList("None"));
-
-        if (manager.saveTag(newTag)) {
-            locale.sendMessage(sender, "command-create-created", StringPlaceholders.single("tag", newTag.getTag()));
-        }
+        manager.saveTag(tag);
+        manager.updateActiveTag(tag);
+        locale.sendMessage(context.getSender(), "command-edit-edited", StringPlaceholders.single("tag", tag.getTag()));
     }
-
 
     @Override
     protected String getDefaultName() {
-        return "create";
+        return "edit";
     }
 
     @Override
     public String getDescriptionKey() {
-        return "command-create-description";
+        return "command-edit-description";
     }
 
     @Override
     public String getRequiredPermission() {
-        return "eternaltags.create";
+        return "eternaltags.edit";
     }
-
 }

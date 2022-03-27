@@ -30,16 +30,11 @@ public class PluginConversionManager extends Manager {
      * @return The conversion function.
      */
     public ConversionPlugin getPlugin(ValidPlugin plugin) {
-        switch (plugin) {
-            case DELUXETAGS:
-                return new DeluxeConversion(this.rosePlugin);
-            case CIFYTAGS:
-                return new CIFYConversion(this.rosePlugin);
-            case ALONSOTAGS:
-                return new AlonsoConversion(this.rosePlugin);
-            default:
-                return null;
-        }
+        return switch (plugin) {
+            case DELUXETAGS -> new DeluxeConversion(this.rosePlugin);
+            case CIFYTAGS -> new CIFYConversion(this.rosePlugin);
+            case ALONSOTAGS -> new AlonsoConversion(this.rosePlugin);
+        };
     }
 
     /**

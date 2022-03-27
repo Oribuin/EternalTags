@@ -5,25 +5,26 @@ import dev.rosewood.rosegarden.command.framework.ArgumentParser;
 import dev.rosewood.rosegarden.command.framework.RoseCommandArgumentHandler;
 import dev.rosewood.rosegarden.command.framework.RoseCommandArgumentInfo;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
-import xyz.oribuin.eternaltags.conversion.ValidPlugin;
+import org.apache.commons.lang.StringUtils;
+import xyz.oribuin.eternaltags.obj.EditOption;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class PluginArgumentHandler extends RoseCommandArgumentHandler<ValidPlugin> {
+public class TagOptionArgumentHandler extends RoseCommandArgumentHandler<EditOption> {
 
-    public PluginArgumentHandler(RosePlugin rosePlugin) {
-        super(rosePlugin, ValidPlugin.class);
+    public TagOptionArgumentHandler(RosePlugin rosePlugin) {
+        super(rosePlugin, EditOption.class);
     }
 
     @Override
-    protected ValidPlugin handleInternal(RoseCommandArgumentInfo argumentInfo, ArgumentParser argumentParser) throws HandledArgumentException {
+    protected EditOption handleInternal(RoseCommandArgumentInfo argumentInfo, ArgumentParser argumentParser) throws HandledArgumentException {
         String input = argumentParser.next();
-        Optional<ValidPlugin> value = ValidPlugin.match(input);
+        Optional<EditOption> value = EditOption.match(input);
         if (value.isEmpty())
-            throw new HandledArgumentException("argument-handler-plugins", StringPlaceholders.single("input", input));
+            throw new HandledArgumentException("argument-handler-edit-option", StringPlaceholders.single("input", input));
 
         return value.get();
     }
@@ -32,9 +33,9 @@ public class PluginArgumentHandler extends RoseCommandArgumentHandler<ValidPlugi
     protected List<String> suggestInternal(RoseCommandArgumentInfo argumentInfo, ArgumentParser argumentParser) {
         argumentParser.next();
 
-        return Arrays.stream(ValidPlugin.values())
-                .map(ValidPlugin::getDisplay)
+        return Arrays.stream(EditOption.values())
+                .map(EditOption::name)
+                .map(String::toLowerCase)
                 .collect(Collectors.toList());
-
     }
 }

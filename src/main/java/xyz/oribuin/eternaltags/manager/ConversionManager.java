@@ -25,12 +25,15 @@ public class ConversionManager extends Manager {
 
     public ConversionManager(RosePlugin rosePlugin) {
         super(rosePlugin);
+
     }
 
     public void reload() {
         this.rosePlugin.getLogger().info("Checking if plugin needs to be converted.");
-        if (!this.shouldConvert())
+        if (!this.shouldConvert()) {
+            this.rosePlugin.getLogger().info("Plugin files are up to date!");
             return;
+        }
 
         this.rosePlugin.getLogger().warning("Converting old EternalTags configs");
         File file = new File(this.rosePlugin.getDataFolder(), "config.yml");
@@ -47,6 +50,7 @@ public class ConversionManager extends Manager {
         final CommentedFileConfiguration newConfig = manager.getConfig();
         this.configOptions.forEach(newConfig::set);
         newConfig.save();
+
     }
 
     @Override
@@ -104,11 +108,13 @@ public class ConversionManager extends Manager {
             this.loadedTags.put(key, tag);
         }
 
-        this.rosePlugin.getManager(TagsManager.class).saveTags(this.loadedTags);
+        final TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
+        manager.wipeTags();
+        manager.saveTags(this.loadedTags);
     }
 
     public Map<String, String> getRemappedOptions() {
-        return new LinkedHashMap<String, String>() {{
+        return new LinkedHashMap<>() {{
             this.put("default-tag", "default-tag");
             this.put("formatted_placeholder", "formatted-placeholder");
             this.put("remove-inaccessible-tags", "remove-inaccessible-tags");

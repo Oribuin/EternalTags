@@ -8,8 +8,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import xyz.oribuin.eternaltags.event.TagCreateEvent;
 import xyz.oribuin.eternaltags.event.TagDeleteEvent;
+import xyz.oribuin.eternaltags.event.TagSaveEvent;
 import xyz.oribuin.eternaltags.obj.Tag;
 
 import java.io.File;
@@ -117,21 +117,34 @@ public class TagsManager extends Manager {
      * @param tag The tag being saved.
      */
     public boolean saveTag(Tag tag) {
-        final String id = tag.getId().toLowerCase().replace(".", "_");
-
-        final TagCreateEvent event = new TagCreateEvent(tag);
+        final TagSaveEvent event = new TagSaveEvent(tag);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled())
             return false;
 
-        this.cachedTags.put(id, tag);
-        this.config.set("tags." + id + ".name", tag.getName());
-        this.config.set("tags." + id + ".tag", tag.getTag());
-        this.config.set("tags." + id + ".description", tag.getDescription());
-        this.config.set("tags." + id + ".permission", tag.getPermission());
-        this.config.set("tags." + id + ".order", tag.getOrder());
+        this.cachedTags.put(tag.getId(), tag);
+        this.config.set("tags." + tag.getId() + ".name", tag.getName());
+        this.config.set("tags." + tag.getId() + ".tag", tag.getTag());
+        this.config.set("tags." + tag.getId() + ".description", tag.getDescription());
+        this.config.set("tags." + tag.getId() + ".permission", tag.getPermission());
+        this.config.set("tags." + tag.getId() + ".order", tag.getOrder());
         this.config.save();
+
         return true;
+    }
+
+    /**
+     * Update every player's with a specific tag with a new one
+     *
+     * @param tag The tag
+     */
+    public void updateActiveTag(Tag tag) {
+        final DataManager data = this.rosePlugin.getManager(DataManager.class);
+
+        for (Map.Entry<UUID, Tag> entry : data.getCachedUsers().entrySet()) {
+            if (entry.getValue().getId().equalsIgnoreCase(tag.getId()))
+                data.getCachedUsers().put(entry.getKey(), tag);
+        }
     }
 
     /**
@@ -139,8 +152,8 @@ public class TagsManager extends Manager {
      *
      * @param tag The tag being deleted.
      */
-    public boolean deleteTag(Tag tag) {
-        return this.deleteTag(tag.getId().toLowerCase());
+    public void deleteTag(Tag tag) {
+        this.deleteTag(tag.getId().toLowerCase());
     }
 
     /**
@@ -165,20 +178,33 @@ public class TagsManager extends Manager {
      *
      * @param id The id of the tag.
      */
-    public boolean deleteTag(String id) {
+    public void deleteTag(String id) {
         Optional<Tag> optional = this.matchTagFromID(id);
-        if (!optional.isPresent())
-            return false;
+        if (optional.isEmpty())
+            return;
 
         final TagDeleteEvent event = new TagDeleteEvent(optional.get());
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled())
-            return false;
+            return;
+
+        // remove anyone with the tag active.
+        this.rosePlugin.getManager(DataManager.class).deleteTag(id);
 
         this.cachedTags.remove(id);
         this.config.set("tags." + id, null);
         this.config.save();
-        return true;
+    }
+
+    /**
+     * Wipes all the tags from the tags.yml
+     */
+    public void wipeTags() {
+        CompletableFuture.runAsync(() -> this.cachedTags.forEach((id, tag)
+                -> this.config.set("tags." + id, null))).thenRun(()
+                -> this.config.save());
+
+        this.cachedTags.clear();
     }
 
     /**
@@ -365,7 +391,7 @@ public class TagsManager extends Manager {
      * @return A map of all the original tags.
      */
     public @NotNull Map<String, Object> getDefaultTags() {
-        return new LinkedHashMap<String, Object>() {{
+        return new LinkedHashMap<>() {{
 
             // First Tag
             this.put("#0", "Configure the plugin tags here.");
@@ -396,7 +422,7 @@ public class TagsManager extends Manager {
 
             // Animated Gradient Tag
             this.put("tags.automatic-gradient.name", "Animated Gradient");
-            this.put("tags.automatic-gradient.tag", "&7[<g#15:#ED213A:#93291E>Gradient&7]");
+            this.put("tags.automatic-gradient.tag", "&7[<g#10:#12c2e9:#c471ed:#f64f59>Gradient&7]");
             this.put("tags.automatic-gradient.description", Arrays.asList("A gradient tag that", "will update with every", "message that you send."));
             this.put("tags.automatic-gradient.permission", "eternaltags.tag.animated-gradient");
         }};

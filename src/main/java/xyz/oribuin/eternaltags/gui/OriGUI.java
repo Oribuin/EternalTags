@@ -14,9 +14,9 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.oribuin.eternaltags.manager.ConfigurationManager;
 import xyz.oribuin.eternaltags.obj.Tag;
-import xyz.oribuin.eternaltags.util.BukkitColour;
-import xyz.oribuin.eternaltags.util.TagsUtil;
+import xyz.oribuin.eternaltags.obj.BukkitColour;
 import xyz.oribuin.gui.Item;
 import xyz.oribuin.gui.PaginatedGui;
 
@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -166,7 +167,8 @@ public abstract class OriGUI {
         }
 
         List<String> lore = this.get(path + ".lore", new ArrayList<>());
-        lore = lore.stream().map(s -> this.format(viewer, s, plc)).collect(Collectors.toList());
+        lore = this.getTagLore(viewer, tag, lore);
+//        lore = lore.stream().map(s -> this.format(viewer, s, plc)).collect(Collectors.toList());
 
         ItemFlag[] flags = new ItemFlag[]{};
         if (this.get(path + ".flags", null) != null)
@@ -207,7 +209,8 @@ public abstract class OriGUI {
             return null;
 
         List<String> lore = this.get(path + ".lore", new ArrayList<>());
-        lore = lore.stream().map(s -> this.format(viewer, s, placeholders)).collect(Collectors.toList());
+        lore = lore.stream().map(s -> this.format(viewer, s, placeholders))
+                .collect(Collectors.toList());
 
         ItemFlag[] flags = new ItemFlag[]{};
         if (this.get(path + ".flags", null) != null)
@@ -258,7 +261,7 @@ public abstract class OriGUI {
     /**
      * Load the plugin configuration files.
      */
-    public final OriGUI loadConfiguration() {
+    public final void loadConfiguration() {
         final File folder = new File(this.rosePlugin.getDataFolder(), "menus");
         boolean newFile = false;
         if (!folder.exists())
@@ -285,7 +288,6 @@ public abstract class OriGUI {
         }
 
         this.config.save();
-        return this;
     }
 
     /**
@@ -337,7 +339,7 @@ public abstract class OriGUI {
         builder.addPlaceholder("tag", HexUtils.colorify(tag.getTag()));
         builder.addPlaceholder("id", tag.getId());
         builder.addPlaceholder("name", tag.getName());
-        builder.addPlaceholder("description", TagsUtil.formatList(tag.getDescription()));
+//        builder.addPlaceholder("description", TagsUtil.formatList(tag.getDescription())); // Unused
         return builder.build();
     }
 
@@ -351,7 +353,7 @@ public abstract class OriGUI {
         return StringPlaceholders.builder("page", gui.getPage())
                 .addPlaceholder("previous", gui.getPrevPage())
                 .addPlaceholder("next", gui.getNextPage())
-                .addPlaceholder("total", gui.getTotalPages())
+                .addPlaceholder("total", Math.max(gui.getPage(), gui.getTotalPages()))
                 .build();
     }
 
@@ -376,41 +378,37 @@ public abstract class OriGUI {
     }
 
 
-//    /**
-//     * Reformat a stringlist created for tags into supporting multiline description.
-//     *
-//     * @param unformattedList The unformatted list
-//     * @return the new list.
-//     */
-//    public List<String> getTagLore(Player player, Tag tag, List<String> unformattedList) {
-//        final StringPlaceholders plc = this.getTagPlaceholders(tag);
-//        List<String> lore = unformattedList.stream()
-//                .map(s -> this.format(player, s, plc))
-//                .collect(Collectors.toList());
-//
-//        for (int i = 0; i < lore.size(); i++) {
-//            String index = lore.get(i);
-//
-//            if (!index.toLowerCase().contains("%description%"))
-//                continue;
-//
-//            final List<String> desc = new ArrayList<>(tag.getDescription());
-//            if (desc.size() == 0) {
-//                lore.set(i, index.replace("%description%", ConfigurationManager.Setting.FORMATTED_PLACEHOLDER.getString()));
-//                break;
-//            }
-//
-//            lore.set(i, index.replace("%description%", this.format(player, desc.get(0), plc)));
-//            desc.remove(desc.size() > i ? i : desc.size() - 1);
-//
-//            for (int x = i + 1; x < desc.size(); x++) {
-//                final String color = ChatColor.getLastColors(index);
-//                lore.add(x++, color + this.format(player, s, plc));
-//            }
-//
-//            break;
-//        }
-//
-//        return lore;
-//    }
+    /**
+     * Reformat a stringlist created for tags into supporting multiline description.
+     *
+     * @param list unformatted list
+     * @return the new list.
+     */
+    public List<String> getTagLore(Player player, Tag tag, List<String> list) {
+        final StringPlaceholders plc = this.getTagPlaceholders(tag);
+        final List<String> lore = new ArrayList<>(list);
+
+        for (int i = 0; i < lore.size(); i++) {
+            String index = lore.get(i);
+
+            if (!index.toLowerCase().contains("%description%"))
+                continue;
+
+            final List<String> desc = new ArrayList<>(tag.getDescription());
+            if (desc.isEmpty()) {
+                lore.set(i, index.replace("%description%", ConfigurationManager.Setting.FORMATTED_PLACEHOLDER.getString()));
+                break;
+            }
+
+            lore.set(i, index.replace("%description%", desc.get(0)));
+            desc.remove(0);
+
+            final String descriptionFormat = this.get("description-format", " &f| &7");
+            AtomicInteger integer = new AtomicInteger(i);
+            desc.forEach(s -> lore.add(integer.incrementAndGet(), descriptionFormat + s));
+            break;
+        }
+
+        return lore.stream().map(s -> this.format(player, s, plc)).collect(Collectors.toList());
+    }
 }

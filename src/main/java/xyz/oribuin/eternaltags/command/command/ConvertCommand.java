@@ -7,7 +7,6 @@ import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import xyz.oribuin.eternaltags.conversion.ValidPlugin;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.PluginConversionManager;
@@ -33,12 +32,6 @@ public class ConvertCommand extends RoseCommand {
             locale.sendMessage(sender, "command-convert-invalid-plugin", StringPlaceholders.single("options", TagsUtil.formatList(Arrays.stream(ValidPlugin.values())
                     .map(ValidPlugin::getDisplay)
                     .collect(Collectors.toList()))));
-
-            return;
-        }
-
-        if (sender instanceof Player) {
-            locale.sendMessage(sender, "only-console");
             return;
         }
 

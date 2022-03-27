@@ -24,7 +24,7 @@ public class TagsArgumentHandler extends RoseCommandArgumentHandler<Tag> {
     protected Tag handleInternal(RoseCommandArgumentInfo argumentInfo, ArgumentParser argumentParser) throws HandledArgumentException {
         String input = argumentParser.next();
         Optional<Tag> value = this.rosePlugin.getManager(TagsManager.class).matchTagFromID(input.toLowerCase());
-        if (!value.isPresent())
+        if (value.isEmpty())
             throw new HandledArgumentException("argument-handler-tags", StringPlaceholders.single("input", input));
 
         return value.get();

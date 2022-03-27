@@ -1,4 +1,4 @@
-package xyz.oribuin.eternaltags.util;
+package xyz.oribuin.eternaltags.obj;
 
 import org.bukkit.Color;
 

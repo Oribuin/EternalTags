@@ -45,7 +45,7 @@ public class SetCommand extends RoseCommand {
                 return;
 
             manager.setTag(player.getUniqueId(), tag);
-            if (silent != null && !silent) {
+            if (silent == null || !silent) {
                 locale.sendMessage(player, "command-set-changed", StringPlaceholders.single("tag", tag.getTag()));
             }
 
@@ -53,12 +53,10 @@ public class SetCommand extends RoseCommand {
             return;
         }
 
-        if (!(sender instanceof Player)) {
+        if (!(sender instanceof final Player pl)) {
             locale.sendMessage(sender, "only-player");
             return;
         }
-
-        final Player pl = (Player) sender;
 
         if (!pl.hasPermission(tag.getPermission())) {
             locale.sendMessage(pl, "command-set-no-permission");

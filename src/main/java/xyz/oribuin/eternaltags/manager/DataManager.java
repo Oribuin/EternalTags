@@ -45,7 +45,26 @@ public class DataManager extends AbstractDataManager {
                 statement.executeUpdate();
             }
         }));
+    }
 
+    /**
+     * Remove any user from the database with specific tag.
+     *
+     * @param id The tag id being removed.
+     */
+    public void deleteTag(String id) {
+        for (Map.Entry<UUID, Tag> entry : this.cachedUsers.entrySet()) {
+            if (entry.getValue().getId().equalsIgnoreCase(id))
+                this.cachedUsers.remove(entry.getKey());
+        }
+
+        final String query = "DELETE FROM " + this.getTablePrefix() + "tags WHERE tagID = ?";
+        this.async(task -> this.databaseConnector.connect(connection -> {
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setString(1, id);
+                statement.executeUpdate();
+            }
+        }));
     }
 
     /**

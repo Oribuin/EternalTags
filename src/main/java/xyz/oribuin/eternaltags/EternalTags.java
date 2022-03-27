@@ -2,6 +2,7 @@ package xyz.oribuin.eternaltags;
 
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.manager.Manager;
+import dev.rosewood.rosegarden.utils.NMSUtil;
 import xyz.oribuin.eternaltags.hook.Expansion;
 import xyz.oribuin.eternaltags.listener.PlayerListeners;
 import xyz.oribuin.eternaltags.manager.CommandManager;
@@ -35,6 +36,13 @@ public class EternalTags extends RosePlugin {
         // Make sure the server has PlaceholderAPI
         if (!this.getServer().getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             this.getLogger().severe("Please install PlaceholderAPI onto your server to use this plugin.");
+            this.getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
+        // Make sure the server is on MC 1.16
+        if (NMSUtil.getVersionNumber() < 16) {
+            this.getLogger().severe("This plugin only supports 1.16+ Minecraft.");
             this.getServer().getPluginManager().disablePlugin(this);
             return;
         }

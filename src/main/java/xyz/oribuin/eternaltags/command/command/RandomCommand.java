@@ -28,7 +28,7 @@ public class RandomCommand extends RoseCommand {
         Player sender = (Player) context.getSender();
 
         final Optional<Tag> tagOptional = manager.getRandomTag(sender);
-        if (!tagOptional.isPresent()) {
+        if (tagOptional.isEmpty()) {
             locale.sendMessage(sender, "no-tags");
             return;
         }
@@ -39,7 +39,7 @@ public class RandomCommand extends RoseCommand {
             return;
 
         manager.setTag(sender.getUniqueId(), tagOptional.get());
-        locale.sendMessage(sender, "command-set-changed", StringPlaceholders.single("tag", tagOptional.get()));
+        locale.sendMessage(sender, "command-set-changed", StringPlaceholders.single("tag", tagOptional.get().getTag()));
     }
 
 
