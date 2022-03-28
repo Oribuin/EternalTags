@@ -4,6 +4,7 @@ import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.manager.Manager;
 import dev.rosewood.rosegarden.utils.NMSUtil;
 import xyz.oribuin.eternaltags.hook.Expansion;
+import xyz.oribuin.eternaltags.hook.OraxenHook;
 import xyz.oribuin.eternaltags.listener.PlayerListeners;
 import xyz.oribuin.eternaltags.manager.CommandManager;
 import xyz.oribuin.eternaltags.manager.ConfigurationManager;
@@ -55,6 +56,9 @@ public class EternalTags extends RosePlugin {
 
         // Initialize the API
         new EternalAPI(this);
+
+        // Initialize plugin hooks
+        new OraxenHook();
     }
 
     @Override

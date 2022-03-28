@@ -6,10 +6,12 @@ import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import dev.rosewood.rosegarden.manager.Manager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.craftbukkit.libs.org.apache.maven.model.Organization;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.event.TagDeleteEvent;
 import xyz.oribuin.eternaltags.event.TagSaveEvent;
+import xyz.oribuin.eternaltags.hook.OraxenHook;
 import xyz.oribuin.eternaltags.obj.Tag;
 
 import java.io.File;
@@ -106,6 +108,10 @@ public class TagsManager extends Manager {
             final String iconName = tagSection.getString(key + ".icon");
             if (iconName != null)
                 obj.setIcon(Material.matchMaterial(iconName) != null ? Material.matchMaterial(iconName) : Material.NAME_TAG);
+
+            if (OraxenHook.enabled()) {
+                obj.setTag(OraxenHook.parseTag(tag));
+            }
 
             this.cachedTags.put(key, obj);
         }

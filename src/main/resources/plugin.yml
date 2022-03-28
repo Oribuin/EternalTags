@@ -7,3 +7,4 @@ description: A simple tag plugin alternative to other Tag plugins (With Hex Supp
 website: https://oribuin.xyz/
 softdepend:
   - PlaceholderAPI
+  - Oraxen
