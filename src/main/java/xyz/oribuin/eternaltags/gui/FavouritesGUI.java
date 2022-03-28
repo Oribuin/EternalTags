@@ -105,6 +105,10 @@ public class FavouritesGUI extends OriGUI {
         gui.getPageItems().clear();
         // Add all the tags to the gui
         tags.forEach(tag -> gui.addPageItem(this.createTagItem(tag, "tag-item", player), event -> {
+
+            if (!event.getWhoClicked().hasPermission(tag.getPermission()))
+                return;
+            
             if (event.isShiftClick()) {
                 this.toggleFavourite(player, tag);
                 this.addTags(gui, player, this.getTags(player));

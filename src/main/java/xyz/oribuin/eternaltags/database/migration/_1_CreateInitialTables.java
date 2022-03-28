@@ -5,6 +5,7 @@ import dev.rosewood.rosegarden.database.DatabaseConnector;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 public class _1_CreateInitialTables extends DataMigration {
 
@@ -14,14 +15,17 @@ public class _1_CreateInitialTables extends DataMigration {
 
     @Override
     public void migrate(DatabaseConnector connector, Connection connection, String tablePrefix) throws SQLException {
-        connection.createStatement().execute("CREATE TABLE IF NOT EXISTS " + tablePrefix + "tags (" +
-                "player VARCHAR(36), " +
-                "tagID TEXT, " +
-                "PRIMARY KEY(player))");
+        try (Statement statement = connection.createStatement()) {
+            statement.execute("CREATE TABLE IF NOT EXISTS " + tablePrefix + "tags (" +
+                    "player VARCHAR(36), " +
+                    "tagID TEXT, " +
+                    "PRIMARY KEY(player))");
+        }
 
-        connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS " + tablePrefix + "favourites (" +
-                "player VARCHAR(36), " +
-                "tagID TEXT)");
-
+        try (Statement statement = connection.createStatement()) {
+            statement.execute("CREATE TABLE IF NOT EXISTS " + tablePrefix + "favourites (" +
+                    "player VARCHAR(36), " +
+                    "tagID TEXT)");
+        }
     }
 }

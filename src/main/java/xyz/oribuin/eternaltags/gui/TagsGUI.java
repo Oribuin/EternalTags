@@ -107,6 +107,10 @@ public class TagsGUI extends OriGUI {
         // Add all the tags to the gui
         tags.forEach(tag -> gui.addPageItem(this.createTagItem(tag, "tag-item", player), event -> {
             final Player whoClicked = (Player) event.getWhoClicked();
+
+            if (!event.getWhoClicked().hasPermission(tag.getPermission()))
+                return;
+
             if (event.isShiftClick()) {
                 this.toggleFavourite(player, tag);
                 this.addTags(gui, player, keyword, this.getTags(player, keyword));

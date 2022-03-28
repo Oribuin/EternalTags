@@ -26,14 +26,7 @@ public final class TagsUtil {
      * @return the new formatted string.
      */
     public static String formatList(List<String> list) {
-        final StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < list.size(); i++) {
-            builder.append(list.get(i));
-            if (i != list.size() - 1)
-                builder.append(", ");
-        }
-
-        return builder.toString();
+        return String.join(", ", list);
     }
 
     /**
