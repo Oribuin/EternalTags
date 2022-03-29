@@ -39,6 +39,12 @@ public class AlonsoConversion extends ConversionPlugin {
                 .forEach(key -> {
                     final Tag tag = new Tag(key, section.getString("Displayname"), section.getString(key + ".Tag"));
 
+                    if (tag.getName() == null)
+                        tag.setName(key);
+
+                    if (tag.getTag() == null)
+                        return;
+
                     if (section.get(key + ".Lore.Unlocked") != null)
                         tag.setDescription(section.getStringList(key + ".Lore.Unlocked"));
 

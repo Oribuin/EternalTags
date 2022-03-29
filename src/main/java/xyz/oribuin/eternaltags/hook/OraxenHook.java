@@ -1,32 +1,34 @@
 package xyz.oribuin.eternaltags.hook;
 
 import io.th0rgal.oraxen.OraxenPlugin;
-import io.th0rgal.oraxen.font.FontManager;
 import io.th0rgal.oraxen.font.Glyph;
-import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
+
+import java.util.Optional;
 
 public class OraxenHook {
 
     private static final String pluginIdentifier = "oraxen:";
 
-    public static String parseTag(String tag) {
+    /**
+     * Parse oraxen glyphs through a tag
+     *
+     * @param tag The tag to parse
+     * @return The parsed glyph
+     */
+    public static String parseGlyph(String tag) {
+        Optional<Glyph> matchedGlyph = Optional.empty();
+        for (Glyph glyph : OraxenPlugin.get().getFontManager().getGlyphs()) {
+            if (tag.contains(pluginIdentifier + glyph.getName())) {
+                matchedGlyph = Optional.of(glyph);
+            }
+        }
 
-        final String text = StringUtils.substringBetween(tag, "%", "%");
-
-        if (text == null || !text.startsWith(pluginIdentifier))
+        if (matchedGlyph.isEmpty()) {
             return tag;
+        }
 
-        final FontManager fontManager = OraxenPlugin.get().getFontManager();
-        final Glyph glyph = fontManager.getGlyphFromName(text.replace(pluginIdentifier, ""));
-
-        if (glyph == null)
-            return tag;
-
-        String glyphText = tag.replace("%", "");
-        glyphText = glyphText.replace(text, String.valueOf(glyph.getCharacter()));
-
-        return glyphText;
+        return tag.replace(pluginIdentifier + matchedGlyph.get().getName(), String.valueOf(matchedGlyph.get().getCharacter()));
     }
 
     /**

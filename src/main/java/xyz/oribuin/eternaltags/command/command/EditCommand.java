@@ -11,8 +11,6 @@ import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.EditOption;
 import xyz.oribuin.eternaltags.obj.Tag;
 
-import java.util.Collections;
-
 public class EditCommand extends RoseCommand {
 
     public EditCommand(RosePlugin rosePlugin, RoseCommandWrapper parent) {
@@ -28,7 +26,16 @@ public class EditCommand extends RoseCommand {
 
         manager.saveTag(tag);
         manager.updateActiveTag(tag);
-        locale.sendMessage(context.getSender(), "command-edit-edited", StringPlaceholders.single("tag", tag.getTag()));
+
+        final StringPlaceholders placeholders = StringPlaceholders.builder()
+                .addPlaceholder("tag", tag.getName())
+                .addPlaceholder("option", option.name().toLowerCase())
+                .addPlaceholder("id", tag.getId())
+                .addPlaceholder("name", tag.getName())
+                .addPlaceholder("value", value)
+                .build();
+
+        locale.sendMessage(context.getSender(), "command-edit-edited", placeholders);
     }
 
     @Override

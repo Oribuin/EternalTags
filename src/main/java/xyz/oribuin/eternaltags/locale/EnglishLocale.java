@@ -82,8 +82,8 @@ public class EnglishLocale implements Locale {
             this.put("command-help-list-description-no-args", "&8 - #00B4DB/%cmd% %subcmd% &7- %desc%");
 
             this.put("#13", "Edit Command");
-            this.put("command-edit-description", "Edit any tag's message");
-            this.put("command-edit-edited", "You have changed the tag, %tag%&f!");
+            this.put("command-edit-description", "Edit any tag's values");
+            this.put("command-edit-edited", "You have changed the tag's %option% to %value%&f!");
 
 //            this.put("#13", "List Command");
 //            this.put("command-list-description", "Shows all your active tags in the chat.");

@@ -6,7 +6,6 @@ import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import dev.rosewood.rosegarden.manager.Manager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.libs.org.apache.maven.model.Organization;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.event.TagDeleteEvent;
@@ -81,8 +80,6 @@ public class TagsManager extends Manager {
      * Load all the tags from the plugin config.
      */
     public void loadTags() {
-        this.config.reloadConfig();
-
         this.cachedTags.clear();
         CommentedConfigurationSection tagSection = this.config.getConfigurationSection("tags");
         if (tagSection == null) {
@@ -93,6 +90,13 @@ public class TagsManager extends Manager {
         for (String key : tagSection.getKeys(false)) {
             String name = tagSection.getString(key + ".name");
             String tag = tagSection.getString(key + ".tag");
+
+            if (name == null)
+                name = key;
+
+            if (tag == null)
+                continue;
+
             final Tag obj = new Tag(key, name, tag);
             List<String> description = tagSection.get(key + ".description") instanceof String
                     ? Collections.singletonList(tagSection.getString(key + ".description"))
@@ -110,7 +114,7 @@ public class TagsManager extends Manager {
                 obj.setIcon(Material.matchMaterial(iconName) != null ? Material.matchMaterial(iconName) : Material.NAME_TAG);
 
             if (OraxenHook.enabled()) {
-                obj.setTag(OraxenHook.parseTag(tag));
+                obj.setTag(OraxenHook.parseGlyph(tag));
             }
 
             this.cachedTags.put(key, obj);
@@ -123,6 +127,7 @@ public class TagsManager extends Manager {
      * @param tag The tag being saved.
      */
     public boolean saveTag(Tag tag) {
+
         final TagSaveEvent event = new TagSaveEvent(tag);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled())

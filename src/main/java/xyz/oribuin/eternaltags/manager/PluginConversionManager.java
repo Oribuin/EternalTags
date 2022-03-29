@@ -50,6 +50,9 @@ public class PluginConversionManager extends Manager {
 
         final TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
         final Map<String, Tag> tags = conversionPlugin.getPluginTags();
+
+        // filter out tags that have name or tag null
+        tags.entrySet().removeIf(entry -> entry.getKey() == null || entry.getValue().getName() == null);
         manager.saveTags(tags);
         return tags;
     }

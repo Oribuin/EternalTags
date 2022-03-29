@@ -165,6 +165,7 @@ public class TagsGUI extends OriGUI {
      */
     private void sortTags(List<Tag> tags) {
         SortType sortType = SortType.match(this.get("sort-type", null)).orElse(SortType.ALPHABETICAL);
+
         switch (sortType) {
             case ALPHABETICAL -> tags.sort(Comparator.comparing(Tag::getName));
             case CUSTOM -> tags.sort(Comparator.comparing(Tag::getOrder));
