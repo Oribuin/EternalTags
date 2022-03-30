@@ -63,14 +63,13 @@ public class FavouritesGUI extends OriGUI {
 
         if (this.get("clear-tag.enabled", true)) {
             this.put(gui, "clear-tag", player, event -> {
-                final TagUnequipEvent tagUnequipEvent = new TagUnequipEvent((Player) event.getWhoClicked());
+                final TagUnequipEvent tagUnequipEvent = new TagUnequipEvent(player);
                 Bukkit.getPluginManager().callEvent(tagUnequipEvent);
-                if (event.isCancelled())
+                if (tagUnequipEvent.isCancelled())
                     return;
 
                 this.rosePlugin.getManager(TagsManager.class).clearTag(event.getWhoClicked().getUniqueId());
                 this.rosePlugin.getManager(LocaleManager.class).sendMessage(event.getWhoClicked(), "command-clear-cleared");
-
                 event.getWhoClicked().closeInventory();
             });
         }
