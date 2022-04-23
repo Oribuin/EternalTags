@@ -29,11 +29,16 @@ public class Expansion extends PlaceholderExpansion {
     public String onRequest(OfflinePlayer player, String params) {
 
         // Allow the ability to get any tag from the id
-        final String[] args = params.split("_");
-
-        if (args.length == 2 && args[0].equalsIgnoreCase("get")) {
-            final String tagId = String.join(" ", args).substring(args[0].length() + 1);
-            return this.manager.matchTagFromID(tagId).map(Tag::getTag).orElse("");
+        if (params.toLowerCase().startsWith("get_")) {
+            boolean isFormatted = params.toLowerCase().endsWith("_formatted");
+            String tagId;
+            if (isFormatted) {
+                tagId = params.substring(4, params.length() - 10);
+            } else {
+                tagId = params.substring(4);
+            }
+            String tag = this.manager.matchTagFromID(tagId).map(Tag::getTag).orElse("");
+            return isFormatted ? HexUtils.colorify(tag) : tag;
         }
 
         final Optional<Tag> activeTag = this.manager.getUsersTag(player.getUniqueId());
