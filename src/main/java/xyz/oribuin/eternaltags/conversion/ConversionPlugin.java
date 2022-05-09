@@ -1,6 +1,7 @@
 package xyz.oribuin.eternaltags.conversion;
 
 import dev.rosewood.rosegarden.RosePlugin;
+import org.bukkit.Bukkit;
 import xyz.oribuin.eternaltags.obj.Tag;
 
 import java.io.File;
@@ -8,18 +9,12 @@ import java.util.Map;
 
 public abstract class ConversionPlugin {
 
-    private final RosePlugin plugin;
-
-    public ConversionPlugin(RosePlugin plugin) {
-        this.plugin = plugin;
-    }
-
     /**
      * All the tags found in the file.
      *
      * @return A map of converted tags.
      */
-    public abstract Map<String, Tag> getPluginTags();
+    public abstract Map<String, Tag> getPluginTags(RosePlugin plugin);
 
     /**
      * The name of the plugin being converted
@@ -41,11 +36,8 @@ public abstract class ConversionPlugin {
      * @return The folder.
      */
     public File getPluginsFolder() {
-        return new File(this.plugin.getDataFolder().getParentFile(), this.getPluginName());
+        return new File(Bukkit.getServer().getUpdateFolderFile().getParentFile(), this.getPluginName());
     }
 
-    public RosePlugin getPlugin() {
-        return this.plugin;
-    }
 
 }

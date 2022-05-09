@@ -24,32 +24,17 @@ public class PluginConversionManager extends Manager {
     }
 
     /**
-     * Get a conversion plugin from ValidPlugin.
-     *
-     * @param plugin The plugin
-     * @return The conversion function.
-     */
-    public ConversionPlugin getPlugin(ValidPlugin plugin) {
-        return switch (plugin) {
-            case DELUXETAGS -> new DeluxeConversion(this.rosePlugin);
-            case CIFYTAGS -> new CIFYConversion(this.rosePlugin);
-            case ALONSOTAGS -> new AlonsoConversion(this.rosePlugin);
-        };
-    }
-
-    /**
      * Convert a plugin into EternalTags
      *
      * @param plugin The plugin
      * @return The converted tags.
      */
-    public Map<String, Tag> convertPlugin(ValidPlugin plugin) {
-        ConversionPlugin conversionPlugin = this.getPlugin(plugin);
+    public Map<String, Tag> convertPlugin(ConversionPlugin conversionPlugin) {
         if (conversionPlugin == null)
             return new HashMap<>();
 
         final TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
-        final Map<String, Tag> tags = conversionPlugin.getPluginTags();
+        final Map<String, Tag> tags = conversionPlugin.getPluginTags(this.rosePlugin);
 
         // filter out tags that have name or tag null
         tags.entrySet().removeIf(entry -> entry.getKey() == null || entry.getValue().getName() == null);

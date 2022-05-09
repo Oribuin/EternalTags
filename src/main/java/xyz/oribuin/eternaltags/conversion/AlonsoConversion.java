@@ -16,15 +16,9 @@ import java.util.Optional;
 // God this plugin sucks to configure in terms of config readability
 public class AlonsoConversion extends ConversionPlugin {
 
-    private final TagsManager manager;
-
-    public AlonsoConversion(RosePlugin plugin) {
-        super(plugin);
-        this.manager = this.getPlugin().getManager(TagsManager.class);
-    }
-
     @Override
-    public Map<String, Tag> getPluginTags() {
+    public Map<String, Tag> getPluginTags(RosePlugin plugin) {
+        final TagsManager manager = plugin.getManager(TagsManager.class);
         final Map<String, Tag> convertedTags = new HashMap<>();
 
         final FileConfiguration config = YamlConfiguration.loadConfiguration(this.getTagsFile());

@@ -15,15 +15,10 @@ import java.util.Map;
 
 public class CIFYConversion extends ConversionPlugin {
 
-    private final TagsManager manager;
-
-    public CIFYConversion(RosePlugin plugin) {
-        super(plugin);
-        this.manager = plugin.getManager(TagsManager.class);
-    }
-
     @Override
-    public Map<String, Tag> getPluginTags() {
+    public Map<String, Tag> getPluginTags(RosePlugin plugin) {
+        final TagsManager manager = plugin.getManager(TagsManager.class);
+
         final Map<String, Tag> convertedTags = new HashMap<>();
         final FileConfiguration config = YamlConfiguration.loadConfiguration(this.getTagsFile());
         final ConfigurationSection section = config.getConfigurationSection("tags");

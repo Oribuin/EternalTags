@@ -7,6 +7,7 @@ import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import org.bukkit.command.CommandSender;
+import xyz.oribuin.eternaltags.conversion.ConversionPlugin;
 import xyz.oribuin.eternaltags.conversion.ValidPlugin;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.PluginConversionManager;
@@ -22,15 +23,16 @@ public class ConvertCommand extends RoseCommand {
     }
 
     @RoseExecutable
-    public void execute(CommandContext context, ValidPlugin plugin) {
+    public void execute(CommandContext context, ConversionPlugin plugin) {
         final LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
         final PluginConversionManager manager = this.rosePlugin.getManager(PluginConversionManager.class);
         CommandSender sender = context.getSender();
 
         // Check if the player arg was provided.
         if (plugin == null) {
-            locale.sendMessage(sender, "command-convert-invalid-plugin", StringPlaceholders.single("options", TagsUtil.formatList(Arrays.stream(ValidPlugin.values())
-                    .map(ValidPlugin::getDisplay)
+            locale.sendMessage(sender, "command-convert-invalid-plugin", StringPlaceholders.single("options", TagsUtil.formatList(ValidPlugin.PLUGINS.values()
+                    .stream()
+                    .map(ConversionPlugin::getPluginName)
                     .collect(Collectors.toList()))));
             return;
         }

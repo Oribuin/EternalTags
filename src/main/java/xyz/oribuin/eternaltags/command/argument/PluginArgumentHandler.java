@@ -5,6 +5,7 @@ import dev.rosewood.rosegarden.command.framework.ArgumentParser;
 import dev.rosewood.rosegarden.command.framework.RoseCommandArgumentHandler;
 import dev.rosewood.rosegarden.command.framework.RoseCommandArgumentInfo;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
+import xyz.oribuin.eternaltags.conversion.ConversionPlugin;
 import xyz.oribuin.eternaltags.conversion.ValidPlugin;
 
 import java.util.Arrays;
@@ -12,29 +13,30 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class PluginArgumentHandler extends RoseCommandArgumentHandler<ValidPlugin> {
+public class PluginArgumentHandler extends RoseCommandArgumentHandler<ConversionPlugin> {
 
     public PluginArgumentHandler(RosePlugin rosePlugin) {
-        super(rosePlugin, ValidPlugin.class);
+        super(rosePlugin, ConversionPlugin.class);
     }
 
     @Override
-    protected ValidPlugin handleInternal(RoseCommandArgumentInfo argumentInfo, ArgumentParser argumentParser) throws HandledArgumentException {
+    protected ConversionPlugin handleInternal(RoseCommandArgumentInfo argumentInfo, ArgumentParser argumentParser) throws HandledArgumentException {
         String input = argumentParser.next();
-        Optional<ValidPlugin> value = ValidPlugin.match(input);
-        if (value.isEmpty())
+
+        Optional<ConversionPlugin> conversion = ValidPlugin.match(input);
+        if (conversion.isEmpty())
             throw new HandledArgumentException("argument-handler-plugins", StringPlaceholders.single("input", input));
 
-        return value.get();
+        return conversion.get();
     }
 
     @Override
     protected List<String> suggestInternal(RoseCommandArgumentInfo argumentInfo, ArgumentParser argumentParser) {
         argumentParser.next();
 
-        return Arrays.stream(ValidPlugin.values())
-                .map(ValidPlugin::getDisplay)
-                .collect(Collectors.toList());
-
+        return ValidPlugin.PLUGINS
+                .keySet()
+                .stream()
+                .toList();
     }
 }
