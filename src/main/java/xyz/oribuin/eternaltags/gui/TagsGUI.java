@@ -170,6 +170,9 @@ public class TagsGUI extends OriGUI {
             case ALPHABETICAL -> tags.sort(Comparator.comparing(Tag::getName));
             case CUSTOM -> tags.sort(Comparator.comparing(Tag::getOrder));
             case RANDOM -> Collections.shuffle(tags);
+            default -> {
+                // Do nothing
+            }
         }
     }
 

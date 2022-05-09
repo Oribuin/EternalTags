@@ -56,9 +56,6 @@ public class EternalTags extends RosePlugin {
 
         // Initialize the API
         new EternalAPI(this);
-
-        // Initialize plugin hooks
-        new OraxenHook();
     }
 
     @Override

@@ -11,6 +11,7 @@ import xyz.oribuin.eternaltags.obj.Tag;
 import xyz.oribuin.eternaltags.util.TagsUtil;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 public class Expansion extends PlaceholderExpansion {
@@ -27,7 +28,6 @@ public class Expansion extends PlaceholderExpansion {
 
     @Override
     public String onRequest(OfflinePlayer player, String params) {
-
         // Allow the ability to get any tag from the id
         final String[] args = params.split("_");
 
@@ -38,33 +38,32 @@ public class Expansion extends PlaceholderExpansion {
 
         final Optional<Tag> activeTag = this.manager.getUsersTag(player.getUniqueId());
 
-        switch (params.toLowerCase()) {
-            case "tag":
-                return HexUtils.colorify(activeTag.map(Tag::getTag).orElse(""));
-            case "tag_formatted":
-                return HexUtils.colorify(activeTag.map(Tag::getTag).orElse(formattedPlaceholder));
-            case "tag_stripped":
-                return activeTag.map(Tag::getTag).orElse("");
-            case "tag_stripped_formatted":
-                return activeTag.map(Tag::getTag).orElse(formattedPlaceholder);
-            case "tag_name":
-                return activeTag.map(Tag::getName).orElse(formattedPlaceholder);
-            case "tag_id":
-                return activeTag.map(Tag::getId).orElse(formattedPlaceholder);
-            case "tag_permission":
-                return activeTag.map(Tag::getPermission).orElse(formattedPlaceholder);
-            case "tag_description":
-                return TagsUtil.formatList(activeTag.map(Tag::getDescription).orElse(Collections.singletonList(formattedPlaceholder)));
-            case "total":
-                return String.valueOf(this.manager.getCachedTags().size());
-            case "unlocked":
-                if (player.getPlayer() != null)
-                    return String.valueOf(this.manager.getPlayersTags(player.getPlayer()).size());
-                else
-                    return "0";
-            default:
-                return null;
-        }
+        return switch (params.toLowerCase()) {
+            case "tag" -> HexUtils.colorify(activeTag.map(Tag::getTag).orElse(""));
+            case "tag_formatted" -> HexUtils.colorify(activeTag.map(Tag::getTag).orElse(formattedPlaceholder));
+            case "tag_stripped" -> activeTag.map(Tag::getTag).orElse("");
+            case "tag_stripped_formatted" -> activeTag.map(Tag::getTag).orElse(formattedPlaceholder);
+            case "tag_name" -> activeTag.map(Tag::getName).orElse(formattedPlaceholder);
+            case "tag_id" -> activeTag.map(Tag::getId).orElse(formattedPlaceholder);
+            case "tag_permission" -> activeTag.map(Tag::getPermission).orElse(formattedPlaceholder);
+            case "tag_description" -> TagsUtil.formatList(activeTag.map(Tag::getDescription).orElse(Collections.singletonList(formattedPlaceholder)));
+            case "total" -> String.valueOf(this.manager.getCachedTags().size());
+            case "joined" -> this.joinTags(Optional.ofNullable(player.getPlayer())
+                    .map(this.manager::getPlayersTags)
+                    .orElse(this.manager.getCachedTags().values().stream().toList()));
+            case "unlocked" -> player.getPlayer() != null ? String.valueOf(this.manager.getPlayersTags(player.getPlayer()).size()) : "0";
+            default -> null;
+        };
+    }
+
+    /**
+     * Join all the tags in a single string
+     *
+     * @param tags The tags to join
+     * @return The joined tags
+     */
+    public String joinTags(List<Tag> tags) {
+        return tags.stream().map(Tag::getTag).reduce("", (a, b) -> a + b);
     }
 
     @Override
