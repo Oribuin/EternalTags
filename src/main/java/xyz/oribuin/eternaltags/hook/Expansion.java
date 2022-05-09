@@ -63,7 +63,7 @@ public class Expansion extends PlaceholderExpansion {
      * @return The joined tags
      */
     public String joinTags(List<Tag> tags) {
-        return tags.stream().map(Tag::getTag).reduce("", (a, b) -> a + b);
+        return tags.stream().map(Tag::getTag).map(HexUtils::colorify).reduce("", (a, b) -> a + b);
     }
 
     @Override
