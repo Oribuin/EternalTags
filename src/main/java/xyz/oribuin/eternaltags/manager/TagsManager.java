@@ -461,7 +461,7 @@ public class TagsManager extends Manager {
 
             // Animated Gradient Tag
             this.put("tags.automatic-gradient.name", "Animated Gradient");
-            this.put("tags.automatic-gradient.tag", "&7[<g#10:#12c2e9:#c471ed>Gradient&7]");
+            this.put("tags.automatic-gradient.tag", "&7[<g#10:#12c2e9>Gradient&7]");
             this.put("tags.automatic-gradient.description", Arrays.asList("A gradient tag that", "will update with every", "message that you send."));
             this.put("tags.automatic-gradient.permission", "eternaltags.tag.animated-gradient");
         }};
