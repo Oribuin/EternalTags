@@ -4,10 +4,14 @@ import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import dev.rosewood.rosegarden.manager.Manager;
+import dev.rosewood.rosegarden.utils.HexUtils;
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import xyz.oribuin.eternaltags.event.TagDeleteEvent;
 import xyz.oribuin.eternaltags.event.TagSaveEvent;
 import xyz.oribuin.eternaltags.hook.OraxenHook;
@@ -103,6 +107,7 @@ public class TagsManager extends Manager {
                     : tagSection.getStringList(key + ".description");
 
             obj.setDescription(description);
+
             if (tagSection.getString(key + ".permission") != null)
                 obj.setPermission(tagSection.getString(key + ".permission"));
 
@@ -397,6 +402,29 @@ public class TagsManager extends Manager {
     }
 
     /**
+     * Get the display version of a tag using placeholderapi
+     *
+     * @param tag    The tag.
+     * @param player The player.
+     * @param placeholder The placeholder.
+     * @return The display tag.
+     */
+    public String getDisplayTag(@Nullable Tag tag, OfflinePlayer player, String placeholder) {
+        return HexUtils.colorify(PlaceholderAPI.setPlaceholders(player, tag == null ? placeholder : tag.getTag()));
+    }
+
+    /**
+     * Get the display version of a tag using placeholderapi
+     *
+     * @param tag   The tag.
+     * @param player The player.
+     * @return The display tag.
+     */
+    public String getDisplayTag(@Nullable Tag tag, OfflinePlayer player) {
+        return this.getDisplayTag(tag, player, ""); // Empty placeholder string
+    }
+
+    /**
      * Get the default tags for the plugin
      *
      * @return A map of all the original tags.
@@ -433,7 +461,7 @@ public class TagsManager extends Manager {
 
             // Animated Gradient Tag
             this.put("tags.automatic-gradient.name", "Animated Gradient");
-            this.put("tags.automatic-gradient.tag", "&7[<g#10:#12c2e9:#c471ed:#f64f59>Gradient&7]");
+            this.put("tags.automatic-gradient.tag", "&7[<g#10:#12c2e9:#c471ed>Gradient&7]");
             this.put("tags.automatic-gradient.description", Arrays.asList("A gradient tag that", "will update with every", "message that you send."));
             this.put("tags.automatic-gradient.permission", "eternaltags.tag.animated-gradient");
         }};

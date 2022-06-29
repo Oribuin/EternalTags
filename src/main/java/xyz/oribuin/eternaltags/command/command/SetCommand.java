@@ -46,10 +46,13 @@ public class SetCommand extends RoseCommand {
 
             manager.setTag(player.getUniqueId(), tag);
             if (silent == null || !silent) {
-                locale.sendMessage(player, "command-set-changed", StringPlaceholders.single("tag", tag.getTag()));
+                locale.sendMessage(player, "command-set-changed", StringPlaceholders.single("tag", manager.getDisplayTag(tag, player)));
             }
 
-            locale.sendMessage(sender, "command-set-changed-other", StringPlaceholders.builder("tag", tag.getTag()).addPlaceholder("player", player.getName()).build());
+            locale.sendMessage(sender, "command-set-changed-other", StringPlaceholders.builder("tag", manager.getDisplayTag(tag, player))
+                    .addPlaceholder("player", player.getName())
+                    .build());
+
             return;
         }
 
@@ -69,7 +72,7 @@ public class SetCommand extends RoseCommand {
             return;
 
         manager.setTag(pl.getUniqueId(), tag);
-        locale.sendMessage(sender, "command-set-changed", StringPlaceholders.single("tag", tag.getTag()));
+        locale.sendMessage(sender, "command-set-changed", StringPlaceholders.single("tag", manager.getDisplayTag(tag, pl)));
     }
 
 

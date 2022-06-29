@@ -276,7 +276,7 @@ public class FavouritesGUI extends OriGUI {
             return;
 
         this.rosePlugin.getManager(TagsManager.class).setTag(player.getUniqueId(), tag);
-        this.rosePlugin.getManager(LocaleManager.class).sendMessage(player, "command-set-changed", StringPlaceholders.single("tag", tag.getTag()));
+        this.rosePlugin.getManager(LocaleManager.class).sendMessage(player, "command-set-changed", StringPlaceholders.single("tag", tagsManager.getDisplayTag(tag, player)));
     }
 
     /**
@@ -298,6 +298,6 @@ public class FavouritesGUI extends OriGUI {
         String on = locale.getLocaleMessage("command-favorite-on");
         String off = locale.getLocaleMessage("command-favorite-off");
 
-        locale.sendMessage(player, "command-favorite-toggled", StringPlaceholders.builder("tag", tag.getTag()).addPlaceholder("toggled", !isFavourite ? on : off).build());
+        locale.sendMessage(player, "command-favorite-toggled", StringPlaceholders.builder("tag", manager.getDisplayTag(tag, player)).addPlaceholder("toggled", !isFavourite ? on : off).build());
     }
 }

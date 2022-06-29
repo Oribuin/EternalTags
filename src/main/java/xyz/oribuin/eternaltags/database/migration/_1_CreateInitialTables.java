@@ -16,16 +16,17 @@ public class _1_CreateInitialTables extends DataMigration {
     @Override
     public void migrate(DatabaseConnector connector, Connection connection, String tablePrefix) throws SQLException {
         try (Statement statement = connection.createStatement()) {
-            statement.execute("CREATE TABLE IF NOT EXISTS " + tablePrefix + "tags (" +
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS " + tablePrefix + "tags (" +
                     "player VARCHAR(36), " +
                     "tagID TEXT, " +
                     "PRIMARY KEY(player))");
         }
 
         try (Statement statement = connection.createStatement()) {
-            statement.execute("CREATE TABLE IF NOT EXISTS " + tablePrefix + "favourites (" +
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS " + tablePrefix + "favourites (" +
                     "player VARCHAR(36), " +
                     "tagID TEXT)");
         }
     }
+
 }

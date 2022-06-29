@@ -302,7 +302,7 @@ public class TagsGUI extends OriGUI {
             return;
 
         this.rosePlugin.getManager(TagsManager.class).setTag(player.getUniqueId(), tag);
-        this.rosePlugin.getManager(LocaleManager.class).sendMessage(player, "command-set-changed", StringPlaceholders.single("tag", tag.getTag()));
+        this.rosePlugin.getManager(LocaleManager.class).sendMessage(player, "command-set-changed", StringPlaceholders.single("tag", tagsManager.getDisplayTag(tag, player)));
     }
 
     /**

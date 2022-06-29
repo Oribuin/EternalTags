@@ -1,6 +1,7 @@
 package xyz.oribuin.eternaltags.obj;
 
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;

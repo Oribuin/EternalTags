@@ -7,6 +7,7 @@ import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Color;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -15,6 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.oribuin.eternaltags.manager.ConfigurationManager;
+import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 import xyz.oribuin.eternaltags.obj.BukkitColour;
 import xyz.oribuin.gui.Item;
@@ -25,6 +27,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -32,10 +35,12 @@ import java.util.stream.Collectors;
 public abstract class OriGUI {
 
     protected final RosePlugin rosePlugin;
+    protected final TagsManager tagsManager;
     private CommentedFileConfiguration config;
 
     public OriGUI(RosePlugin rosePlugin) {
         this.rosePlugin = rosePlugin;
+        this.tagsManager = this.rosePlugin.getManager(TagsManager.class);
     }
 
     /**
@@ -152,7 +157,7 @@ public abstract class OriGUI {
      * @return The ItemStack.
      */
     public final ItemStack createTagItem(Tag tag, String path, Player viewer) {
-        final StringPlaceholders plc = this.getTagPlaceholders(tag);
+        final StringPlaceholders plc = this.getTagPlaceholders(tag, viewer);
         final String materialName = this.config.getString(path + ".material");
         if (materialName == null)
             return null;
@@ -334,14 +339,16 @@ public abstract class OriGUI {
      * @param tag The tag
      * @return The placeholders
      */
-    public StringPlaceholders getTagPlaceholders(Tag tag) {
+    public StringPlaceholders getTagPlaceholders(Tag tag, OfflinePlayer player) {
         final StringPlaceholders.Builder builder = StringPlaceholders.builder();
-        builder.addPlaceholder("tag", HexUtils.colorify(tag.getTag()));
+        builder.addPlaceholder("tag", this.tagsManager.getDisplayTag(tag, player));
         builder.addPlaceholder("id", tag.getId());
         builder.addPlaceholder("name", tag.getName());
 //        builder.addPlaceholder("description", TagsUtil.formatList(tag.getDescription())); // Unused
         return builder.build();
     }
+
+
 
     /**
      * Get the placeholders for the Page GUI
@@ -385,7 +392,7 @@ public abstract class OriGUI {
      * @return the new list.
      */
     public List<String> getTagLore(Player player, Tag tag, List<String> list) {
-        final StringPlaceholders plc = this.getTagPlaceholders(tag);
+        final StringPlaceholders plc = this.getTagPlaceholders(tag, player);
         final List<String> lore = new ArrayList<>(list);
 
         for (int i = 0; i < lore.size(); i++) {

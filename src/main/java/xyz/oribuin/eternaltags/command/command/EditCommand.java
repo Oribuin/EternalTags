@@ -28,7 +28,7 @@ public class EditCommand extends RoseCommand {
         manager.updateActiveTag(tag);
 
         final StringPlaceholders placeholders = StringPlaceholders.builder()
-                .addPlaceholder("tag", tag.getName())
+                .addPlaceholder("tag", manager.getDisplayTag(tag, null))
                 .addPlaceholder("option", option.name().toLowerCase())
                 .addPlaceholder("id", tag.getId())
                 .addPlaceholder("name", tag.getName())

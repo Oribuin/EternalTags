@@ -1,6 +1,7 @@
 package xyz.oribuin.eternaltags.hook;
 
 import dev.rosewood.rosegarden.utils.HexUtils;
+import me.clip.placeholderapi.PlaceholderAPI;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
@@ -31,16 +32,26 @@ public class Expansion extends PlaceholderExpansion {
         // Allow the ability to get any tag from the id
         final String[] args = params.split("_");
 
-        if (args.length == 2 && args[0].equalsIgnoreCase("get")) {
+        // Add new specific tags here
+        if (args.length == 2) {
             final String tagId = String.join(" ", args).substring(args[0].length() + 1);
-            return this.manager.matchTagFromID(tagId).map(Tag::getTag).orElse("");
+            final Optional<Tag> tag = this.manager.matchTagFromID(tagId);
+            return switch (args[0].toLowerCase()) {
+                case "get" -> tag.map(Tag::getTag).orElse("");
+                case "has" -> player.getPlayer() != null && tag.stream().map(Tag::getTag).anyMatch(player.getPlayer()::hasPermission) ? "true" : "false";
+                default -> null;
+            };
         }
+
 
         final Optional<Tag> activeTag = this.manager.getUsersTag(player.getUniqueId());
 
         return switch (params.toLowerCase()) {
-            case "tag" -> HexUtils.colorify(activeTag.map(Tag::getTag).orElse(""));
-            case "tag_formatted" -> HexUtils.colorify(activeTag.map(Tag::getTag).orElse(formattedPlaceholder));
+            // Set bracket placeholders to allow \o/ Placeholder Inception \o/
+            case "tag" -> this.manager.getDisplayTag(activeTag.orElse(null), player, "");
+            case "tag_formatted" -> this.manager.getDisplayTag(activeTag.orElse(null), player, formattedPlaceholder);
+
+            // We're separating these tags from the other ones because of placeholder inception
             case "tag_stripped" -> activeTag.map(Tag::getTag).orElse("");
             case "tag_stripped_formatted" -> activeTag.map(Tag::getTag).orElse(formattedPlaceholder);
             case "tag_name" -> activeTag.map(Tag::getName).orElse(formattedPlaceholder);
@@ -52,6 +63,7 @@ public class Expansion extends PlaceholderExpansion {
                     .map(this.manager::getPlayersTags)
                     .orElse(this.manager.getCachedTags().values().stream().toList()));
             case "unlocked" -> player.getPlayer() != null ? String.valueOf(this.manager.getPlayersTags(player.getPlayer()).size()) : "0";
+            case "favorites" -> player.getPlayer() != null ? String.valueOf(this.manager.getUsersFavourites(player.getUniqueId()).size()) : "0";
             default -> null;
         };
     }

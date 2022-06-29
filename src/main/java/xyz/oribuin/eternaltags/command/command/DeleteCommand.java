@@ -36,7 +36,7 @@ public class DeleteCommand extends RoseCommand {
             return;
 
         manager.deleteTag(tag);
-        locale.sendMessage(sender, "command-delete-deleted", StringPlaceholders.single("tag", tag.getTag()));
+        locale.sendMessage(sender, "command-delete-deleted", StringPlaceholders.single("tag", manager.getDisplayTag(tag, null)));
     }
 
 

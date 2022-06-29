@@ -48,7 +48,9 @@ public class FavoriteCommand extends RoseCommand {
         String on = locale.getLocaleMessage("command-favorite-on");
         String off = locale.getLocaleMessage("command-favorite-off");
 
-        locale.sendMessage(sender, "command-favorite-toggled", StringPlaceholders.builder("tag", tag.getTag()).addPlaceholder("toggled", !isFavourite ? on : off).build());
+        locale.sendMessage(sender, "command-favorite-toggled", StringPlaceholders.builder("tag", manager.getDisplayTag(tag, sender))
+                .addPlaceholder("toggled", !isFavourite ? on : off)
+                .build());
     }
 
 
