@@ -33,31 +33,31 @@ public class Expansion extends PlaceholderExpansion {
         final String[] args = params.split("_");
 
         // Add new specific tags here
-        if (args.length == 2) {
+        if (args.length >= 2) {
             final String tagId = String.join(" ", args).substring(args[0].length() + 1);
             final Optional<Tag> tag = this.manager.matchTagFromID(tagId);
-            return switch (args[0].toLowerCase()) {
-                case "get" -> tag.map(Tag::getTag).orElse("");
-                case "has" -> player.getPlayer() != null && tag.stream().map(Tag::getTag).anyMatch(player.getPlayer()::hasPermission) ? "true" : "false";
-                default -> null;
-            };
+            // Can't use the switch statement here
+            if (args[0].equalsIgnoreCase("get"))
+                return tag.map(Tag::getTag).orElse(this.formattedPlaceholder);
+
+            else if (args[0].equalsIgnoreCase("has"))
+                return player.getPlayer() != null && tag.stream().map(Tag::getTag).anyMatch(player.getPlayer()::hasPermission) ? "true" : "false";
         }
 
 
         final Optional<Tag> activeTag = this.manager.getUsersTag(player.getUniqueId());
-
         return switch (params.toLowerCase()) {
             // Set bracket placeholders to allow \o/ Placeholder Inception \o/
             case "tag" -> this.manager.getDisplayTag(activeTag.orElse(null), player, "");
-            case "tag_formatted" -> this.manager.getDisplayTag(activeTag.orElse(null), player, formattedPlaceholder);
+            case "tag_formatted" -> this.manager.getDisplayTag(activeTag.orElse(null), player, this.formattedPlaceholder);
 
             // We're separating these tags from the other ones because of placeholder inception
             case "tag_stripped" -> activeTag.map(Tag::getTag).orElse("");
-            case "tag_stripped_formatted" -> activeTag.map(Tag::getTag).orElse(formattedPlaceholder);
-            case "tag_name" -> activeTag.map(Tag::getName).orElse(formattedPlaceholder);
-            case "tag_id" -> activeTag.map(Tag::getId).orElse(formattedPlaceholder);
-            case "tag_permission" -> activeTag.map(Tag::getPermission).orElse(formattedPlaceholder);
-            case "tag_description" -> TagsUtil.formatList(activeTag.map(Tag::getDescription).orElse(Collections.singletonList(formattedPlaceholder)));
+            case "tag_stripped_formatted" -> activeTag.map(Tag::getTag).orElse(this.formattedPlaceholder);
+            case "tag_name" -> activeTag.map(Tag::getName).orElse(this.formattedPlaceholder);
+            case "tag_id" -> activeTag.map(Tag::getId).orElse(this.formattedPlaceholder);
+            case "tag_permission" -> activeTag.map(Tag::getPermission).orElse(this.formattedPlaceholder);
+            case "tag_description" -> TagsUtil.formatList(activeTag.map(Tag::getDescription).orElse(Collections.singletonList(this.formattedPlaceholder)));
             case "total" -> String.valueOf(this.manager.getCachedTags().size());
             case "joined" -> this.joinTags(Optional.ofNullable(player.getPlayer())
                     .map(this.manager::getPlayersTags)

@@ -3,6 +3,7 @@ package xyz.oribuin.eternaltags;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.manager.Manager;
 import dev.rosewood.rosegarden.utils.NMSUtil;
+import org.bukkit.plugin.PluginManager;
 import xyz.oribuin.eternaltags.hook.Expansion;
 import xyz.oribuin.eternaltags.hook.OraxenHook;
 import xyz.oribuin.eternaltags.listener.PlayerListeners;
@@ -52,7 +53,8 @@ public class EternalTags extends RosePlugin {
         new Expansion(this).register();
 
         // Register Plugin Listeners
-        this.getServer().getPluginManager().registerEvents(new PlayerListeners(this), this);
+        PluginManager pluginManager = this.getServer().getPluginManager();
+        pluginManager.registerEvents(new PlayerListeners(this), this);
 
         // Initialize the API
         new EternalAPI(this);

@@ -21,10 +21,4 @@ public class PlayerListeners implements Listener {
         this.data.loadFavourites(event.getPlayer().getUniqueId());
     }
 
-    @EventHandler(ignoreCancelled = true)
-    public void onQuit(PlayerQuitEvent event) {
-        this.data.getCachedUsers().remove(event.getPlayer().getUniqueId());
-        this.data.getCachedFavourites().remove(event.getPlayer().getUniqueId());
-    }
-
 }

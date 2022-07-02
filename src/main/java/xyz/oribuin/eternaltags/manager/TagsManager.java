@@ -409,8 +409,8 @@ public class TagsManager extends Manager {
      * @param placeholder The placeholder.
      * @return The display tag.
      */
-    public String getDisplayTag(@Nullable Tag tag, OfflinePlayer player, String placeholder) {
-        return HexUtils.colorify(PlaceholderAPI.setPlaceholders(player, tag == null ? placeholder : tag.getTag()));
+    public String getDisplayTag(@Nullable Tag tag, OfflinePlayer player, @NotNull String placeholder) {
+        return PlaceholderAPI.setPlaceholders(player, HexUtils.colorify(tag != null ? tag.getTag() : placeholder)); // Doesn't work with bold text
     }
 
     /**
