@@ -121,26 +121,26 @@ public class TagsGUI extends PluginGUI {
 
         List<Tag> tags = new ArrayList<>();
         if (this.get("favorite-first", true)) {
-            tags = manager.getPlayerTags(player).stream().filter(tag -> manager.isFavourite(player.getUniqueId(), tag)).collect(Collectors.toList());
+            tags = new ArrayList<>(manager.getUsersFavourites(player.getUniqueId()).values());
             this.sortTags(tags);
         }
 
-        List<Tag> finalTags = tags;
-        final List<Tag> otherTags = manager.getPlayerTags(player).stream()
-                .filter(tag -> !finalTags.contains(tag))
-                .collect(Collectors.toList());
+        final List<Tag> playersTags = new ArrayList<>(this.manager.getPlayerTags(player));
+        this.sortTags(playersTags);
 
-        this.sortTags(otherTags);
-        finalTags.addAll(otherTags);
+        tags.addAll(playersTags);
 
         if (this.get("add-all-tags", false)) {
-            otherTags.addAll(manager.getCachedTags().values().stream().filter(tag -> !player.hasPermission(tag.getPermission())).collect(Collectors.toList()));
+            final List<Tag> allTags = new ArrayList<>(manager.getCachedTags().values());
+            this.sortTags(allTags);
+            tags.addAll(allTags);
         }
 
-        if (keyword != null)
-            finalTags.removeIf(tag -> !tag.getName().toLowerCase().contains(keyword.toLowerCase()));
+        if (keyword != null) {
+            tags = tags.stream().filter(tag -> tag.getName().toLowerCase().contains(keyword.toLowerCase())).collect(Collectors.toList());
+        }
 
-        return finalTags;
+        return tags.stream().distinct().collect(Collectors.toList());
     }
 
 
