@@ -68,7 +68,7 @@ public class TagsGUI extends PluginGUI {
         });
 
         gui.open(player);
-        gui.updateTitle(this.formatString(player, this.get("menu-name"), this.getPagePlaceholders(gui)));
+
         final List<Tag> tags = this.getTags(player, keyword);
 
         int dynamicSpeed = this.get("dynamic-speed", 3);
@@ -85,6 +85,7 @@ public class TagsGUI extends PluginGUI {
             this.addTags(gui, player, tags, keyword);
         }
 
+        gui.updateTitle(this.formatString(player, this.get("menu-name"), this.getPagePlaceholders(gui)));
     }
 
     private void addTags(PaginatedGui gui, Player player, List<Tag> tags, String keyword) {

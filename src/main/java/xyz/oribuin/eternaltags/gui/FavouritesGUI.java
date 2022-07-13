@@ -66,9 +66,8 @@ public class FavouritesGUI extends PluginGUI {
         });
 
         gui.open(player);
-        gui.updateTitle(this.formatString(player, this.get("menu-name"), this.getPagePlaceholders(gui)));
-        final List<Tag> tags = this.getTags(player);
 
+        final List<Tag> tags = this.getTags(player);
         int dynamicSpeed = this.get("dynamic-speed", 3);
         if (this.get("dynamic-gui", false)) {
             this.rosePlugin.getServer().getScheduler().runTaskTimer(this.rosePlugin, task -> {
@@ -83,6 +82,7 @@ public class FavouritesGUI extends PluginGUI {
             this.addTags(gui, player, tags);
         }
 
+        gui.updateTitle(this.formatString(player, this.get("menu-name"), this.getPagePlaceholders(gui)));
     }
 
     private void addTags(PaginatedGui gui, Player player, List<Tag> tags) {
@@ -190,17 +190,17 @@ public class FavouritesGUI extends PluginGUI {
             ));
             this.put("clear-tag.texture", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZTljZGI5YWYzOGNmNDFkYWE1M2JjOGNkYTc2NjVjNTA5NjMyZDE0ZTY3OGYwZjE5ZjI2M2Y0NmU1NDFkOGEzMCJ9fX0=");
 
-            // Favourites Tag Item
+            // Main Menu Item
             this.put("#12", "The display item for viewing favourite tags.");
-            this.put("favorite-tags.enabled", true);
-            this.put("favorite-tags.slot", 48);
-            this.put("favorite-tags.material", Material.PLAYER_HEAD.name());
-            this.put("favorite-tags.name", "#00B4DB&lFavorite Tags");
-            this.put("favorite-tags.lore", Arrays.asList(
-                    " &f| &7Click to view all your",
-                    " &f| &7favorite tags in one menu."
+            this.put("main-menu.enabled", true);
+            this.put("main-menu.slot", 48);
+            this.put("main-menu.material", Material.PLAYER_HEAD.name());
+            this.put("main-menu.name", "#00B4DB&lMain Menu");
+            this.put("main-menu.lore", Arrays.asList(
+                    " &f| &7Click to go back to",
+                    " &f| &7the main tags menu."
             ));
-            this.put("favorite-tags.texture", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZDVjNmRjMmJiZjUxYzM2Y2ZjNzcxNDU4NWE2YTU2ODNlZjJiMTRkNDdkOGZmNzE0NjU0YTg5M2Y1ZGE2MjIifX19");
+            this.put("main-menu.texture", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmQ2OWUwNmU1ZGFkZmQ4NGU1ZjNkMWMyMTA2M2YyNTUzYjJmYTk0NWVlMWQ0ZDcxNTJmZGM1NDI1YmMxMmE5In19fQ==");
 
             this.put("#13", "The border item at the bottom of the gui.");
             this.put("border-item.enabled", true);
