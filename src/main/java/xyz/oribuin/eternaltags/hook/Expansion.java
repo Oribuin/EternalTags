@@ -4,9 +4,8 @@ import dev.rosewood.rosegarden.utils.HexUtils;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import xyz.oribuin.eternaltags.EternalTags;
-import xyz.oribuin.eternaltags.manager.ConfigurationManager;
+import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 import xyz.oribuin.eternaltags.util.TagsUtils;
@@ -22,7 +21,7 @@ public class Expansion extends PlaceholderExpansion {
     public Expansion(final EternalTags plugin) {
         this.plugin = plugin;
         this.manager = plugin.getManager(TagsManager.class);
-        this.formattedPlaceholder = ConfigurationManager.Setting.FORMATTED_PLACEHOLDER.getString();
+        this.formattedPlaceholder = Setting.FORMATTED_PLACEHOLDER.getString();
     }
 
     @Override
@@ -35,11 +34,20 @@ public class Expansion extends PlaceholderExpansion {
             final String tagId = String.join(" ", args).substring(args[0].length() + 1);
             final Tag tag = this.manager.getTagFromId(tagId);
             // Can't use the switch statement here
-            if (args[0].equalsIgnoreCase("get") && tag != null)
+            if (args[0].equalsIgnoreCase("get") && tag != null) {
                 return this.manager.getDisplayTag(tag, player, this.formattedPlaceholder);
+            }
 
-            else if (args[0].equalsIgnoreCase("has") && tag != null)
+            // I really need a better system for this
+            if (args[0].equalsIgnoreCase("has") && tag != null) {
                 return player.getPlayer() != null && player.getPlayer().hasPermission(tag.getPermission()) ? "true" : "false";
+            }
+
+
+            if (args[0].equalsIgnoreCase("has-unlocked") && tag != null) {
+                boolean unlocked = player.getPlayer() != null && player.getPlayer().hasPermission(tag.getPermission());
+                return HexUtils.colorify(unlocked ? Setting.TAG_UNLOCKED_FORMAT.getString() : Setting.TAG_LOCKED_FORMAT.getString());
+            }
         }
 
 
@@ -70,6 +78,7 @@ public class Expansion extends PlaceholderExpansion {
             default -> null;
         };
     }
+
     /**
      * Join all the tags in a single string
      *

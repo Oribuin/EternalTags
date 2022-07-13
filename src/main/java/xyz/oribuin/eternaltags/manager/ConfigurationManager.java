@@ -12,6 +12,8 @@ public class ConfigurationManager extends AbstractConfigurationManager {
         // Tag Settings
         DEFAULT_TAG("default-tag", "none", "The tag that will show when player does not have an active tag.", "Set to 'none' to disable.", "Set to 'random' to apply a random tag"),
         FORMATTED_PLACEHOLDER("formatted-placeholder", "None", "The placeholder that will show when the player has no active tag."),
+        TAG_UNLOCKED_FORMAT("tag-unlocked-format", "&a&lUnlocked", "The format that will show when the player has the tag unlocked."),
+        TAG_LOCKED_FORMAT("tag-locked-format", "&c&lLocked", "The format that will show when the player has the tag locked."),
         REMOVE_TAGS("remove-inaccessible-tags", false, "Should a tag be automatically removed if the player doesn't have permission to use it?");
 
         private final String key;

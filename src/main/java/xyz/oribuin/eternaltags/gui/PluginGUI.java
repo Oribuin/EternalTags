@@ -91,7 +91,7 @@ public abstract class PluginGUI {
         if (newFile) {
             this.getDefaultValues().forEach((path, object) -> {
                 if (path.startsWith("#"))
-                    this.config.addPathedComments(object.toString());
+                    this.config.addPathedComments(path, object.toString());
                 else
                     this.config.set(path, object);
             });

@@ -4,7 +4,7 @@ plugins {
 }
 
 group "xyz.oribuin"
-version "1.1.4-pre2"
+version "1.1.4-pre3"
 sourceCompatibility = JavaVersion.VERSION_16
 targetCompatibility = JavaVersion.VERSION_16
 
