@@ -1,19 +1,17 @@
 package xyz.oribuin.eternaltags.hook;
 
 import dev.rosewood.rosegarden.utils.HexUtils;
-import me.clip.placeholderapi.PlaceholderAPI;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.manager.ConfigurationManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
-import xyz.oribuin.eternaltags.util.TagsUtil;
+import xyz.oribuin.eternaltags.util.TagsUtils;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 public class Expansion extends PlaceholderExpansion {
 
@@ -35,37 +33,71 @@ public class Expansion extends PlaceholderExpansion {
         // Add new specific tags here
         if (args.length >= 2) {
             final String tagId = String.join(" ", args).substring(args[0].length() + 1);
-            final Optional<Tag> tag = this.manager.matchTagFromID(tagId);
+            final Tag tag = this.manager.getTagFromId(tagId);
+            if (tag == null)
+                return this.formattedPlaceholder;
+
             // Can't use the switch statement here
             if (args[0].equalsIgnoreCase("get"))
-                return tag.map(Tag::getTag).orElse(this.formattedPlaceholder);
+                return this.formatString(tag.getTag(), true);
 
             else if (args[0].equalsIgnoreCase("has"))
-                return player.getPlayer() != null && tag.stream().map(Tag::getTag).anyMatch(player.getPlayer()::hasPermission) ? "true" : "false";
+                return player.getPlayer() != null && player.getPlayer().hasPermission(tag.getPermission()) ? "true" : "false";
         }
 
 
-        final Optional<Tag> activeTag = this.manager.getUsersTag(player.getUniqueId());
+        final Tag activeTag = this.manager.getPlayersTag(player);
         return switch (params.toLowerCase()) {
             // Set bracket placeholders to allow \o/ Placeholder Inception \o/
-            case "tag" -> this.manager.getDisplayTag(activeTag.orElse(null), player, "");
-            case "tag_formatted" -> this.manager.getDisplayTag(activeTag.orElse(null), player, this.formattedPlaceholder);
+            case "tag" -> this.manager.getDisplayTag(activeTag, player, "");
+            case "tag_formatted" -> this.manager.getDisplayTag(activeTag, player, this.formattedPlaceholder);
 
             // We're separating these tags from the other ones because of placeholder inception
-            case "tag_stripped" -> activeTag.map(Tag::getTag).orElse("");
-            case "tag_stripped_formatted" -> activeTag.map(Tag::getTag).orElse(this.formattedPlaceholder);
-            case "tag_name" -> activeTag.map(Tag::getName).orElse(this.formattedPlaceholder);
-            case "tag_id" -> activeTag.map(Tag::getId).orElse(this.formattedPlaceholder);
-            case "tag_permission" -> activeTag.map(Tag::getPermission).orElse(this.formattedPlaceholder);
-            case "tag_description" -> TagsUtil.formatList(activeTag.map(Tag::getDescription).orElse(Collections.singletonList(this.formattedPlaceholder)));
+            case "tag_stripped" -> this.formatString(activeTag.getTag(), false);
+            case "tag_stripped_formatted" -> this.formatString(activeTag.getTag(), false);
+
+            // Geneal tag placeholders, unlikely to be used often
+            case "tag_name" -> this.formatString(activeTag.getName(), true);
+            case "tag_id" -> this.formatString(activeTag.getId(), true);
+            case "tag_permission" -> this.formatString(activeTag.getPermission(), true);
+            case "tag_description" -> TagsUtils.formatList(this.formatList(activeTag.getDescription()));
+            case "tag_order" -> this.formatString(String.valueOf(activeTag.getOrder()), true);
+            case "tag_icon" -> this.formatString(activeTag.getIcon().toString(), true);
+
+            // These are the tags that return a number.
             case "total" -> String.valueOf(this.manager.getCachedTags().size());
-            case "joined" -> this.joinTags(Optional.ofNullable(player.getPlayer())
-                    .map(this.manager::getPlayersTags)
-                    .orElse(this.manager.getCachedTags().values().stream().toList()));
-            case "unlocked" -> player.getPlayer() != null ? String.valueOf(this.manager.getPlayersTags(player.getPlayer()).size()) : "0";
+            case "joined" -> this.joinTags(this.manager.getPlayerTags(player.getPlayer()));
+            case "unlocked" -> player.getPlayer() != null ? String.valueOf(this.manager.getPlayerTags(player.getPlayer()).size()) : "0";
             case "favorites" -> player.getPlayer() != null ? String.valueOf(this.manager.getUsersFavourites(player.getUniqueId()).size()) : "0";
             default -> null;
         };
+    }
+
+    /**
+     * Format a string depending on if it is null or not
+     *
+     * @param text      The string to format
+     * @param formatted If the string is formatted or not
+     * @return The formatted string
+     */
+    private String formatString(@Nullable String text, boolean formatted) {
+        if (text == null)
+            return formatted ? this.formattedPlaceholder : "";
+
+        return text;
+    }
+
+    /**
+     * Format a string list depending on if it is null or not
+     *
+     * @param list The strings to format
+     * @return The formatted string list
+     */
+    private List<String> formatList(@Nullable List<String> list) {
+        if (list == null)
+            return List.of(this.formattedPlaceholder);
+
+        return list;
     }
 
     /**

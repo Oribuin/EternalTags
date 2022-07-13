@@ -1,10 +1,12 @@
 package xyz.oribuin.eternaltags;
 
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 
-import java.util.Optional;
+import java.util.UUID;
 
 /**
  * @author Oribuin
@@ -15,24 +17,32 @@ public class EternalAPI {
     private static EternalAPI instance;
     private final TagsManager tagManager;
 
-    public EternalAPI(final EternalTags plugin) {
-        instance = this;
-        this.tagManager = plugin.getManager(TagsManager.class);
+    private EternalAPI() {
+        this.tagManager = EternalTags.getInstance().getManager(TagsManager.class);
     }
 
     /**
      * Get an offline player's active tag
      *
-     * @param player The offline player.
+     * @param uuid The player's UUID
      * @return The [Tag] belonging to the player, This tag is nullable
+     * @since v1.1.4
      */
-    @Deprecated
-    public Tag getUserTag(OfflinePlayer player) {
-        return null;
+    @Nullable
+    public Tag getUserTag(UUID uuid) {
+        return this.getTagManager().getTagFromUUID(uuid);
     }
 
-    public Optional<Tag> getUser(OfflinePlayer player) {
-        return this.tagManager.getUsersTag(player.getUniqueId());
+    /**
+     * Get a player's active tag if they are online.
+     *
+     * @param player The player to get the tag of
+     * @return The [Tag] belonging to the player, This tag is nullable
+     * @since v1.1.4
+     */
+    @Nullable
+    public Tag getOnlineTag(Player player) {
+        return this.tagManager.getPlayersTag(player);
     }
 
     /**
@@ -45,12 +55,13 @@ public class EternalAPI {
         this.tagManager.setTag(player.getUniqueId(), tag);
     }
 
-    public TagsManager getTagManager() {
-        return tagManager;
-    }
-
     public static EternalAPI getInstance() {
+        if (instance == null)
+            instance = new EternalAPI();
         return instance;
     }
 
+    public TagsManager getTagManager() {
+        return tagManager;
+    }
 }

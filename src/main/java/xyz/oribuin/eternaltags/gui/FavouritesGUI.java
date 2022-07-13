@@ -2,19 +2,20 @@ package xyz.oribuin.eternaltags.gui;
 
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
+import dev.triumphteam.gui.guis.GuiItem;
+import dev.triumphteam.gui.guis.PaginatedGui;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import xyz.oribuin.eternaltags.event.TagEquipEvent;
 import xyz.oribuin.eternaltags.event.TagUnequipEvent;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.MenuManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
-import xyz.oribuin.gui.PaginatedGui;
+import xyz.oribuin.eternaltags.util.TagsUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,71 +25,54 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-public class FavouritesGUI extends OriGUI {
+public class FavouritesGUI extends PluginGUI {
+
+    private final TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
+    private final LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
 
     public FavouritesGUI(RosePlugin rosePlugin) {
         super(rosePlugin);
     }
 
-    @Override
-    public void createGUI(Player player, @Nullable String keyword) {
-        final List<Tag> tags = this.getTags(player);
-        PaginatedGui gui = this.createBaseGUI(player);
+    public void open(Player player) {
+        PaginatedGui gui = this.createPagedGUI(player);
 
-        // Add the border items.
-        if (this.get("border-item.enabled", true)) {
-            final ItemStack item = this.recreateItem("border-item", player);
-            if (item == null)
-                return;
-
-            for (int i = 45; i < 54; i++)
-                this.put(gui, i, item);
-        }
-
-        // Add page items.
+        this.put(gui, "border-item", player);
         this.put(gui, "next-page", player, event -> {
-            gui.next(player);
-            gui.updateTitle(this.format(player, this.get("menu-name", null), this.getPages(gui)));
+            gui.next();
+            gui.updateTitle(this.formatString(player, this.get("menu-name"), this.getPagePlaceholders(gui)));
         });
 
         this.put(gui, "previous-page", player, event -> {
-            gui.previous(player);
-            gui.updateTitle(this.format(player, this.get("menu-name", null), this.getPages(gui)));
+            gui.previous();
+            gui.updateTitle(this.formatString(player, this.get("menu-name"), this.getPagePlaceholders(gui)));
         });
 
-        // Add clear tags option
-        // yes there's potential for it to completely fuck over if the user changes their commands? yes but do i care? god fuckin no
+        this.put(gui, "clear-tag", player, event -> {
+            final TagUnequipEvent tagUnequipEvent = new TagUnequipEvent(player);
+            Bukkit.getPluginManager().callEvent(tagUnequipEvent);
+            if (tagUnequipEvent.isCancelled())
+                return;
 
-        if (this.get("clear-tag.enabled", true)) {
-            this.put(gui, "clear-tag", player, event -> {
-                final TagUnequipEvent tagUnequipEvent = new TagUnequipEvent(player);
-                Bukkit.getPluginManager().callEvent(tagUnequipEvent);
-                if (tagUnequipEvent.isCancelled())
-                    return;
+            this.manager.clearTag(event.getWhoClicked().getUniqueId());
+            this.locale.sendMessage(event.getWhoClicked(), "command-clear-cleared");
+            gui.close(player);
+        });
 
-                this.rosePlugin.getManager(TagsManager.class).clearTag(event.getWhoClicked().getUniqueId());
-                this.rosePlugin.getManager(LocaleManager.class).sendMessage(event.getWhoClicked(), "command-clear-cleared");
-                event.getWhoClicked().closeInventory();
-            });
-        }
-
-        // Add favourites tag option
-        if (this.get("main-menu.enabled", true)) {
-            this.put(gui, "main-menu", player, event -> {
-                final MenuManager manager = this.rosePlugin.getManager(MenuManager.class);
-                manager.matchMenu("tags-gui").ifPresent(menu -> menu.createGUI(player, keyword));
-            });
-        }
+        this.put(gui, "main-menu", player, event -> {
+            final MenuManager manager = this.rosePlugin.getManager(MenuManager.class);
+            manager.get(TagsGUI.class).open(player, null);
+        });
 
         gui.open(player);
-        gui.updateTitle(this.format(player, this.get("menu-name", null), this.getPages(gui)));
+        gui.updateTitle(this.formatString(player, this.get("menu-name"), this.getPagePlaceholders(gui)));
+        final List<Tag> tags = this.getTags(player);
 
         int dynamicSpeed = this.get("dynamic-speed", 3);
         if (this.get("dynamic-gui", false)) {
             this.rosePlugin.getServer().getScheduler().runTaskTimer(this.rosePlugin, task -> {
-                if (gui.getInv().getViewers().isEmpty()) {
+                if (gui.getInventory().getViewers().isEmpty()) {
                     task.cancel();
                     return;
                 }
@@ -98,16 +82,16 @@ public class FavouritesGUI extends OriGUI {
         } else {
             this.addTags(gui, player, tags);
         }
+
     }
 
     private void addTags(PaginatedGui gui, Player player, List<Tag> tags) {
-        gui.getPageItems().clear();
-        // Add all the tags to the gui
-        tags.forEach(tag -> gui.addPageItem(this.createTagItem(tag, "tag-item", player), event -> {
+        gui.clearPageItems();
 
+        tags.stream().map(tag -> new GuiItem(TagsUtils.getItemStack(this.config, "tag-item", player, this.getTagPlaceholders(tag, player)), event -> {
             if (!event.getWhoClicked().hasPermission(tag.getPermission()))
                 return;
-            
+
             if (event.isShiftClick()) {
                 this.toggleFavourite(player, tag);
                 this.addTags(gui, player, this.getTags(player));
@@ -115,8 +99,8 @@ public class FavouritesGUI extends OriGUI {
             }
 
             this.setTag(player, tag);
-            event.getWhoClicked().closeInventory();
-        }));
+            gui.close(player);
+        })).forEach(gui::addItem);
 
         gui.update();
     }
@@ -129,12 +113,7 @@ public class FavouritesGUI extends OriGUI {
      * @return The list of tags
      */
     private List<Tag> getTags(Player player) {
-        final TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
-
-        List<Tag> tags = manager.getPlayersTags(player).stream()
-                .filter(tag -> manager.isFavourite(player.getUniqueId(), tag))
-                .collect(Collectors.toList());
-
+        List<Tag> tags = new ArrayList<>(manager.getUsersFavourites(player.getUniqueId()).values());
         this.sortTags(tags);
         return tags;
     }
@@ -157,18 +136,22 @@ public class FavouritesGUI extends OriGUI {
     public @NotNull Map<String, Object> getDefaultValues() {
         return new LinkedHashMap<>() {{
             this.put("#0", "Configure the name at the top of the gui.");
-            this.put("menu-name", "Favorite Tags | %page%/%total%");
+            this.put("menu-name", "EternalTags | %page%/%total%");
             this.put("#1", "Available Options: ALPHABETICAL, CUSTOM, NONE, RANDOM");
             this.put("sort-type", SortType.ALPHABETICAL.name());
-            this.put("#2", "Should the gui update frequently for animated tags?");
+            this.put("#2", "Should favourite tags be put at the start of the gui?");
+            this.put("favorites-first", true);
+            this.put("#3", "Should all tags be added to the gui?");
+            this.put("add-all-tags", false);
+            this.put("#5", "Should the gui update frequently for animated tags?");
             this.put("dynamic-gui", false);
-            this.put("#3", "The speed (in ticks) that the dynamic gui updates in.");
+            this.put("#6", "The speed (in ticks) that the dynamic gui updates in.");
             this.put("dynamic-speed", 3);
-            this.put("#4", "The text before any new lines when using %description% placeholder.");
+            this.put("#7", "The text before any new lines when using %description% placeholder.");
             this.put("description-format", " &f| &7");
 
             // Tag Item
-            this.put("#5", "The display item for tags");
+            this.put("#8", "The display item for tags");
             this.put("tag-item.material", Material.NAME_TAG.name());
             this.put("tag-item.amount", 1);
             this.put("tag-item.name", "%tag%");
@@ -182,19 +165,19 @@ public class FavouritesGUI extends OriGUI {
             this.put("tag-item.glow", true);
 
             // Next Page Item
-            this.put("#6", "The display item for the next page button");
+            this.put("#9", "The display item for the next page button");
             this.put("next-page.material", Material.PAPER.name());
             this.put("next-page.name", "#00B4DB&lNext Page");
             this.put("next-page.slot", 52);
 
             // Previous Page Item
-            this.put("#7", "The display item for the next page button");
+            this.put("#10", "The display item for the next page button");
             this.put("previous-page.material", Material.PAPER.name());
             this.put("previous-page.name", "#00B4DB&lPrevious Page");
             this.put("previous-page.slot", 46);
 
             // Clear Tag Item
-            this.put("#8", "The display item for clearing active tag.");
+            this.put("#11", "The display item for clearing active tag.");
             this.put("clear-tag.enabled", true);
             this.put("clear-tag.slot", 50);
             this.put("clear-tag.material", Material.PLAYER_HEAD.name());
@@ -208,41 +191,28 @@ public class FavouritesGUI extends OriGUI {
             this.put("clear-tag.texture", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZTljZGI5YWYzOGNmNDFkYWE1M2JjOGNkYTc2NjVjNTA5NjMyZDE0ZTY3OGYwZjE5ZjI2M2Y0NmU1NDFkOGEzMCJ9fX0=");
 
             // Favourites Tag Item
-            this.put("#9", "The display item for viewing favourite tags.");
-            this.put("main-menu.enabled", true);
-            this.put("main-menu.slot", 48);
-            this.put("main-menu.material", Material.PLAYER_HEAD.name());
-            this.put("main-menu.name", "#00B4DB&lMain Menu");
-            this.put("main-menu.lore", Arrays.asList(
-                    " &f| &7Click to go back to",
-                    " &f| &7the main tags menu."
+            this.put("#12", "The display item for viewing favourite tags.");
+            this.put("favorite-tags.enabled", true);
+            this.put("favorite-tags.slot", 48);
+            this.put("favorite-tags.material", Material.PLAYER_HEAD.name());
+            this.put("favorite-tags.name", "#00B4DB&lFavorite Tags");
+            this.put("favorite-tags.lore", Arrays.asList(
+                    " &f| &7Click to view all your",
+                    " &f| &7favorite tags in one menu."
             ));
-            this.put("main-menu.texture", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmQ2OWUwNmU1ZGFkZmQ4NGU1ZjNkMWMyMTA2M2YyNTUzYjJmYTk0NWVlMWQ0ZDcxNTJmZGM1NDI1YmMxMmE5In19fQ==");
+            this.put("favorite-tags.texture", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZDVjNmRjMmJiZjUxYzM2Y2ZjNzcxNDU4NWE2YTU2ODNlZjJiMTRkNDdkOGZmNzE0NjU0YTg5M2Y1ZGE2MjIifX19");
 
-            this.put("#10", "The border item at the bottom of the gui.");
+            this.put("#13", "The border item at the bottom of the gui.");
             this.put("border-item.enabled", true);
             this.put("border-item.material", Material.GRAY_STAINED_GLASS_PANE.name());
             this.put("border-item.name", " ");
+            this.put("border-item.slots", List.of("45-53"));
         }};
-    }
-
-    @Override
-    public int getRows() {
-        return 6;
     }
 
     @Override
     public @NotNull String getMenuName() {
         return "favorites-gui";
-    }
-
-    @Override
-    public @NotNull List<Integer> getPageSlots() {
-        List<Integer> slots = new ArrayList<>();
-        for (int i = 0; i < 45; i++)
-            slots.add(i);
-
-        return slots;
     }
 
     private enum SortType {
@@ -276,7 +246,7 @@ public class FavouritesGUI extends OriGUI {
             return;
 
         this.rosePlugin.getManager(TagsManager.class).setTag(player.getUniqueId(), tag);
-        this.rosePlugin.getManager(LocaleManager.class).sendMessage(player, "command-set-changed", StringPlaceholders.single("tag", tagsManager.getDisplayTag(tag, player)));
+        this.rosePlugin.getManager(LocaleManager.class).sendMessage(player, "command-set-changed", StringPlaceholders.single("tag", this.manager.getDisplayTag(tag, player)));
     }
 
     /**
@@ -299,5 +269,21 @@ public class FavouritesGUI extends OriGUI {
         String off = locale.getLocaleMessage("command-favorite-off");
 
         locale.sendMessage(player, "command-favorite-toggled", StringPlaceholders.builder("tag", manager.getDisplayTag(tag, player)).addPlaceholder("toggled", !isFavourite ? on : off).build());
+    }
+
+    public StringPlaceholders getTagPlaceholders(Tag tag, OfflinePlayer player) {
+        return StringPlaceholders.builder()
+                .addPlaceholder("tag", this.manager.getDisplayTag(tag, player))
+                .addPlaceholder("id", tag.getId())
+                .addPlaceholder("name", tag.getName())
+                .addPlaceholder("description", String.join(", ", tag.getDescription()))
+                .addPlaceholder("permission", tag.getPermission())
+                .addPlaceholder("order", tag.getOrder())
+                .build();
+    }
+
+    @Override
+    protected int rows() {
+        return 6;
     }
 }

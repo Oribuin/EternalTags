@@ -3,16 +3,15 @@ package xyz.oribuin.eternaltags.manager;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.manager.Manager;
 import xyz.oribuin.eternaltags.gui.FavouritesGUI;
-import xyz.oribuin.eternaltags.gui.OriGUI;
+import xyz.oribuin.eternaltags.gui.PluginGUI;
 import xyz.oribuin.eternaltags.gui.TagsGUI;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Optional;
 
 public class MenuManager extends Manager {
 
-    private Map<String, OriGUI> registeredGUIs;
+    private Map<Class<? extends PluginGUI>, PluginGUI> registeredMenus;
 
     public MenuManager(RosePlugin rosePlugin) {
         super(rosePlugin);
@@ -20,28 +19,27 @@ public class MenuManager extends Manager {
 
     @Override
     public void reload() {
-        this.registeredGUIs = new LinkedHashMap<String, OriGUI>() {{
-            this.put("tags-gui", new TagsGUI(rosePlugin));
-            this.put("favorites-gui", new FavouritesGUI(rosePlugin));
+        this.registeredMenus = new LinkedHashMap<>() {{
+            this.put(TagsGUI.class, new TagsGUI(rosePlugin));
+            this.put(FavouritesGUI.class, new FavouritesGUI(rosePlugin));
         }};
 
-        // Load menu configurations
-        this.registeredGUIs.forEach((s, gui) -> gui.loadConfiguration());
+        this.registeredMenus.forEach((name, gui) -> gui.load());
     }
 
-    /**
-     * Find a menu from the id
-     *
-     * @param id The id of the menu
-     * @return The GUI if present
-     */
-    public Optional<OriGUI> matchMenu(String id) {
-        return Optional.ofNullable(this.registeredGUIs.getOrDefault(id, null));
+    @SuppressWarnings("unchecked")
+    public <T extends PluginGUI> T get(Class<T> menuClass) {
+        if (this.registeredMenus.containsKey(menuClass)) {
+            return (T) this.registeredMenus.get(menuClass);
+        }
+
+        return null;
     }
+
 
     @Override
     public void disable() {
-        this.registeredGUIs.clear();
+        this.registeredMenus.clear();
     }
 
 }

@@ -8,6 +8,7 @@ import dev.rosewood.rosegarden.command.framework.annotation.Optional;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import org.bukkit.entity.Player;
+import xyz.oribuin.eternaltags.gui.FavouritesGUI;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.MenuManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
@@ -29,7 +30,7 @@ public class FavoriteCommand extends RoseCommand {
         Player sender = (Player) context.getSender();
 
         if (tag == null) {
-            this.rosePlugin.getManager(MenuManager.class).matchMenu("favorites-gui").ifPresent(gui -> gui.createGUI(sender, null));
+            this.rosePlugin.getManager(MenuManager.class).get(FavouritesGUI.class).open(sender);
             return;
         }
 

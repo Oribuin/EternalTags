@@ -1,7 +1,5 @@
 package xyz.oribuin.eternaltags.obj;
 
-import xyz.oribuin.eternaltags.conversion.ValidPlugin;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;

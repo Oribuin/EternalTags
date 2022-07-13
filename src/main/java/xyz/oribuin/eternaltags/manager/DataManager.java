@@ -3,7 +3,6 @@ package xyz.oribuin.eternaltags.manager;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.database.DataMigration;
 import dev.rosewood.rosegarden.manager.AbstractDataManager;
-import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.database.migration._1_CreateInitialTables;
@@ -68,19 +67,21 @@ public class DataManager extends AbstractDataManager {
     }
 
     /**
-     * Change every single person in the database's current tag.
+     * Change every select user's active tag to the new tag.
      *
      * @param tag The tag.
      */
-    public void updateEveryone(Tag tag, List<Player> players) {
-        players.forEach(player -> this.cachedUsers.put(player.getUniqueId(), tag));
+    public void updateUsers(Tag tag, List<UUID> players) {
+        players.forEach(player -> this.cachedUsers.put(player, tag));
 
         this.async(task -> this.databaseConnector.connect(connection -> {
-            final String query = "UPDATE " + this.getTablePrefix() + "tags SET tagID = ?";
-
+            final String query = "REPLACE INTO " + this.getTablePrefix() + "tags (player, tagID) VALUES (?, ?)";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
-                statement.setString(1, tag.getId());
-                statement.executeUpdate();
+                for (UUID player : players) {
+                    statement.setString(1, player.toString());
+                    statement.setString(2, tag.getId());
+                    statement.executeUpdate();
+                }
             }
         }));
 
@@ -149,46 +150,39 @@ public class DataManager extends AbstractDataManager {
     }
 
     /**
-     * Load & Cache a user's current active tag.
+     * Load a user from the database and cache them.
      *
      * @param uuid The player's uuid
      */
     public void loadUser(UUID uuid) {
-        this.async(task -> this.databaseConnector.connect(connection -> {
-            final String query = "SELECT tagID FROM " + this.getTablePrefix() + "tags WHERE player = ?";
+        final TagsManager tagsManager = this.rosePlugin.getManager(TagsManager.class);
+        final Set<Tag> favouriteTags = new HashSet<>();
 
-            try (PreparedStatement statement = connection.prepareStatement(query)) {
+        this.async(task -> this.databaseConnector.connect(connection -> {
+            final String selectTag = "SELECT tagID FROM " + this.getTablePrefix() + "tags WHERE player = ?";
+
+            // Load the active tag from the database.
+            try (PreparedStatement statement = connection.prepareStatement(selectTag)) {
                 statement.setString(1, uuid.toString());
                 final ResultSet result = statement.executeQuery();
                 if (result.next()) {
-                    this.rosePlugin.getManager(TagsManager.class).matchTagFromID(result.getString(1)).ifPresent(tag -> this.cachedUsers.put(uuid, tag));
+
+                    final String tagId = result.getString(1);
+
+                    this.cachedUsers.put(uuid, tagsManager.getTagFromId(tagId));
                 }
             }
-        }));
-    }
 
-    /**
-     * Load a user's favourite tags from the database.
-     *
-     * @param uuid The player's UUID
-     */
-    public void loadFavourites(UUID uuid) {
-        final Set<Tag> tags = new HashSet<>();
-        this.async(task -> this.databaseConnector.connect(connection -> {
-
-            // Select all the favourite tags from the database set by the player.
-            final String query = "SELECT tagID FROM " + this.getTablePrefix() + "favourites WHERE player = ?";
-            try (PreparedStatement statement = connection.prepareStatement(query)) {
+            final String favouriteTagsQuery = "SELECT tagID FROM " + this.getTablePrefix() + "favourites WHERE player = ?";
+            try (PreparedStatement statement = connection.prepareStatement(favouriteTagsQuery)) {
                 statement.setString(1, uuid.toString());
                 final ResultSet result = statement.executeQuery();
-
-                final TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
                 while (result.next()) {
-                    manager.matchTagFromID(result.getString("tagID")).ifPresent(tags::add);
-                    this.cachedFavourites.put(uuid, tags);
+                    final String tagId = result.getString(1);
+                    favouriteTags.add(tagsManager.getTagFromId(tagId));
+                    this.cachedFavourites.put(uuid, favouriteTags);
                 }
             }
-
         }));
     }
 

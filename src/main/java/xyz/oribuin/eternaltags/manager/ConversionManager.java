@@ -29,7 +29,6 @@ public class ConversionManager extends Manager {
     }
 
     public void reload() {
-        this.rosePlugin.getLogger().info("Checking if plugin needs to be converted.");
         if (!this.shouldConvert()) {
             this.rosePlugin.getLogger().info("Plugin files are up to date!");
             return;

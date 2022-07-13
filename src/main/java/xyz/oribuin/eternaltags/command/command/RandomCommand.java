@@ -27,19 +27,19 @@ public class RandomCommand extends RoseCommand {
         final TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
         Player sender = (Player) context.getSender();
 
-        final Optional<Tag> tagOptional = manager.getRandomTag(sender);
-        if (tagOptional.isEmpty()) {
+        final Tag randomTag = manager.getRandomTag(sender);
+        if (randomTag == null) {
             locale.sendMessage(sender, "no-tags");
             return;
         }
 
-        final TagEquipEvent event = new TagEquipEvent(sender, tagOptional.get());
+        final TagEquipEvent event = new TagEquipEvent(sender, randomTag);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled())
             return;
 
-        manager.setTag(sender.getUniqueId(), tagOptional.get());
-        locale.sendMessage(sender, "command-set-changed", StringPlaceholders.single("tag", manager.getDisplayTag(tagOptional.get(), sender)));
+        manager.setTag(sender.getUniqueId(), randomTag);
+        locale.sendMessage(sender, "command-set-changed", StringPlaceholders.single("tag", manager.getDisplayTag(randomTag, sender)));
     }
 
 

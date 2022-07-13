@@ -26,8 +26,7 @@ public class PluginConversionManager extends Manager {
     /**
      * Convert a plugin into EternalTags
      *
-     * @param plugin The plugin
-     * @return The converted tags.
+     * @param conversionPlugin The plugin to convert
      */
     public Map<String, Tag> convertPlugin(ConversionPlugin conversionPlugin) {
         if (conversionPlugin == null)

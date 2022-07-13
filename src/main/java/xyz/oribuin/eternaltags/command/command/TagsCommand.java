@@ -6,6 +6,7 @@ import dev.rosewood.rosegarden.command.framework.CommandContext;
 import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import org.bukkit.entity.Player;
+import xyz.oribuin.eternaltags.gui.TagsGUI;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.MenuManager;
 
@@ -25,13 +26,13 @@ public class TagsCommand extends BaseCommand {
             return;
         }
 
-        this.rosePlugin.getManager(MenuManager.class).matchMenu("tags-gui")
-                .ifPresent(oriGUI -> oriGUI.createGUI(player, null));
-
+        this.rosePlugin.getManager(MenuManager.class).get(TagsGUI.class).open(player, null);
     }
 
     @Override
     public String getRequiredPermission() {
         return "eternaltags.use";
     }
+
+
 }

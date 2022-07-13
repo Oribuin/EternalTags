@@ -9,16 +9,11 @@ import xyz.oribuin.eternaltags.manager.DataManager;
 
 public class PlayerListeners implements Listener {
 
-    private final DataManager data;
+    private final DataManager data = EternalTags.getInstance().getManager(DataManager.class);
 
-    public PlayerListeners(final EternalTags plugin) {
-        this.data = plugin.getManager(DataManager.class);
-    }
-
-    @EventHandler(ignoreCancelled = true)
-    public void onJoin(PlayerJoinEvent event) {
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
         this.data.loadUser(event.getPlayer().getUniqueId());
-        this.data.loadFavourites(event.getPlayer().getUniqueId());
     }
 
 }

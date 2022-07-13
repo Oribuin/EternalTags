@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -38,8 +37,8 @@ public class TagsManager extends Manager {
     private final Map<String, Tag> cachedTags = new HashMap<>();
     private final Random random = new Random();
 
-    private boolean removeInaccessible;
     private CommentedFileConfiguration config;
+    private boolean removeInaccessible;
 
     public TagsManager(RosePlugin plugin) {
         super(plugin);
@@ -101,7 +100,7 @@ public class TagsManager extends Manager {
             if (tag == null)
                 continue;
 
-            final Tag obj = new Tag(key, name, tag);
+            final Tag obj = new Tag(key.toLowerCase(), name, tag);
             List<String> description = tagSection.get(key + ".description") instanceof String
                     ? Collections.singletonList(tagSection.getString(key + ".description"))
                     : tagSection.getStringList(key + ".description");
@@ -122,7 +121,7 @@ public class TagsManager extends Manager {
                 obj.setTag(OraxenHook.parseGlyph(tag));
             }
 
-            this.cachedTags.put(key, obj);
+            this.cachedTags.put(key.toLowerCase(), obj);
         }
     }
 
@@ -195,11 +194,11 @@ public class TagsManager extends Manager {
      * @param id The id of the tag.
      */
     public void deleteTag(String id) {
-        Optional<Tag> optional = this.matchTagFromID(id);
-        if (optional.isEmpty())
+        Tag tag = this.getTagFromId(id);
+        if (tag == null)
             return;
 
-        final TagDeleteEvent event = new TagDeleteEvent(optional.get());
+        final TagDeleteEvent event = new TagDeleteEvent(tag);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled())
             return;
@@ -224,21 +223,40 @@ public class TagsManager extends Manager {
     }
 
     /**
-     * Get a user's active tag by UUID
+     * Get a tag by the UUID, load the user if they aren't cached.
      *
-     * @param uuid The UUID of the user.
+     * @param uuid The UUID of the player.
      * @return The active tag if present
      */
-    public Optional<Tag> getUsersTag(UUID uuid) {
-        Tag tag = this.rosePlugin.getManager(DataManager.class).getCachedUsers().get(uuid);
-        Player player = Bukkit.getPlayer(uuid);
+    @Nullable
+    public Tag getTagFromUUID(UUID uuid) {
+        // I could return this.getTag(player.getUniqueId()); but its *slightly* more efficient for the removeInaccessible option
+        final DataManager dataManager = this.rosePlugin.getManager(DataManager.class);
+        Tag tag = dataManager.getCachedUsers().get(uuid);
         if (tag == null)
-            return this.getDefaultTag(player);
+            dataManager.loadUser(uuid);
 
+        return dataManager.getCachedUsers().get(uuid);
+    }
+
+    /**
+     * Get an offline player's active tag.
+     *
+     * @param offlinePlayer The player.
+     * @return The active tag if present
+     */
+    @Nullable
+    public Tag getPlayersTag(@NotNull OfflinePlayer offlinePlayer) {
+        Tag tag = this.rosePlugin.getManager(DataManager.class).getCachedUsers().get(offlinePlayer.getUniqueId());
+        if (tag == null)
+            return this.getDefaultTag(offlinePlayer);
+
+        // this might be very inefficient, we'll see.
+        final Player player = offlinePlayer.getPlayer();
         if (this.removeInaccessible && player != null && !player.hasPermission(tag.getPermission()))
-            return this.getDefaultTag(player);
+            return this.getDefaultTag(offlinePlayer);
 
-        return Optional.of(tag);
+        return tag;
     }
 
     /**
@@ -281,29 +299,12 @@ public class TagsManager extends Manager {
     }
 
     /**
-     * Get a user's active tag by the player object
-     *
-     * @param player The player
-     * @return The active tag if present
-     */
-    public Optional<Tag> getUsersTag(Player player) {
-        // I could return this.getTag(player.getUniqueId()); but its *slightly* more efficient for the removeInaccessible option
-        Tag tag = this.rosePlugin.getManager(DataManager.class).getCachedUsers().get(player.getUniqueId());
-        if (tag == null)
-            return this.getDefaultTag(player);
-
-        if (this.removeInaccessible && !player.hasPermission(tag.getPermission()))
-            return this.getDefaultTag(player);
-
-        return Optional.of(tag);
-    }
-
-    /**
      * Get a user's favourite tags.
      *
      * @param uuid The UUID of the player.
      * @return The map of favourite tags.
      */
+    @NotNull
     public Map<String, Tag> getUsersFavourites(UUID uuid) {
         final Map<String, Tag> favourites = new HashMap<>();
         Set<Tag> tags = this.rosePlugin.getManager(DataManager.class).getCachedFavourites().get(uuid);
@@ -321,7 +322,11 @@ public class TagsManager extends Manager {
      * @param player The player
      * @return The tags the player has.
      */
-    public List<Tag> getPlayersTags(Player player) {
+    @NotNull
+    public List<Tag> getPlayerTags(@Nullable Player player) {
+        if (player == null)
+            return new ArrayList<>(this.cachedTags.values());
+
         return this.cachedTags.values().stream()
                 .filter(entry -> player.hasPermission(entry.getPermission()))
                 .collect(Collectors.toList());
@@ -343,28 +348,28 @@ public class TagsManager extends Manager {
      * @param id The id of the tag.
      * @return An optional tag.
      */
-    public Optional<Tag> matchTagFromID(String id) {
-        return Optional.ofNullable(this.cachedTags.get(id.toLowerCase()));
+    @Nullable
+    public Tag getTagFromId(String id) {
+        return this.cachedTags.get(id.toLowerCase());
     }
 
     /**
+     * Get the default tag for a player.
+     *
      * @param player The player
      * @return The default tag.
      */
-    public Optional<Tag> getDefaultTag(Player player) {
+    public Tag getDefaultTag(@Nullable OfflinePlayer player) {
         String defaultTagID = ConfigurationManager.Setting.DEFAULT_TAG.getString();
 
         if (defaultTagID == null || defaultTagID.equalsIgnoreCase("none"))
-            return Optional.empty();
+            return null;
 
-        if (defaultTagID.equalsIgnoreCase("random") && player != null) {
-            Optional<Tag> randomTag = this.getRandomTag(player);
-            randomTag.ifPresent(tag -> this.setTag(player.getUniqueId(), tag));
-
-            return randomTag;
+        if (defaultTagID.equalsIgnoreCase("random")) {
+            return this.getRandomTag(player);
         }
 
-        return this.matchTagFromID(defaultTagID);
+        return this.getTagFromId(defaultTagID);
     }
 
     /**
@@ -384,39 +389,48 @@ public class TagsManager extends Manager {
      * @param tag The tag
      */
     public void setEveryone(Tag tag) {
-        this.rosePlugin.getManager(DataManager.class).updateEveryone(tag, new ArrayList<>(Bukkit.getOnlinePlayers()));
+        this.rosePlugin.getManager(DataManager.class).updateUsers(tag, new ArrayList<>(
+                Bukkit.getOnlinePlayers()
+                        .stream()
+                        .map(Player::getUniqueId)
+                        .collect(Collectors.toList()))
+        );
     }
 
     /**
      * Get a randomized tag from a user's available tags.
      *
-     * @param player The player
+     * @param offlinePlayer The offlinePlayer
      * @return The random tag.
      */
-    public Optional<Tag> getRandomTag(Player player) {
-        List<Tag> tags = this.getPlayersTags(player);
-        if (tags.isEmpty())
-            return Optional.empty();
+    public Tag getRandomTag(@Nullable OfflinePlayer offlinePlayer) {
+        List<Tag> tags = new ArrayList<>(this.getCachedTags().values());
 
-        return Optional.ofNullable(tags.get(random.nextInt(tags.size())));
+        if (offlinePlayer != null && offlinePlayer.getPlayer() != null)
+            tags = this.getPlayerTags(offlinePlayer.getPlayer());
+
+        if (tags.isEmpty())
+            return null;
+
+        return tags.get(random.nextInt(tags.size()));
+    }
+
+    /**
+     * Get the display version of a tag using placeholderapi
+     *
+     * @param tag         The tag.
+     * @param player      The player.
+     * @param placeholder The placeholder.
+     * @return The display tag.
+     */
+    public String getDisplayTag(@Nullable Tag tag, OfflinePlayer player, @NotNull String placeholder) {
+        return HexUtils.colorify(PlaceholderAPI.setPlaceholders(player, tag != null ? tag.getTag() : placeholder));
     }
 
     /**
      * Get the display version of a tag using placeholderapi
      *
      * @param tag    The tag.
-     * @param player The player.
-     * @param placeholder The placeholder.
-     * @return The display tag.
-     */
-    public String getDisplayTag(@Nullable Tag tag, OfflinePlayer player, @NotNull String placeholder) {
-        return PlaceholderAPI.setPlaceholders(player, HexUtils.colorify(tag != null ? tag.getTag() : placeholder)); // Doesn't work with bold text
-    }
-
-    /**
-     * Get the display version of a tag using placeholderapi
-     *
-     * @param tag   The tag.
      * @param player The player.
      * @return The display tag.
      */
@@ -461,7 +475,7 @@ public class TagsManager extends Manager {
 
             // Animated Gradient Tag
             this.put("tags.automatic-gradient.name", "Animated Gradient");
-            this.put("tags.automatic-gradient.tag", "&7[<g#10:#12c2e9>Gradient&7]");
+            this.put("tags.automatic-gradient.tag", "&7[<g#10:#12c2e9:#0c6275>Gradient&7]");
             this.put("tags.automatic-gradient.description", Arrays.asList("A gradient tag that", "will update with every", "message that you send."));
             this.put("tags.automatic-gradient.permission", "eternaltags.tag.animated-gradient");
         }};

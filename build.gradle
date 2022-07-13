@@ -4,7 +4,7 @@ plugins {
 }
 
 group "xyz.oribuin"
-version "1.1.4-pre1"
+version "1.1.4-pre2"
 sourceCompatibility = JavaVersion.VERSION_16
 targetCompatibility = JavaVersion.VERSION_16
 
@@ -22,24 +22,28 @@ repositories {
     maven { url "https://repo.extendedclip.com/content/repositories/placeholderapi/" }
     maven { url "https://repo.codemc.org/repository/maven-public" }
     maven { url "https://jitpack.io" }
+    maven { url "https://repo.mattstudios.me/artifactory/public/" }
 }
 
 dependencies {
-    compileOnly 'org.spigotmc:spigot:1.17'
+    compileOnly "org.spigotmc:spigot:1.17"
     compileOnly "me.clip:placeholderapi:2.10.9"
-    compileOnly 'org.jetbrains:annotations:23.0.0'
-    compileOnly 'com.github.oraxen:oraxen:afc4903680'
+    compileOnly "org.jetbrains:annotations:23.0.0"
+    compileOnly "com.github.oraxen:oraxen:afc4903680"
+    compileOnly 'net.kyori:adventure-api:4.11.0'
 
-    implementation 'dev.rosewood:rosegarden:1.1.0.29-SNAPSHOT'
-    implementation 'xyz.oribuin:ori-gui:1.0.11'
+    implementation "dev.rosewood:rosegarden:1.1.0.42-SNAPSHOT"
+    implementation ("dev.triumphteam:triumph-gui:3.1.2") {  // https://mf.mattstudios.me/triumph-gui/introduction
+        exclude group: "com.google.code.gson", module: "gson" // Remove GSON, Already included in spigot api
+        exclude group: "net.kyori", module: "*" // Remove kyori, takes up too much space
+    }
 }
+
 
 shadowJar {
     archiveClassifier.set(null)
-    relocate('xyz.oribuin.gui', "${project.group}.eternaltags.libs.gui")
-    relocate('dev.rosewood.rosegarden', "${project.group}.eternaltags.libs.rosegarden")
-    relocate('org.slf4j', "${project.group}.eternaltags.libs.slf4j")
-    relocate('com.zaxxer.hikari', "${project.group}.eternaltags.libs.hikari")
+    relocate("dev.rosewood.rosegarden", "${project.group}.eternaltags.libs.rosegarden")
+    relocate("dev.triumphteam.gui", "${project.group}.eternaltags.libs.gui")
 }
 
 tasks.getByName("build").dependsOn("shadowJar")

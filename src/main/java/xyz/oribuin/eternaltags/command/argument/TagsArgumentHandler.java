@@ -23,22 +23,20 @@ public class TagsArgumentHandler extends RoseCommandArgumentHandler<Tag> {
     @Override
     protected Tag handleInternal(RoseCommandArgumentInfo argumentInfo, ArgumentParser argumentParser) throws HandledArgumentException {
         String input = argumentParser.next();
-        Optional<Tag> value = this.rosePlugin.getManager(TagsManager.class).matchTagFromID(input.toLowerCase());
-        if (value.isEmpty())
+        Tag value = this.rosePlugin.getManager(TagsManager.class).getTagFromId(input.toLowerCase());
+        if (value == null)
             throw new HandledArgumentException("argument-handler-tags", StringPlaceholders.single("input", input));
 
-        return value.get();
+        return value;
     }
 
     @Override
     protected List<String> suggestInternal(RoseCommandArgumentInfo argumentInfo, ArgumentParser argumentParser) {
         argumentParser.next();
-        List<Tag> tags = new ArrayList<>(this.rosePlugin.getManager(TagsManager.class).getCachedTags().values());
+        List<String> tags = new ArrayList<>(this.rosePlugin.getManager(TagsManager.class).getCachedTags().keySet());
         if (tags.isEmpty())
             return Collections.singletonList("<no loaded tags>");
 
-        return tags.stream()
-                .map(Tag::getId)
-                .collect(Collectors.toList());
+        return tags;
     }
 }

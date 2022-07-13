@@ -5,7 +5,6 @@ import dev.rosewood.rosegarden.manager.Manager;
 import dev.rosewood.rosegarden.utils.NMSUtil;
 import org.bukkit.plugin.PluginManager;
 import xyz.oribuin.eternaltags.hook.Expansion;
-import xyz.oribuin.eternaltags.hook.OraxenHook;
 import xyz.oribuin.eternaltags.listener.PlayerListeners;
 import xyz.oribuin.eternaltags.manager.CommandManager;
 import xyz.oribuin.eternaltags.manager.ConfigurationManager;
@@ -49,15 +48,12 @@ public class EternalTags extends RosePlugin {
             return;
         }
 
-        // Register PlaceholderAPI Expansion
-        new Expansion(this).register();
-
         // Register Plugin Listeners
         PluginManager pluginManager = this.getServer().getPluginManager();
-        pluginManager.registerEvents(new PlayerListeners(this), this);
+        pluginManager.registerEvents(new PlayerListeners(), this);
 
-        // Initialize the API
-        new EternalAPI(this);
+        // Register PlaceholderAPI Expansion
+        new Expansion(this).register();
     }
 
     @Override

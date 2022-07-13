@@ -11,9 +11,8 @@ import xyz.oribuin.eternaltags.conversion.ConversionPlugin;
 import xyz.oribuin.eternaltags.conversion.ValidPlugin;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.PluginConversionManager;
-import xyz.oribuin.eternaltags.util.TagsUtil;
+import xyz.oribuin.eternaltags.util.TagsUtils;
 
-import java.util.Arrays;
 import java.util.stream.Collectors;
 
 public class ConvertCommand extends RoseCommand {
@@ -30,7 +29,7 @@ public class ConvertCommand extends RoseCommand {
 
         // Check if the player arg was provided.
         if (plugin == null) {
-            locale.sendMessage(sender, "command-convert-invalid-plugin", StringPlaceholders.single("options", TagsUtil.formatList(ValidPlugin.PLUGINS.values()
+            locale.sendMessage(sender, "command-convert-invalid-plugin", StringPlaceholders.single("options", TagsUtils.formatList(ValidPlugin.PLUGINS.values()
                     .stream()
                     .map(ConversionPlugin::getPluginName)
                     .collect(Collectors.toList()))));
