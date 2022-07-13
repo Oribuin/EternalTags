@@ -34,35 +34,33 @@ public class Expansion extends PlaceholderExpansion {
         if (args.length >= 2) {
             final String tagId = String.join(" ", args).substring(args[0].length() + 1);
             final Tag tag = this.manager.getTagFromId(tagId);
-            if (tag == null)
-                return this.formattedPlaceholder;
-
             // Can't use the switch statement here
-            if (args[0].equalsIgnoreCase("get"))
-                return this.formatString(tag.getTag(), true);
+            if (args[0].equalsIgnoreCase("get") && tag != null)
+                return this.manager.getDisplayTag(tag, player, this.formattedPlaceholder);
 
-            else if (args[0].equalsIgnoreCase("has"))
+            else if (args[0].equalsIgnoreCase("has") && tag != null)
                 return player.getPlayer() != null && player.getPlayer().hasPermission(tag.getPermission()) ? "true" : "false";
         }
 
 
         final Tag activeTag = this.manager.getPlayersTag(player);
+
         return switch (params.toLowerCase()) {
             // Set bracket placeholders to allow \o/ Placeholder Inception \o/
             case "tag" -> this.manager.getDisplayTag(activeTag, player, "");
             case "tag_formatted" -> this.manager.getDisplayTag(activeTag, player, this.formattedPlaceholder);
 
             // We're separating these tags from the other ones because of placeholder inception
-            case "tag_stripped" -> this.formatString(activeTag.getTag(), false);
-            case "tag_stripped_formatted" -> this.formatString(activeTag.getTag(), false);
+            case "tag_stripped" -> activeTag != null ? activeTag.getTag() : "";
+            case "tag_stripped_formatted" -> activeTag != null ? activeTag.getTag() : this.formattedPlaceholder;
 
-            // Geneal tag placeholders, unlikely to be used often
-            case "tag_name" -> this.formatString(activeTag.getName(), true);
-            case "tag_id" -> this.formatString(activeTag.getId(), true);
-            case "tag_permission" -> this.formatString(activeTag.getPermission(), true);
-            case "tag_description" -> TagsUtils.formatList(this.formatList(activeTag.getDescription()));
-            case "tag_order" -> this.formatString(String.valueOf(activeTag.getOrder()), true);
-            case "tag_icon" -> this.formatString(activeTag.getIcon().toString(), true);
+            // general tag placeholders, unlikely to be used often
+            case "tag_name" -> activeTag != null ? activeTag.getName() : this.formattedPlaceholder;
+            case "tag_id" -> activeTag != null ? activeTag.getId() : this.formattedPlaceholder;
+            case "tag_permission" -> activeTag != null ? activeTag.getPermission() : this.formattedPlaceholder;
+            case "tag_description" -> activeTag != null ? TagsUtils.formatList(activeTag.getDescription()) : this.formattedPlaceholder;
+            case "tag_order" -> activeTag != null ? String.valueOf(activeTag.getOrder()) : this.formattedPlaceholder;
+            case "tag_icon" -> activeTag != null ? activeTag.getIcon().toString() : this.formattedPlaceholder;
 
             // These are the tags that return a number.
             case "total" -> String.valueOf(this.manager.getCachedTags().size());
@@ -72,34 +70,6 @@ public class Expansion extends PlaceholderExpansion {
             default -> null;
         };
     }
-
-    /**
-     * Format a string depending on if it is null or not
-     *
-     * @param text      The string to format
-     * @param formatted If the string is formatted or not
-     * @return The formatted string
-     */
-    private String formatString(@Nullable String text, boolean formatted) {
-        if (text == null)
-            return formatted ? this.formattedPlaceholder : "";
-
-        return text;
-    }
-
-    /**
-     * Format a string list depending on if it is null or not
-     *
-     * @param list The strings to format
-     * @return The formatted string list
-     */
-    private List<String> formatList(@Nullable List<String> list) {
-        if (list == null)
-            return List.of(this.formattedPlaceholder);
-
-        return list;
-    }
-
     /**
      * Join all the tags in a single string
      *

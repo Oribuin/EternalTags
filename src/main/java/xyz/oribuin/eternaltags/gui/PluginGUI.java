@@ -1,6 +1,7 @@
 package xyz.oribuin.eternaltags.gui;
 
 import dev.rosewood.rosegarden.RosePlugin;
+import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.triumphteam.gui.guis.BaseGui;
@@ -10,8 +11,6 @@ import dev.triumphteam.gui.guis.PaginatedGui;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Color;
 import org.bukkit.Material;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
@@ -29,7 +28,7 @@ import java.util.function.Consumer;
 public abstract class PluginGUI {
 
     protected final RosePlugin rosePlugin;
-    protected FileConfiguration config;
+    protected CommentedFileConfiguration config;
 
     public PluginGUI(RosePlugin rosePlugin) {
         this.rosePlugin = rosePlugin;
@@ -84,16 +83,21 @@ public abstract class PluginGUI {
                 file.createNewFile();
                 newFile = true;
             }
-
-            this.config = YamlConfiguration.loadConfiguration(file);
-            if (newFile) {
-                this.getDefaultValues().forEach((path, object) -> this.config.set(path, object));
-            }
-
-            this.config.save(file);
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        this.config = CommentedFileConfiguration.loadConfiguration(file);
+        if (newFile) {
+            this.getDefaultValues().forEach((path, object) -> {
+                if (path.startsWith("#"))
+                    this.config.addPathedComments(object.toString());
+                else
+                    this.config.set(path, object);
+            });
+        }
+
+        this.config.save(file);
     }
 
     /**
@@ -103,11 +107,7 @@ public abstract class PluginGUI {
      * @return The created GUI
      */
     protected final PaginatedGui createPagedGUI(Player player) {
-        return Gui.paginated()
-                .rows(this.rows())
-                .title(this.format(player, this.get("menu-name", this.getMenuName())))
-                .disableAllInteractions()
-                .create();
+        return Gui.paginated().rows(this.rows()).title(this.format(player, this.get("menu-name", this.getMenuName()))).disableAllInteractions().create();
     }
 
     /**
@@ -117,11 +117,7 @@ public abstract class PluginGUI {
      * @return The created GUI
      */
     protected Gui createGUI(Player player) {
-        return Gui.gui()
-                .rows(this.rows())
-                .title(this.format(player, this.get("menu-name", this.getMenuName())))
-                .disableAllInteractions()
-                .create();
+        return Gui.gui().rows(this.rows()).title(this.format(player, this.get("menu-name", this.getMenuName()))).disableAllInteractions().create();
     }
 
     /**
@@ -182,20 +178,16 @@ public abstract class PluginGUI {
      * @param eventConsumer The event consumer
      */
     protected final void put(BaseGui gui, String itemPath, Player viewer, StringPlaceholders placeholders, Consumer<InventoryClickEvent> eventConsumer) {
-        if (!this.get(itemPath + ".enabled", true))
-            return;
+        if (!this.get(itemPath + ".enabled", true)) return;
 
         Integer slot = this.get(itemPath + ".slot", null);
-        if (slot != null)
-            this.put(gui, slot, itemPath, viewer, placeholders, eventConsumer);
+        if (slot != null) this.put(gui, slot, itemPath, viewer, placeholders, eventConsumer);
 
         final List<?> slots = this.config.getList(itemPath + ".slots");
-        if (slots == null)
-            return;
+        if (slots == null) return;
 
         for (Object slotObject : slots) {
-            if (slotObject instanceof Integer)
-                this.put(gui, (Integer) slotObject, itemPath, viewer, placeholders, eventConsumer);
+            if (slotObject instanceof Integer) this.put(gui, (Integer) slotObject, itemPath, viewer, placeholders, eventConsumer);
 
             if (slotObject instanceof String) {
                 this.put(gui, this.parseStringToSlots((String) slotObject), itemPath, viewer, placeholders, eventConsumer);
@@ -252,10 +244,7 @@ public abstract class PluginGUI {
      */
     protected final void put(BaseGui gui, List<Integer> slots, String itemPath, Player viewer, StringPlaceholders placeholders, Consumer<InventoryClickEvent> eventConsumer) {
         ItemStack item = TagsUtils.getItemStack(this.config, itemPath, viewer, placeholders);
-        if (item == null)
-            item = new ItemBuilder(Material.BARRIER)
-                    .setName(HexUtils.colorify("&cInvalid Material:" + itemPath + ".material"))
-                    .create();
+        if (item == null) item = new ItemBuilder(Material.BARRIER).setName(HexUtils.colorify("&cInvalid Material:" + itemPath + ".material")).create();
 
         gui.setItem(slots, new GuiItem(item, eventConsumer::accept));
     }
@@ -355,12 +344,7 @@ public abstract class PluginGUI {
      * @return The page placeholders
      */
     protected StringPlaceholders getPagePlaceholders(PaginatedGui gui) {
-        return StringPlaceholders.builder()
-                .addPlaceholder("page", gui.getCurrentPageNum())
-                .addPlaceholder("total", Math.max(gui.getPagesNum(), 1))
-                .addPlaceholder("next", gui.getNextPageNum())
-                .addPlaceholder("previous", gui.getPrevPageNum())
-                .build();
+        return StringPlaceholders.builder().addPlaceholder("page", gui.getCurrentPageNum()).addPlaceholder("total", Math.max(gui.getPagesNum(), 1)).addPlaceholder("next", gui.getNextPageNum()).addPlaceholder("previous", gui.getPrevPageNum()).build();
     }
 
     protected final void sync(Runnable runnable) {
