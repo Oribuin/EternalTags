@@ -15,7 +15,6 @@ import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.MenuManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
-import xyz.oribuin.eternaltags.util.TagsUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -88,7 +87,7 @@ public class FavouritesGUI extends PluginGUI {
     private void addTags(PaginatedGui gui, Player player, List<Tag> tags) {
         gui.clearPageItems();
 
-        tags.stream().map(tag -> new GuiItem(TagsUtils.getItemStack(this.config, "tag-item", player, this.getTagPlaceholders(tag, player)), event -> {
+        tags.stream().map(tag -> new GuiItem(this.getTagItem(player, tag), event -> {
             if (!event.getWhoClicked().hasPermission(tag.getPermission()))
                 return;
 

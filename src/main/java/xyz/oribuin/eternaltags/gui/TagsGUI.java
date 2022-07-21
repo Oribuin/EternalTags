@@ -6,7 +6,6 @@ import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -16,7 +15,6 @@ import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.MenuManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
-import xyz.oribuin.eternaltags.util.TagsUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -91,7 +89,7 @@ public class TagsGUI extends PluginGUI {
     private void addTags(PaginatedGui gui, Player player, List<Tag> tags, String keyword) {
         gui.clearPageItems();
 
-        tags.stream().map(tag -> new GuiItem(TagsUtils.getItemStack(this.config, "tag-item", player, this.getTagPlaceholders(tag, player)), event -> {
+        tags.stream().map(tag -> new GuiItem(this.getTagItem(player, tag), event -> {
             if (!event.getWhoClicked().hasPermission(tag.getPermission()))
                 return;
 
@@ -295,16 +293,6 @@ public class TagsGUI extends PluginGUI {
         this.locale.sendMessage(player, "command-favorite-toggled", StringPlaceholders.builder("tag", this.manager.getDisplayTag(tag, player)).addPlaceholder("toggled", !isFavourite ? on : off).build());
     }
 
-    public StringPlaceholders getTagPlaceholders(Tag tag, OfflinePlayer player) {
-        return StringPlaceholders.builder()
-                .addPlaceholder("tag", this.manager.getDisplayTag(tag, player))
-                .addPlaceholder("id", tag.getId())
-                .addPlaceholder("name", tag.getName())
-                .addPlaceholder("description", String.join(", ", tag.getDescription()))
-                .addPlaceholder("permission", tag.getPermission())
-                .addPlaceholder("order", tag.getOrder())
-                .build();
-    }
 
     @Override
     protected int rows() {

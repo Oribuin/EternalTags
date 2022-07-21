@@ -11,9 +11,12 @@ import dev.triumphteam.gui.guis.PaginatedGui;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Color;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
+import xyz.oribuin.eternaltags.manager.TagsManager;
+import xyz.oribuin.eternaltags.obj.Tag;
 import xyz.oribuin.eternaltags.util.ItemBuilder;
 import xyz.oribuin.eternaltags.util.TagsUtils;
 
@@ -23,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("unckecked")
 public abstract class PluginGUI {
@@ -304,7 +308,6 @@ public abstract class PluginGUI {
         return TagsUtils.fromHex(hex);
     }
 
-
     protected List<Integer> parseStringToSlots(String string) {
         String[] split = string.split("-");
         if (split.length != 2) {
@@ -337,6 +340,40 @@ public abstract class PluginGUI {
         return list;
     }
 
+    protected ItemStack getTagItem(Player player, Tag tag) {
+
+        final ItemStack baseItem = TagsUtils.getItemStack(this.config, "tag-item", player, this.getTagPlaceholders(tag, player));
+
+        List<String> configLore = TagsUtils.get(config, "tag-item.lore", List.of());
+        List<String> newLore = new ArrayList<>();
+
+        // im not happy about this but it works
+        for (final String line : configLore) {
+            if (!line.contains("%description%")) {
+                newLore.add(TagsUtils.format(player, line));
+                continue;
+            }
+
+            if (tag.getDescription().isEmpty())
+                continue;
+
+            // get the content before the line includes the %description% tag
+            String before = line.substring(0, line.indexOf("%description%"));
+
+            newLore.add(TagsUtils.format(player, line.replace("%description%", tag.getDescription().get(0))));
+            for (int j = 1; j < tag.getDescription().size(); j++) {
+                newLore.add(before + tag.getDescription().get(j));
+            }
+        }
+
+        newLore = newLore.stream().map(line -> TagsUtils.format(player, line, this.getTagPlaceholders(tag, player))).collect(Collectors.toList());
+
+
+        return new ItemBuilder(baseItem)
+                .setLore(newLore)
+                .create();
+    }
+
     /**
      * Get the page placeholders for the gui
      *
@@ -347,12 +384,16 @@ public abstract class PluginGUI {
         return StringPlaceholders.builder().addPlaceholder("page", gui.getCurrentPageNum()).addPlaceholder("total", Math.max(gui.getPagesNum(), 1)).addPlaceholder("next", gui.getNextPageNum()).addPlaceholder("previous", gui.getPrevPageNum()).build();
     }
 
-    protected final void sync(Runnable runnable) {
-        this.rosePlugin.getServer().getScheduler().runTask(this.rosePlugin, runnable);
-    }
+    protected StringPlaceholders getTagPlaceholders(Tag tag, OfflinePlayer player) {
+        return StringPlaceholders.builder()
+                .addPlaceholder("tag", this.rosePlugin.getManager(TagsManager.class).getDisplayTag(tag, player))
+                .addPlaceholder("id", tag.getId())
+                .addPlaceholder("name", tag.getName())
+                .addPlaceholder("description", String.join(", ", tag.getDescription()))
+                .addPlaceholder("permission", tag.getPermission())
+                .addPlaceholder("order", tag.getOrder())
+                .build();
 
-    protected final void async(Runnable runnable) {
-        this.rosePlugin.getServer().getScheduler().runTaskAsynchronously(this.rosePlugin, runnable);
     }
 
 }

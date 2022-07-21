@@ -199,9 +199,7 @@ public final class TagsUtils {
             });
         }
 
-        ItemStack item = builder.create();
-
-        return item;
+        return builder.create();
     }
 
     /**
