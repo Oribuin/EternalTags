@@ -52,7 +52,6 @@ public class Expansion extends PlaceholderExpansion {
 
 
         final Tag activeTag = this.manager.getPlayersTag(player);
-
         return switch (params.toLowerCase()) {
             // Set bracket placeholders to allow \o/ Placeholder Inception \o/
             case "tag" -> this.manager.getDisplayTag(activeTag, player, "");

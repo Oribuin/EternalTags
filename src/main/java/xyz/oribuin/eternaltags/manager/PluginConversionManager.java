@@ -2,11 +2,7 @@ package xyz.oribuin.eternaltags.manager;
 
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.manager.Manager;
-import xyz.oribuin.eternaltags.conversion.AlonsoConversion;
-import xyz.oribuin.eternaltags.conversion.CIFYConversion;
 import xyz.oribuin.eternaltags.conversion.ConversionPlugin;
-import xyz.oribuin.eternaltags.conversion.DeluxeConversion;
-import xyz.oribuin.eternaltags.conversion.ValidPlugin;
 import xyz.oribuin.eternaltags.obj.Tag;
 
 import java.util.HashMap;

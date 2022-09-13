@@ -8,10 +8,8 @@ import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import xyz.oribuin.eternaltags.conversion.ConversionPlugin;
 import xyz.oribuin.eternaltags.conversion.ValidPlugin;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class PluginArgumentHandler extends RoseCommandArgumentHandler<ConversionPlugin> {
 

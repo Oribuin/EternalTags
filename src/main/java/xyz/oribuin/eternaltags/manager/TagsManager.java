@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import xyz.oribuin.eternaltags.event.TagDeleteEvent;
 import xyz.oribuin.eternaltags.event.TagSaveEvent;
 import xyz.oribuin.eternaltags.hook.OraxenHook;
+import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
 import xyz.oribuin.eternaltags.obj.Tag;
 
 import java.io.File;
@@ -26,6 +27,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -46,6 +48,14 @@ public class TagsManager extends Manager {
 
     @Override
     public void reload() {
+
+        // Load all tags from mysql instead of tags.yml
+        if (Setting.MYSQL_TAGDATA.getBoolean()) {
+            this.cachedTags.clear();
+            this.cachedTags.putAll(this.rosePlugin.getManager(DataManager.class).loadTagData());
+            return;
+        }
+
         final File file = new File(this.rosePlugin.getDataFolder(), "tags.yml");
         boolean newFile = false;
         try {
@@ -84,6 +94,7 @@ public class TagsManager extends Manager {
      */
     public void loadTags() {
         this.cachedTags.clear();
+
         CommentedConfigurationSection tagSection = this.config.getConfigurationSection("tags");
         if (tagSection == null) {
             this.rosePlugin.getLogger().severe("Couldn't find tags configuration section.");
@@ -137,6 +148,11 @@ public class TagsManager extends Manager {
         if (event.isCancelled())
             return false;
 
+        // Save to mysql instead of tags.yml
+        if (Setting.MYSQL_TAGDATA.getBoolean()) {
+            this.rosePlugin.getManager(DataManager.class).saveTagData(tag);
+        }
+
         this.cachedTags.put(tag.getId(), tag);
         this.config.set("tags." + tag.getId() + ".name", tag.getName());
         this.config.set("tags." + tag.getId() + ".tag", tag.getTag());
@@ -179,6 +195,10 @@ public class TagsManager extends Manager {
     public void saveTags(Map<String, Tag> tags) {
         this.cachedTags.putAll(tags);
 
+        if (Setting.MYSQL_TAGDATA.getBoolean()) {
+            this.rosePlugin.getManager(DataManager.class).saveTagData(tags);
+        }
+
         CompletableFuture.runAsync(() -> tags.forEach((id, tag) -> {
             this.config.set("tags." + id + ".name", tag.getName());
             this.config.set("tags." + id + ".tag", tag.getTag());
@@ -203,10 +223,17 @@ public class TagsManager extends Manager {
         if (event.isCancelled())
             return;
 
-        // remove anyone with the tag active.
-        this.rosePlugin.getManager(DataManager.class).deleteTag(id);
 
+        // remove anyone with the tag active.
+        this.rosePlugin.getManager(DataManager.class).deleteUserTag(id);
         this.cachedTags.remove(id);
+
+        // Save to mysql instead of tags.yml
+        if (Setting.MYSQL_TAGDATA.getBoolean()) {
+            this.rosePlugin.getManager(DataManager.class).deleteTagData(tag);
+            return;
+        }
+
         this.config.set("tags." + id, null);
         this.config.save();
     }
@@ -215,6 +242,12 @@ public class TagsManager extends Manager {
      * Wipes all the tags from the tags.yml
      */
     public void wipeTags() {
+
+        if (Setting.MYSQL_TAGDATA.getBoolean()) {
+            this.rosePlugin.getManager(DataManager.class).deleteAllTagData();
+            return;
+        }
+
         CompletableFuture.runAsync(() -> this.cachedTags.forEach((id, tag)
                 -> this.config.set("tags." + id, null))).thenRun(()
                 -> this.config.save());
@@ -312,7 +345,9 @@ public class TagsManager extends Manager {
         if (tags == null || tags.isEmpty())
             return favourites;
 
-        tags.forEach(tag -> favourites.put(tag.getId().toLowerCase(), tag));
+        tags.stream()
+                .filter(Objects::nonNull)
+                .forEach(tag -> favourites.put(tag.getId().toLowerCase(), tag));
         return favourites;
     }
 
@@ -424,7 +459,10 @@ public class TagsManager extends Manager {
      * @return The display tag.
      */
     public String getDisplayTag(@Nullable Tag tag, OfflinePlayer player, @NotNull String placeholder) {
-        return HexUtils.colorify(PlaceholderAPI.setPlaceholders(player, tag != null ? tag.getTag() : placeholder));
+        return HexUtils.colorify(PlaceholderAPI.setPlaceholders(player, tag != null
+                ? Setting.TAG_PREFIX.getString() + tag.getTag() + Setting.TAG_SUFFIX.getString()
+                : placeholder)
+        );
     }
 
     /**

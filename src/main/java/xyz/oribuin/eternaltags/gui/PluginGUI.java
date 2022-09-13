@@ -9,6 +9,7 @@ import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -372,6 +373,14 @@ public abstract class PluginGUI {
         return new ItemBuilder(baseItem)
                 .setLore(newLore)
                 .create();
+    }
+
+    public final void async(Runnable runnable) {
+        Bukkit.getScheduler().runTaskAsynchronously(this.rosePlugin, runnable);
+    }
+
+    public final void sync(Runnable runnable) {
+        Bukkit.getScheduler().runTask(this.rosePlugin, runnable);
     }
 
     /**

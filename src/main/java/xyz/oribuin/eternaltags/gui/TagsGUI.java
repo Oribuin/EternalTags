@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -71,7 +72,7 @@ public class TagsGUI extends PluginGUI {
 
         int dynamicSpeed = this.get("dynamic-speed", 3);
         if (this.get("dynamic-gui", false)) {
-            this.rosePlugin.getServer().getScheduler().runTaskTimer(this.rosePlugin, task -> {
+            this.rosePlugin.getServer().getScheduler().runTaskTimerAsynchronously(this.rosePlugin, task -> {
                 if (gui.getInventory().getViewers().isEmpty()) {
                     task.cancel();
                     return;
@@ -80,7 +81,7 @@ public class TagsGUI extends PluginGUI {
                 this.addTags(gui, player, tags, keyword);
             }, 0, dynamicSpeed);
         } else {
-            this.addTags(gui, player, tags, keyword);
+            this.async(() -> this.addTags(gui, player, tags, keyword));
         }
 
         gui.updateTitle(this.formatString(player, this.get("menu-name"), this.getPagePlaceholders(gui)));
@@ -89,21 +90,24 @@ public class TagsGUI extends PluginGUI {
     private void addTags(PaginatedGui gui, Player player, List<Tag> tags, String keyword) {
         gui.clearPageItems();
 
-        tags.stream().map(tag -> new GuiItem(this.getTagItem(player, tag), event -> {
-            if (!event.getWhoClicked().hasPermission(tag.getPermission()))
-                return;
+        this.rosePlugin.getServer().getScheduler().runTaskAsynchronously(this.rosePlugin, () -> {
+            tags.stream().filter(Objects::nonNull).map(tag -> new GuiItem(this.getTagItem(player, tag), event -> {
+                if (!event.getWhoClicked().hasPermission(tag.getPermission()))
+                    return;
 
-            if (event.isShiftClick()) {
-                this.toggleFavourite(player, tag);
-                this.addTags(gui, player, this.getTags(player, keyword), keyword);
-                return;
-            }
+                if (event.isShiftClick()) {
+                    this.toggleFavourite(player, tag);
+                    this.addTags(gui, player, this.getTags(player, keyword), keyword);
+                    return;
+                }
 
-            this.setTag(player, tag);
-            gui.close(player);
-        })).forEach(gui::addItem);
+                this.setTag(player, tag);
+                gui.close(player);
+            })).forEach(gui::addItem);
 
-        gui.update();
+            gui.update();
+        });
+
     }
 
 

@@ -33,7 +33,7 @@ public class CreateCommand extends RoseCommand {
 
         final String id = name.toLowerCase().replace(".", "_");
 
-        Tag newTag = new Tag(id , name, tag.get());
+        Tag newTag = new Tag(id, name, tag.get());
         newTag.setDescription(Collections.singletonList("None"));
 
         if (manager.saveTag(newTag)) {

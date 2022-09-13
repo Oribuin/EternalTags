@@ -1,16 +1,20 @@
 package xyz.oribuin.eternaltags.manager;
 
+import com.google.gson.Gson;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.database.DataMigration;
 import dev.rosewood.rosegarden.manager.AbstractDataManager;
+import org.bukkit.Material;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.database.migration._1_CreateInitialTables;
+import xyz.oribuin.eternaltags.database.migration._2_CreateNewTagTables;
 import xyz.oribuin.eternaltags.obj.Tag;
+import xyz.oribuin.eternaltags.obj.TagDescription;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -23,6 +27,8 @@ public class DataManager extends AbstractDataManager {
 
     private final Map<UUID, Tag> cachedUsers = new HashMap<>();
     private final Map<UUID, Set<Tag>> cachedFavourites = new HashMap<>();
+
+    private final Gson gson = new Gson();
 
     public DataManager(RosePlugin plugin) {
         super(plugin);
@@ -51,7 +57,7 @@ public class DataManager extends AbstractDataManager {
      *
      * @param id The tag id being removed.
      */
-    public void deleteTag(String id) {
+    public void deleteUserTag(String id) {
         for (Map.Entry<UUID, Tag> entry : this.cachedUsers.entrySet()) {
             if (entry.getValue().getId().equalsIgnoreCase(id))
                 this.cachedUsers.remove(entry.getKey());
@@ -186,9 +192,118 @@ public class DataManager extends AbstractDataManager {
         }));
     }
 
+
+    /**
+     * Load all tag data from the database.
+     *
+     * @return A map of all the tag data.
+     */
+    public Map<String, Tag> loadTagData() {
+        final Map<String, Tag> tags = new HashMap<>();
+
+        this.async(task -> this.databaseConnector.connect(connection -> {
+            final String query = "SELECT * FROM " + this.getTablePrefix() + "tag_data";
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+
+                final ResultSet result = statement.executeQuery();
+
+                if (result.next()) {
+                    final String id = result.getString("id");
+                    final String name = result.getString("name");
+                    final List<String> description = gson.fromJson(result.getString("description"), TagDescription.class).getDescription();
+                    final String icon = result.getString("icon");
+
+                    Tag tag = new Tag(id, name, result.getString("tag"));
+                    tag.setPermission(result.getString("permission"));
+                    tag.setDescription(description);
+                    tag.setOrder(result.getInt("order"));
+                    tag.setIcon(icon == null ? null : Material.valueOf(icon));
+
+                    tags.put(id, tag);
+                }
+            }
+        }));
+
+        return tags;
+    }
+
+    /**
+     * Save tag data to the database.
+     *
+     * @param tag The tag to save.
+     */
+    public void saveTagData(Tag tag) {
+        this.async(task -> this.databaseConnector.connect(connection -> {
+            final String query = "REPLACE INTO " + this.getTablePrefix() + "tag_data (id, `name`, description, tag, permission, `order`, icon) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setString(1, tag.getId());
+                statement.setString(2, tag.getName());
+                statement.setString(3, gson.toJson(new TagDescription(tag.getDescription())));
+                statement.setString(4, tag.getTag());
+                statement.setString(5, tag.getPermission());
+                statement.setInt(6, tag.getOrder());
+                statement.setString(7, tag.getIcon() != null ? tag.getIcon().name() : null);
+                statement.executeUpdate();
+            }
+        }));
+    }
+
+    /**
+     * Mass save tag data to the database.
+     *
+     * @param tags The tags to save.
+     */
+    public void saveTagData(Map<String, Tag> tags) {
+        this.async(task -> this.databaseConnector.connect(connection -> {
+            final String query = "REPLACE INTO " + this.getTablePrefix() + "tag_data (id, `name`, description, tag, permission, `order`, icon) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                for (Tag tag : tags.values()) {
+                    statement.setString(1, tag.getId());
+                    statement.setString(2, tag.getName());
+                    statement.setString(3, gson.toJson(new TagDescription(tag.getDescription())));
+                    statement.setString(4, tag.getTag());
+                    statement.setString(5, tag.getPermission());
+                    statement.setInt(6, tag.getOrder());
+                    statement.setString(7, tag.getIcon() != null ? tag.getIcon().name() : null);
+                    statement.addBatch();
+                }
+
+                statement.executeBatch();
+            }
+        }));
+    }
+
+    /**
+     * Delete tag data from the database.
+     *
+     * @param tag The tag to delete.
+     */
+    public void deleteTagData(Tag tag) {
+        this.async(task -> this.databaseConnector.connect(connection -> {
+            final String query = "DELETE FROM " + this.getTablePrefix() + "tag_data WHERE id = ?";
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setString(1, tag.getId());
+                statement.executeUpdate();
+            }
+        }));
+    }
+
+    /**
+     * Delete all the tag data from the database.
+     */
+    public void deleteAllTagData() {
+        this.async(task -> this.databaseConnector.connect(connection -> {
+            final String query = "DELETE FROM " + this.getTablePrefix() + "tag_data";
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.executeUpdate();
+            }
+        }));
+    }
+
     @Override
     public List<Class<? extends DataMigration>> getDataMigrations() {
-        return Collections.singletonList(_1_CreateInitialTables.class);
+        return Arrays.asList(_1_CreateInitialTables.class, _2_CreateNewTagTables.class);
     }
 
     private void async(Consumer<BukkitTask> callback) {

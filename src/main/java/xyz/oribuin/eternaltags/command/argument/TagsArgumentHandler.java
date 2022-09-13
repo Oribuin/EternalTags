@@ -11,8 +11,6 @@ import xyz.oribuin.eternaltags.obj.Tag;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class TagsArgumentHandler extends RoseCommandArgumentHandler<Tag> {
 

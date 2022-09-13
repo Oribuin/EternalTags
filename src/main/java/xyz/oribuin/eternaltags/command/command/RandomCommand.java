@@ -13,8 +13,6 @@ import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 
-import java.util.Optional;
-
 public class RandomCommand extends RoseCommand {
 
     public RandomCommand(RosePlugin rosePlugin, RoseCommandWrapper parent) {

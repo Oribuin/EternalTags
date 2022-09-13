@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 public class FavouritesGUI extends PluginGUI {
@@ -69,7 +70,7 @@ public class FavouritesGUI extends PluginGUI {
         final List<Tag> tags = this.getTags(player);
         int dynamicSpeed = this.get("dynamic-speed", 3);
         if (this.get("dynamic-gui", false)) {
-            this.rosePlugin.getServer().getScheduler().runTaskTimer(this.rosePlugin, task -> {
+            this.rosePlugin.getServer().getScheduler().runTaskTimerAsynchronously(this.rosePlugin, task -> {
                 if (gui.getInventory().getViewers().isEmpty()) {
                     task.cancel();
                     return;
@@ -78,7 +79,7 @@ public class FavouritesGUI extends PluginGUI {
                 this.addTags(gui, player, tags);
             }, 0, dynamicSpeed);
         } else {
-            this.addTags(gui, player, tags);
+            this.async(() -> this.addTags(gui, player, tags));
         }
 
         gui.updateTitle(this.formatString(player, this.get("menu-name"), this.getPagePlaceholders(gui)));
@@ -87,7 +88,7 @@ public class FavouritesGUI extends PluginGUI {
     private void addTags(PaginatedGui gui, Player player, List<Tag> tags) {
         gui.clearPageItems();
 
-        tags.stream().map(tag -> new GuiItem(this.getTagItem(player, tag), event -> {
+        tags.stream().filter(Objects::nonNull).map(tag -> new GuiItem(this.getTagItem(player, tag), event -> {
             if (!event.getWhoClicked().hasPermission(tag.getPermission()))
                 return;
 
