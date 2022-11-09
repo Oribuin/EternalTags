@@ -33,9 +33,10 @@ public class EternalTags extends RosePlugin {
 
     @Override
     public void enable() {
+        PluginManager pluginManager = this.getServer().getPluginManager();
 
         // Make sure the server has PlaceholderAPI
-        if (!this.getServer().getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+        if (!pluginManager.isPluginEnabled("PlaceholderAPI")) {
             this.getLogger().severe("Please install PlaceholderAPI onto your server to use this plugin.");
             this.getServer().getPluginManager().disablePlugin(this);
             return;
@@ -49,7 +50,6 @@ public class EternalTags extends RosePlugin {
         }
 
         // Register Plugin Listeners
-        PluginManager pluginManager = this.getServer().getPluginManager();
         pluginManager.registerEvents(new PlayerListeners(), this);
 
         // Register PlaceholderAPI Expansion

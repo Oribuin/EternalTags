@@ -68,6 +68,7 @@ public class Expansion extends PlaceholderExpansion {
             case "tag_description" -> activeTag != null ? TagsUtils.formatList(activeTag.getDescription()) : this.formattedPlaceholder;
             case "tag_order" -> activeTag != null ? String.valueOf(activeTag.getOrder()) : this.formattedPlaceholder;
             case "tag_icon" -> activeTag != null ? activeTag.getIcon().toString() : this.formattedPlaceholder;
+            case "active" -> String.valueOf(activeTag != null);
 
             // These are the tags that return a number.
             case "total" -> String.valueOf(this.manager.getCachedTags().size());

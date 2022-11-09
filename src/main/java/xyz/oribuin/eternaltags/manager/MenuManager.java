@@ -2,6 +2,7 @@ package xyz.oribuin.eternaltags.manager;
 
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.manager.Manager;
+import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.gui.FavouritesGUI;
 import xyz.oribuin.eternaltags.gui.PluginGUI;
 import xyz.oribuin.eternaltags.gui.TagsGUI;
@@ -11,7 +12,7 @@ import java.util.Map;
 
 public class MenuManager extends Manager {
 
-    private Map<Class<? extends PluginGUI>, PluginGUI> registeredMenus;
+    private @NotNull Map<Class<? extends PluginGUI>, PluginGUI> registeredMenus = new LinkedHashMap<>();
 
     public MenuManager(RosePlugin rosePlugin) {
         super(rosePlugin);

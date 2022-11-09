@@ -208,7 +208,7 @@ public class DataManager extends AbstractDataManager {
                 final ResultSet result = statement.executeQuery();
 
                 if (result.next()) {
-                    final String id = result.getString("id");
+                    final String id = result.getString("tagId");
                     final String name = result.getString("name");
                     final List<String> description = gson.fromJson(result.getString("description"), TagDescription.class).getDescription();
                     final String icon = result.getString("icon");
@@ -234,7 +234,7 @@ public class DataManager extends AbstractDataManager {
      */
     public void saveTagData(Tag tag) {
         this.async(task -> this.databaseConnector.connect(connection -> {
-            final String query = "REPLACE INTO " + this.getTablePrefix() + "tag_data (id, `name`, description, tag, permission, `order`, icon) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            final String query = "REPLACE INTO " + this.getTablePrefix() + "tag_data (tagId, `name`, description, tag, permission, `order`, icon) VALUES (?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, tag.getId());
                 statement.setString(2, tag.getName());
@@ -255,7 +255,7 @@ public class DataManager extends AbstractDataManager {
      */
     public void saveTagData(Map<String, Tag> tags) {
         this.async(task -> this.databaseConnector.connect(connection -> {
-            final String query = "REPLACE INTO " + this.getTablePrefix() + "tag_data (id, `name`, description, tag, permission, `order`, icon) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            final String query = "REPLACE INTO " + this.getTablePrefix() + "tag_data (tagId, `name`, description, tag, permission, `order`, icon) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 for (Tag tag : tags.values()) {
@@ -281,7 +281,7 @@ public class DataManager extends AbstractDataManager {
      */
     public void deleteTagData(Tag tag) {
         this.async(task -> this.databaseConnector.connect(connection -> {
-            final String query = "DELETE FROM " + this.getTablePrefix() + "tag_data WHERE id = ?";
+            final String query = "DELETE FROM " + this.getTablePrefix() + "tag_data WHERE tagId = ?";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, tag.getId());
                 statement.executeUpdate();
