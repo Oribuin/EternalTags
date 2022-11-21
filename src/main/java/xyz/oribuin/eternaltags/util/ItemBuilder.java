@@ -41,6 +41,7 @@ public class ItemBuilder {
      * @param text The text.
      * @return Item.Builder.
      */
+    @SuppressWarnings("deprecation")
     public ItemBuilder setName(String text) {
         final ItemMeta meta = this.item.getItemMeta();
         if (meta == null || text == null)
@@ -58,6 +59,7 @@ public class ItemBuilder {
      * @param lore The lore
      * @return Item.Builder.
      */
+    @SuppressWarnings("deprecation")
     public ItemBuilder setLore(List<String> lore) {
         final ItemMeta meta = this.item.getItemMeta();
         if (meta == null || lore == null)
@@ -75,6 +77,7 @@ public class ItemBuilder {
      * @param lore The lore
      * @return Item.Builder.
      */
+    @SuppressWarnings("deprecation")
     public ItemBuilder setLore(String... lore) {
         final ItemMeta meta = this.item.getItemMeta();
         if (meta == null || lore == null)

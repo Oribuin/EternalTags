@@ -1,7 +1,7 @@
 package xyz.oribuin.eternaltags.conversion;
 
 import dev.rosewood.rosegarden.RosePlugin;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;

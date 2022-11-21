@@ -5,8 +5,6 @@ author: Oribuin
 api-version: "1.13"
 description: A simple tag plugin alternative to other Tag plugins (With Hex Support)
 website: https://oribuin.xyz/
-libraries:
-  - 'net.kyori:adventure-api:4.11.0'
 softdepend:
   - PlaceholderAPI
   - Oraxen
