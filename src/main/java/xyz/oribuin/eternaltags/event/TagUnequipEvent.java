@@ -4,14 +4,18 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.player.PlayerEvent;
+import xyz.oribuin.eternaltags.obj.Tag;
 
 public class TagUnequipEvent extends PlayerEvent implements Cancellable {
 
     private static final HandlerList list = new HandlerList();
     private boolean cancelled = false;
+    private final Tag tag;
 
-    public TagUnequipEvent(Player player) {
+    public TagUnequipEvent(Player player, Tag tag) {
         super(player);
+
+        this.tag = tag;
     }
 
     public static HandlerList getHandlerList() {
@@ -32,4 +36,9 @@ public class TagUnequipEvent extends PlayerEvent implements Cancellable {
     public void setCancelled(boolean cancelled) {
         this.cancelled = cancelled;
     }
+
+    public Tag getTag() {
+        return tag;
+    }
+
 }

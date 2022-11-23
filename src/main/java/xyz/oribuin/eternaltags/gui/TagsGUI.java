@@ -51,7 +51,9 @@ public class TagsGUI extends PluginGUI {
         });
 
         this.put(gui, "clear-tag", player, event -> {
-            final TagUnequipEvent tagUnequipEvent = new TagUnequipEvent(player);
+
+            Tag tag = this.manager.getTagFromUUID(player.getUniqueId());
+            final TagUnequipEvent tagUnequipEvent = new TagUnequipEvent(player, tag);
             Bukkit.getPluginManager().callEvent(tagUnequipEvent);
             if (tagUnequipEvent.isCancelled())
                 return;
@@ -273,7 +275,10 @@ public class TagsGUI extends PluginGUI {
         if (event.isCancelled())
             return;
 
-        this.manager.setTag(player.getUniqueId(), tag);
+        Tag activeTag = this.manager.getTagFromUUID(player.getUniqueId());
+        if (activeTag != null) // No reason to set the same tag
+            this.manager.setTag(player.getUniqueId(), tag);
+
         this.locale.sendMessage(player, "command-set-changed", StringPlaceholders.single("tag", this.manager.getDisplayTag(tag, player)));
     }
 
