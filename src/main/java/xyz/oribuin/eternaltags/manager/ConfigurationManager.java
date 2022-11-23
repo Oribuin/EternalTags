@@ -17,8 +17,9 @@ public class ConfigurationManager extends AbstractConfigurationManager {
         REMOVE_TAGS("remove-inaccessible-tags", false, "Should a tag be automatically removed if the player doesn't have permission to use it?"),
         TAG_PREFIX("tag-prefix", "", "The prefix that will be added in front of the tag in the placeholder"),
         TAG_SUFFIX("tag-suffix", "", "The suffix that will be added after the tag in the placeholder"),
-        MYSQL_TAGDATA("save-tagdata-sql", false, "Should the tag data be stored in a MySQL/SQLite database? (Tags that would be saved in tags.yml)");
-
+        MYSQL_TAGDATA("save-tagdata-sql", false, "Should the tag data be stored in a MySQL/SQLite database? (Tags that would be saved in tags.yml)"),
+        RE_EQUIP_CLEAR("reequip-clear", false, "Should the player's tag be cleared when they re-equip the same tag?");
+        
         private final String key;
         private final Object defaultValue;
         private final String[] comments;

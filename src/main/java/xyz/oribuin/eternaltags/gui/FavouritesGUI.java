@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.event.TagEquipEvent;
 import xyz.oribuin.eternaltags.event.TagUnequipEvent;
+import xyz.oribuin.eternaltags.manager.ConfigurationManager;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.MenuManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
@@ -50,7 +51,8 @@ public class FavouritesGUI extends PluginGUI {
         });
 
         this.put(gui, "clear-tag", player, event -> {
-            final TagUnequipEvent tagUnequipEvent = new TagUnequipEvent(player);
+            Tag activeTag = this.manager.getTagFromUUID(player.getUniqueId());
+            final TagUnequipEvent tagUnequipEvent = new TagUnequipEvent(player, activeTag);
             Bukkit.getPluginManager().callEvent(tagUnequipEvent);
             if (tagUnequipEvent.isCancelled())
                 return;
@@ -240,13 +242,38 @@ public class FavouritesGUI extends PluginGUI {
      * @param tag    The tag
      */
     private void setTag(Player player, Tag tag) {
+
+        Tag activeTag = this.manager.getPlayersTag(player);
+
+        if (activeTag != null && activeTag.equals(tag) && ConfigurationManager.Setting.RE_EQUIP_CLEAR.getBoolean()) {
+            this.clearTag(player);
+            return;
+        }
+
         final TagEquipEvent event = new TagEquipEvent(player, tag);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled())
             return;
 
-        this.rosePlugin.getManager(TagsManager.class).setTag(player.getUniqueId(), tag);
-        this.rosePlugin.getManager(LocaleManager.class).sendMessage(player, "command-set-changed", StringPlaceholders.single("tag", this.manager.getDisplayTag(tag, player)));
+        this.manager.setTag(player.getUniqueId(), tag);
+        this.locale.sendMessage(player, "command-set-changed", StringPlaceholders.single("tag", this.manager.getDisplayTag(tag, player)));
+    }
+
+
+    /**
+     * Method to clear a player's active tag.
+     *
+     * @param player The player
+     */
+    private void clearTag(Player player) {
+        Tag tag = this.manager.getTagFromUUID(player.getUniqueId());
+        final TagUnequipEvent tagUnequipEvent = new TagUnequipEvent(player, tag);
+        Bukkit.getPluginManager().callEvent(tagUnequipEvent);
+        if (tagUnequipEvent.isCancelled())
+            return;
+
+        this.manager.clearTag(player.getUniqueId());
+        this.locale.sendMessage(player, "command-clear-cleared");
     }
 
     /**
