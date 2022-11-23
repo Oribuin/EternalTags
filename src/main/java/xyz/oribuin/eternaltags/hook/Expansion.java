@@ -38,12 +38,17 @@ public class Expansion extends PlaceholderExpansion {
                 return this.manager.getDisplayTag(tag, player, this.formattedPlaceholder);
             }
 
+            // Got this is so ugly, but it works
+            if (args[0].equalsIgnoreCase("get-formatted") && tag != null) {
+                return this.manager.getDisplayTag(tag, player, this.formattedPlaceholder);
+            }
+
             // I really need a better system for this
             if (args[0].equalsIgnoreCase("has") && tag != null) {
                 return player.getPlayer() != null && player.getPlayer().hasPermission(tag.getPermission()) ? "true" : "false";
             }
 
-
+            // Yeah what a yikes
             if (args[0].equalsIgnoreCase("has-unlocked") && tag != null) {
                 boolean unlocked = player.getPlayer() != null && player.getPlayer().hasPermission(tag.getPermission());
                 return HexUtils.colorify(unlocked ? Setting.TAG_UNLOCKED_FORMAT.getString() : Setting.TAG_LOCKED_FORMAT.getString());
