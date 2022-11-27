@@ -61,14 +61,13 @@ public class TagsGUI extends PluginMenu {
                 .path("next-page")
                 .player(player)
                 .action(event -> gui.next())
-                .conditional(config.getBoolean("next-page.hide-if-first") && gui.getNextPageNum() > gui.getCurrentPageNum())
+                .player(player)
                 .place(gui);
 
         MenuItem.create(this.config)
                 .path("previous-page")
                 .player(player)
                 .action(event -> gui.previous())
-                .conditional(config.getBoolean("previous-page.hide-if-last") && gui.getPrevPageNum() < gui.getCurrentPageNum())
                 .place(gui);
 
         MenuItem.create(this.config)
@@ -358,7 +357,7 @@ public class TagsGUI extends PluginMenu {
                     "&f| &7to the previous page",
                     ""
             ));
-            this.put("previous-page.slot", 2);
+            this.put("previous-page.slot", 1);
             this.put("previous-page.hide-if-last", false);
 
             // Clear Tag Item
