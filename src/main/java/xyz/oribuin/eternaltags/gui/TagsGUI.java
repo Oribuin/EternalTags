@@ -343,7 +343,6 @@ public class TagsGUI extends PluginMenu {
                     ""
             ));
             this.put("next-page.slot", 7);
-            this.put("next-page.hide-if-first", false);
 
             // Previous Page Item
             this.put("#33", " ");
@@ -358,7 +357,6 @@ public class TagsGUI extends PluginMenu {
                     ""
             ));
             this.put("previous-page.slot", 1);
-            this.put("previous-page.hide-if-last", false);
 
             // Clear Tag Item
             this.put("#36", " ");
