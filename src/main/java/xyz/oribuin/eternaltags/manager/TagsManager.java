@@ -260,16 +260,65 @@ public class TagsManager extends Manager {
      *
      * @param uuid The UUID of the player.
      * @return The active tag if present
+     * @deprecated Use {@link TagsManager#getUserTag(UUID)} instead.
      */
     @Nullable
+    @Deprecated
     public Tag getTagFromUUID(UUID uuid) {
-        // I could return this.getTag(player.getUniqueId()); but its *slightly* more efficient for the removeInaccessible option
-        final DataManager dataManager = this.rosePlugin.getManager(DataManager.class);
-        Tag tag = dataManager.getCachedUsers().get(uuid);
+        return this.getUserTag(uuid);
+    }
+
+    /**
+     * Get a tag by the UUID, If the user isn't cached, return null.
+     *
+     * @param uuid The UUID of the player.
+     * @return The active tag if present
+     * @since 1.1.6
+     */
+    @Nullable
+    public Tag getUserTag(UUID uuid) {
+        final var dataManager = this.rosePlugin.getManager(DataManager.class);
+        var tag = dataManager.getCachedUsers().get(uuid);
         if (tag == null)
             dataManager.loadUser(uuid);
 
+        // Check if the plugin wants to remove the tag.
+        if (removeInaccessible && tag != null) {
+            var player = Bukkit.getPlayer(uuid);
+            if (player == null)
+                return null;
+
+            if (!player.hasPermission(tag.getPermission())) {
+                var defaultTag = this.getDefaultTag(player);
+                dataManager.saveUser(uuid, defaultTag);
+                return defaultTag;
+            }
+        }
+
         return dataManager.getCachedUsers().get(uuid);
+    }
+
+    /**
+     * Get a tag by the user object, If the user isn't cached, return null.
+     *
+     * @param player The player object.
+     * @return The active tag if present
+     * @
+     */
+    public Tag getUserTag(Player player) {
+        return this.getUserTag(player.getUniqueId());
+    }
+
+
+    /**
+     * Get a tag by the offline player object, If the user isn't cached, return null.
+     *
+     * @param player The offline player object.
+     * @return The active tag if present
+     * @since 1.1.6
+     */
+    public Tag getUserTag(OfflinePlayer player) {
+        return this.getUserTag(player.getUniqueId());
     }
 
     /**
@@ -277,19 +326,12 @@ public class TagsManager extends Manager {
      *
      * @param offlinePlayer The player.
      * @return The active tag if present
+     * @deprecated Use {@link TagsManager#getUserTag(OfflinePlayer)} instead.
      */
     @Nullable
+    @Deprecated
     public Tag getPlayersTag(@NotNull OfflinePlayer offlinePlayer) {
-        Tag tag = this.rosePlugin.getManager(DataManager.class).getCachedUsers().get(offlinePlayer.getUniqueId());
-        if (tag == null)
-            return this.getDefaultTag(offlinePlayer);
-
-        // this might be very inefficient, we'll see.
-        final Player player = offlinePlayer.getPlayer();
-        if (this.removeInaccessible && player != null && !player.hasPermission(tag.getPermission()))
-            return this.getDefaultTag(offlinePlayer);
-
-        return tag;
+        return this.getUserTag(offlinePlayer);
     }
 
     /**
@@ -395,7 +437,7 @@ public class TagsManager extends Manager {
      * @return The default tag.
      */
     public Tag getDefaultTag(@Nullable OfflinePlayer player) {
-        String defaultTagID = ConfigurationManager.Setting.DEFAULT_TAG.getString();
+        var defaultTagID = Setting.DEFAULT_TAG.getString();
 
         if (defaultTagID == null || defaultTagID.equalsIgnoreCase("none"))
             return null;
@@ -474,6 +516,16 @@ public class TagsManager extends Manager {
      */
     public String getDisplayTag(@Nullable Tag tag, OfflinePlayer player) {
         return this.getDisplayTag(tag, player, ""); // Empty placeholder string
+    }
+
+
+    /**
+     * Clear of a player's favourite tags.
+     *
+     * @param uuid The UUID of the player.
+     */
+    public void clearFavourites(UUID uuid) {
+        this.rosePlugin.getManager(DataManager.class).clearFavourites(uuid);
     }
 
     /**

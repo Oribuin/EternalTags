@@ -14,6 +14,7 @@ import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.MenuManager;
 import xyz.oribuin.eternaltags.manager.PluginConversionManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
+import xyz.oribuin.eternaltags.util.EventWaiter;
 
 import java.util.Arrays;
 import java.util.List;
@@ -21,6 +22,7 @@ import java.util.List;
 public class EternalTags extends RosePlugin {
 
     private static EternalTags instance;
+    private static EventWaiter eventWaiter;
 
     public static EternalTags getInstance() {
         return instance;
@@ -52,6 +54,9 @@ public class EternalTags extends RosePlugin {
         // Register Plugin Listeners
         pluginManager.registerEvents(new PlayerListeners(), this);
 
+        // Register Event Waiter
+        eventWaiter = new EventWaiter();
+
         // Register PlaceholderAPI Expansion
         new Expansion(this).register();
     }
@@ -69,6 +74,10 @@ public class EternalTags extends RosePlugin {
                 MenuManager.class,
                 PluginConversionManager.class
         );
+    }
+
+    public static EventWaiter getEventWaiter() {
+        return eventWaiter;
     }
 
 }

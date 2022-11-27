@@ -32,7 +32,7 @@ public class ConvertCommand extends RoseCommand {
             locale.sendMessage(sender, "command-convert-invalid-plugin", StringPlaceholders.single("options", TagsUtils.formatList(ValidPlugin.PLUGINS.values()
                     .stream()
                     .map(ConversionPlugin::getPluginName)
-                    .collect(Collectors.toList()))));
+                    .collect(Collectors.toList()), ", ")));
             return;
         }
 
