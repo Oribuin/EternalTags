@@ -56,7 +56,7 @@ public class Expansion extends PlaceholderExpansion {
         }
 
 
-        final Tag activeTag = this.manager.getPlayersTag(player);
+        final Tag activeTag = this.manager.getUserTag(player);
         return switch (params.toLowerCase()) {
             // Set bracket placeholders to allow \o/ Placeholder Inception \o/
             case "tag" -> this.manager.getDisplayTag(activeTag, player, "");
@@ -70,7 +70,7 @@ public class Expansion extends PlaceholderExpansion {
             case "tag_name" -> activeTag != null ? activeTag.getName() : this.formattedPlaceholder;
             case "tag_id" -> activeTag != null ? activeTag.getId() : this.formattedPlaceholder;
             case "tag_permission" -> activeTag != null ? activeTag.getPermission() : this.formattedPlaceholder;
-            case "tag_description" -> activeTag != null ? TagsUtils.formatList(activeTag.getDescription()) : this.formattedPlaceholder;
+            case "tag_description" -> activeTag != null ? TagsUtils.formatList(activeTag.getDescription(), Setting.DESCRIPTION_DELIMITER.getString()) : this.formattedPlaceholder;
             case "tag_order" -> activeTag != null ? String.valueOf(activeTag.getOrder()) : this.formattedPlaceholder;
             case "tag_icon" -> activeTag != null ? activeTag.getIcon().toString() : this.formattedPlaceholder;
             case "active" -> String.valueOf(activeTag != null);

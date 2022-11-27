@@ -4,15 +4,15 @@ import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.manager.Manager;
 import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.gui.FavouritesGUI;
-import xyz.oribuin.eternaltags.gui.PluginGUI;
 import xyz.oribuin.eternaltags.gui.TagsGUI;
+import xyz.oribuin.eternaltags.gui.PluginMenu;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class MenuManager extends Manager {
 
-    private @NotNull Map<Class<? extends PluginGUI>, PluginGUI> registeredMenus = new LinkedHashMap<>();
+    private @NotNull Map<Class<? extends PluginMenu>, PluginMenu> registeredMenus = new LinkedHashMap<>();
 
     public MenuManager(RosePlugin rosePlugin) {
         super(rosePlugin);
@@ -29,7 +29,7 @@ public class MenuManager extends Manager {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends PluginGUI> T get(Class<T> menuClass) {
+    public <T extends PluginMenu> T get(Class<T> menuClass) {
         if (this.registeredMenus.containsKey(menuClass)) {
             return (T) this.registeredMenus.get(menuClass);
         }

@@ -18,7 +18,9 @@ public class SearchCommand extends RoseCommand {
 
     @RoseExecutable
     public void execute(CommandContext context, GreedyString keyword) {
-        this.rosePlugin.getManager(MenuManager.class).get(TagsGUI.class).open((Player) context.getSender(), keyword.get());
+        this.rosePlugin.getManager(MenuManager.class)
+                .get(TagsGUI.class)
+                .open((Player) context.getSender(), keyword.get());
     }
 
     @Override

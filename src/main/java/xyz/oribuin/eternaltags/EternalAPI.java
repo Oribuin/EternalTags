@@ -30,7 +30,7 @@ public class EternalAPI {
      */
     @Nullable
     public Tag getUserTag(UUID uuid) {
-        return this.getTagManager().getTagFromUUID(uuid);
+        return this.getTagManager().getUserTag(uuid);
     }
 
     /**
@@ -42,7 +42,7 @@ public class EternalAPI {
      */
     @Nullable
     public Tag getOnlineTag(Player player) {
-        return this.tagManager.getPlayersTag(player);
+        return this.tagManager.getUserTag(player);
     }
 
     /**
@@ -64,4 +64,5 @@ public class EternalAPI {
     public TagsManager getTagManager() {
         return tagManager;
     }
+
 }

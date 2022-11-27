@@ -25,7 +25,7 @@ import java.util.UUID;
 
 public class ItemBuilder {
 
-    private final ItemStack item;
+    private ItemStack item;
 
     public ItemBuilder(Material material) {
         this.item = new ItemStack(material);
@@ -33,6 +33,11 @@ public class ItemBuilder {
 
     public ItemBuilder(ItemStack item) {
         this.item = item.clone();
+    }
+
+    public ItemBuilder setMaterial(Material material) {
+        this.item.setType(material);
+        return this;
     }
 
     /**

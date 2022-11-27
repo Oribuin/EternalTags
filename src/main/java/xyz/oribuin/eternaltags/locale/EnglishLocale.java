@@ -52,6 +52,7 @@ public class EnglishLocale implements Locale {
             this.put("command-favorite-description", "Toggles a tag as a favourite.");
             this.put("command-favorite-no-permission", "You do not have permission to favorite this tag.");
             this.put("command-favorite-toggled", "You have toggled the tag %tag% &fas a favorite %toggled%!");
+            this.put("command-favorite-cleared", "You have cleared all your favorite tags.");
             this.put("command-favorite-on", "on");
             this.put("command-favorite-off", "off");
 
@@ -64,6 +65,8 @@ public class EnglishLocale implements Locale {
 
             this.put("#9", "Search Command");
             this.put("command-search-description", "Search for a tag that you own.");
+            this.put("command-search-start", "Type the name of the tag you want to search for.");
+            this.put("command-search-timeout", "You took too long to respond, please try again.");
 
             this.put("#10", "Set Command");
             this.put("command-set-description", "Change your current active tag.");

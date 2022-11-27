@@ -1,5 +1,7 @@
 package xyz.oribuin.eternaltags.util;
 
+import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
+import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import me.clip.placeholderapi.PlaceholderAPI;
@@ -8,6 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
@@ -142,36 +145,28 @@ public final class TagsUtils {
         return WordUtils.capitalizeFully(material.name().toLowerCase().replace("_", " "));
     }
 
-    /**
-     * Get ItemStack from CommentedFileSection path
-     *
-     * @param config       The CommentedFileSection
-     * @param path         The path to the item
-     * @param player       The player
-     * @param placeholders The placeholders
-     * @return The itemstack
-     */
-    public static ItemStack getItemStack(ConfigurationSection config, String path, Player player, StringPlaceholders placeholders) {
+    public static ItemStack getItemStack(CommentedConfigurationSection config, String path, Player player, StringPlaceholders placeholders) {
 
-        ItemStack baseItem = new ItemStack(Material.STONE);
-        Material material = Material.getMaterial(get(config, path + ".material", "STONE"));
-        if (material != null) {
-            baseItem = new ItemStack(material);
+        var material = Material.getMaterial(get(config, path + ".material", "STONE"));
+        if (material == null) {
+            return new ItemStack(Material.STONE);
         }
 
         // Format the item lore
-        List<String> lore = get(config, path + ".lore", List.of());
-        lore = lore.stream().map(s -> format(player, s, placeholders)).collect(Collectors.toList());
+        var lore = new ArrayList<String>(get(config, path + ".lore", new ArrayList<>()))
+                .stream()
+                .map(s -> format(player, s, placeholders))
+                .collect(Collectors.toList());
 
         // Get item flags
-        ItemFlag[] flags = get(config, path + ".flags", new ArrayList<String>())
+        var flags = get(config, path + ".flags", new ArrayList<String>())
                 .stream()
                 .map(String::toUpperCase)
                 .map(ItemFlag::valueOf)
                 .toArray(ItemFlag[]::new);
 
         // Build the item stack
-        ItemBuilder builder = new ItemBuilder(baseItem)
+        var builder = new ItemBuilder(material)
                 .setName(format(player, get(config, path + ".name", null), placeholders))
                 .setLore(lore)
                 .setAmount(Math.max(get(config, path + ".amount", 1), 1))
@@ -182,26 +177,24 @@ public final class TagsUtils {
                 .setModel(get(config, path + ".model-data", -1));
 
         // Get item owner
-        String owner = get(config, path + ".owner", null);
+        var owner = get(config, path + ".owner", null);
         if (owner != null)
-            builder.setOwner(Bukkit.getOfflinePlayer(UUID.fromString(owner)));
+            builder.setOwner(Bukkit.getOfflinePlayer(UUID.fromString((String) owner)));
 
         // Get item enchantments
-        final ConfigurationSection enchants = config.getConfigurationSection(path + ".enchants");
+        final var enchants = config.getConfigurationSection(path + ".enchants");
         if (enchants != null) {
             enchants.getKeys(false).forEach(key -> {
-                Enchantment enchant = Arrays.stream(Enchantment.values()).filter(e -> e.getKey().getKey().equalsIgnoreCase(key)).findFirst().orElse(null);
-
-                if (enchant == null)
+                var enchantment = Enchantment.getByKey(NamespacedKey.minecraft(key.toLowerCase()));
+                if (enchantment == null)
                     return;
 
-                builder.addEnchant(enchant, enchants.getInt(key));
+                builder.addEnchant(enchantment, enchants.getInt(key));
             });
         }
 
         return builder.create();
     }
-
     /**
      * Get ItemStack from CommentedFileSection path
      *
@@ -209,7 +202,7 @@ public final class TagsUtils {
      * @param path   The path to the item
      * @return The itemstack
      */
-    public static ItemStack getItemStack(ConfigurationSection config, String path) {
+    public static ItemStack getItemStack(CommentedFileConfiguration config, String path) {
         return getItemStack(config, path, null, StringPlaceholders.empty());
     }
 
@@ -237,24 +230,55 @@ public final class TagsUtils {
     }
 
     /**
-     * Format a List<String> into a single String
+     * Parse a list of strings from 1-1 to a stringlist
      *
-     * @param list The list
-     * @return the new formatted string.
+     * @param list The list to parse
+     * @return The parsed list
      */
-    public static String formatList(List<String> list) {
-        return String.join(", ", list);
-    }
+    public static List<Integer> parseList(List<String> list) {
+        var newList = new ArrayList<Integer>();
+        for (var s : list) {
+            var split = s.split("-");
+            if (split.length != 2) {
+                continue;
+            }
 
+            newList.addAll(getNumberRange(Integer.parseInt(split[0]), Integer.parseInt(split[1])));
+        }
+
+        return newList;
+    }
 
     /**
-     * Format a List<String> into a single String
+     * Get a range of numbers as a list
      *
-     * @param list The list
-     * @return the new formatted string.
+     * @param start The start of the range
+     * @param end   The end of the range
+     * @return A list of numbers
      */
-    public static String formatList(String[] list) {
-        return formatList(Arrays.asList(list));
+    public static List<Integer> getNumberRange(int start, int end) {
+        if (start == end) {
+            return List.of(start);
+        }
+
+        final var list = new ArrayList<Integer>();
+        for (int i = start; i <= end; i++) {
+            list.add(i);
+        }
+
+        return list;
     }
+
+    /**
+     * Format a string list into a single string.
+     *
+     * @param list      The strings being converted
+     * @param delimiter The delimiter between each string
+     * @return the converted string.
+     */
+    public static String formatList(List<String> list, String delimiter) {
+        return String.join(delimiter, list);
+    }
+
 
 }

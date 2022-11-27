@@ -18,8 +18,10 @@ public class ConfigurationManager extends AbstractConfigurationManager {
         TAG_PREFIX("tag-prefix", "", "The prefix that will be added in front of the tag in the placeholder"),
         TAG_SUFFIX("tag-suffix", "", "The suffix that will be added after the tag in the placeholder"),
         MYSQL_TAGDATA("save-tagdata-sql", false, "Should the tag data be stored in a MySQL/SQLite database? (Tags that would be saved in tags.yml)"),
-        RE_EQUIP_CLEAR("reequip-clear", false, "Should the player's tag be cleared when they re-equip the same tag?");
-        
+        RE_EQUIP_CLEAR("reequip-clear", false, "Should the player's tag be cleared when they re-equip the same tag?"),
+        DESCRIPTION_DELIMITER("description-delimiter", "\n", "The delimiter that will be used for %eternaltags_tag_description%"),
+        ;
+
         private final String key;
         private final Object defaultValue;
         private final String[] comments;
