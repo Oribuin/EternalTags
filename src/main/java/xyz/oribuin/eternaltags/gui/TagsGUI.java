@@ -141,8 +141,7 @@ public class TagsGUI extends PluginMenu {
                     event.setCancelled(true);
                     this.sync(() -> this.open(player, event.getMessage()));
                 },
-                60,
-                TimeUnit.SECONDS,
+                30,
                 () -> this.locale.sendMessage(player, "command-search-timeout")
         );
     }
