@@ -16,7 +16,7 @@ public enum SortType {
 
     public void sort(List<Tag> tags) {
         switch (this) {
-            case ALPHABETICAL -> tags.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
+            case ALPHABETICAL -> tags.sort(Comparator.comparing(Tag::getName));
             case CUSTOM -> tags.sort(Comparator.comparingInt(Tag::getOrder));
             case RANDOM -> Collections.shuffle(tags);
         }

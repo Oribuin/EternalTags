@@ -214,7 +214,7 @@ public class FavouritesGUI extends PluginMenu {
             this.manager.addFavourite(player.getUniqueId(), tag);
 
 
-        var message = locale.getLocaleMessage(isFavourite ? "command-favourite-off" : "command-favourite-on");
+        var message = locale.getLocaleMessage(isFavourite ? "command-favorite-off" : "command-favorite-on");
         this.locale.sendMessage(player, "command-favorite-toggled", StringPlaceholders.builder("tag", this.manager.getDisplayTag(tag, player))
                 .addPlaceholder("toggled", message)
                 .build());
@@ -222,7 +222,7 @@ public class FavouritesGUI extends PluginMenu {
 
     private void clearFavourites(Player player, BaseGui gui) {
         this.manager.clearFavourites(player.getUniqueId());
-        this.locale.sendMessage(player, "command-favourite-cleared");
+        this.locale.sendMessage(player, "command-favorite-cleared");
         gui.close(player);
     }
 

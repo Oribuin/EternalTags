@@ -196,20 +196,20 @@ public class TagsGUI extends PluginMenu {
 
         List<Tag> tags = new ArrayList<>();
 
-        if (this.config.getBoolean("gui-settings.favourite-first", false)) {
+        if (this.config.getBoolean("gui-settings.favourite-first")) {
             tags = new ArrayList<>(this.manager.getUsersFavourites(player.getUniqueId()).values());
             sortType.sort(tags);
         }
 
-        var playerTags = this.manager.getPlayerTags(player); // Get the player's tags
+        var playerTags = new ArrayList<>(this.manager.getPlayerTags(player)); // Get the player's tags
         sortType.sort(playerTags); // Individually sort the player's tags
-        tags.addAll(this.manager.getPlayerTags(player)); // Add all the list of tags
+        tags.addAll(playerTags); // Add all the list of tags
 
         // We're adding all the remaining tags to the list if the option is enabled
-        if (this.config.getBoolean("gui-settings.add-all-tags", false)) {
+        if (this.config.getBoolean("gui-settings.add-all-tags")) {
             var allTags = new ArrayList<>(this.manager.getCachedTags().values());
             sortType.sort(allTags);
-            tags.addAll(this.manager.getCachedTags().values());
+            tags.addAll(allTags);
         }
 
         // If the keyword is not null, filter the list of tags
@@ -259,7 +259,7 @@ public class TagsGUI extends PluginMenu {
             this.manager.addFavourite(player.getUniqueId(), tag);
 
 
-        var message = locale.getLocaleMessage(isFavourite ? "command-favourite-off" : "command-favourite-on");
+        var message = locale.getLocaleMessage(isFavourite ? "command-favorite-off" : "command-favorite-on");
         this.locale.sendMessage(player, "command-favorite-toggled", StringPlaceholders.builder("tag", this.manager.getDisplayTag(tag, player))
                 .addPlaceholder("toggled", message)
                 .build());
