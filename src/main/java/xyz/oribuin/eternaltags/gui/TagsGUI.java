@@ -228,8 +228,10 @@ public class TagsGUI extends PluginMenu {
     private void setTag(Player player, Tag tag) {
 
         var activeTag = this.manager.getUserTag(player);
+        if (activeTag == null)
+            return;
 
-        if (activeTag != null && activeTag.equals(tag) && Setting.RE_EQUIP_CLEAR.getBoolean()) {
+        if (activeTag.equals(tag) && Setting.RE_EQUIP_CLEAR.getBoolean()) {
             this.clearTag(player);
             return;
         }

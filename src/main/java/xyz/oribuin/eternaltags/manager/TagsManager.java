@@ -275,8 +275,7 @@ public class TagsManager extends Manager {
      * @return The active tag if present
      * @since 1.1.6
      */
-    @Nullable
-    public Tag getUserTag(UUID uuid) {
+    public @Nullable Tag getUserTag(UUID uuid) {
         final var dataManager = this.rosePlugin.getManager(DataManager.class);
         var tag = dataManager.getCachedUsers().get(uuid);
         if (tag == null)
@@ -305,7 +304,7 @@ public class TagsManager extends Manager {
      * @return The active tag if present
      * @
      */
-    public Tag getUserTag(Player player) {
+    public @Nullable Tag getUserTag(Player player) {
         return this.getUserTag(player.getUniqueId());
     }
 
@@ -317,7 +316,7 @@ public class TagsManager extends Manager {
      * @return The active tag if present
      * @since 1.1.6
      */
-    public Tag getUserTag(OfflinePlayer player) {
+    public @Nullable Tag getUserTag(OfflinePlayer player) {
         return this.getUserTag(player.getUniqueId());
     }
 
@@ -340,7 +339,7 @@ public class TagsManager extends Manager {
      * @param uuid The UUID of the player.
      * @param tag  The tag of the user.
      */
-    public void setTag(UUID uuid, Tag tag) {
+    public void setTag(@NotNull UUID uuid, @NotNull Tag tag) {
         this.rosePlugin.getManager(DataManager.class).saveUser(uuid, tag);
     }
 
