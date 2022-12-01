@@ -136,11 +136,16 @@ public class FavouritesGUI extends PluginMenu {
         if (gui instanceof ScrollingGui scrollingGui) // Remove all items from the GUI
             scrollingGui.clearPageItems();
 
+
+        var tagActions = this.getTagActions();
         this.getTags(player).forEach(tag -> {
             var item = this.getTagItem(player, tag);
 
             gui.addItem(new GuiItem(item, event -> {
                 if (!player.hasPermission(tag.getPermission()))
+                    return;
+
+                if (tagActions != null && this.runActions(tagActions, event, this.getTagPlaceholders(tag, player)))
                     return;
 
                 if (event.isShiftClick()) {

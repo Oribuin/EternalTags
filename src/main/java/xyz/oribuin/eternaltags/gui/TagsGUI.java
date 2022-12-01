@@ -10,6 +10,7 @@ import dev.triumphteam.gui.guis.ScrollingGui;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class TagsGUI extends PluginMenu {
 
@@ -161,11 +163,15 @@ public class TagsGUI extends PluginMenu {
         if (gui instanceof ScrollingGui scrollingGui) // Remove all items from the GUI
             scrollingGui.clearPageItems();
 
+        var tagActions = this.getTagActions();
         this.getTags(player, keyword).forEach(tag -> {
             var item = this.getTagItem(player, tag);
 
             gui.addItem(new GuiItem(item, event -> {
                 if (!player.hasPermission(tag.getPermission()))
+                    return;
+
+                if (tagActions != null && this.runActions(tagActions, event, this.getTagPlaceholders(tag, player)))
                     return;
 
                 if (event.isShiftClick()) {

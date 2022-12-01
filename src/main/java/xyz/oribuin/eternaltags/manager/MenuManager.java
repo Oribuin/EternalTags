@@ -4,8 +4,8 @@ import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.manager.Manager;
 import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.gui.FavouritesGUI;
-import xyz.oribuin.eternaltags.gui.TagsGUI;
 import xyz.oribuin.eternaltags.gui.PluginMenu;
+import xyz.oribuin.eternaltags.gui.TagsGUI;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
