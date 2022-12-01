@@ -218,6 +218,7 @@ public abstract class PluginMenu {
         for (var key : customActions.getKeys(false)) {
             var clickType = TagsUtils.getEnum(ClickType.class, key.toUpperCase());
             if (clickType == null) {
+                this.rosePlugin.getLogger().warning("Invalid click type [" + key + "] in the tag-item.commands section of the [" + this.getMenuName() + "] menu.");
                 continue;
             }
 

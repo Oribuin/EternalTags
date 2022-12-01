@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
+import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.action.Action;
 import xyz.oribuin.eternaltags.action.PluginAction;
 import xyz.oribuin.eternaltags.util.TagsUtils;
@@ -119,10 +120,10 @@ public class MenuItem {
         if (customActions == null)
             return;
 
-
         for (var key : customActions.getKeys(false)) {
             var clickType = TagsUtils.getEnum(ClickType.class, key.toUpperCase());
             if (clickType == null) {
+                EternalTags.getInstance().getLogger().warning("Invalid click type [" + key + "] in the " + this.itemPath + ".commands section of the [" + this.config.getName() + "] menu.");
                 continue;
             }
 

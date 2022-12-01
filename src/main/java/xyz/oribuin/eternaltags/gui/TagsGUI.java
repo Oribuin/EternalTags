@@ -313,9 +313,9 @@ public class TagsGUI extends PluginMenu {
             this.put("#31", "Here is an example of how to use actions:");
             this.put("#32", "commands:");
             this.put("#33", " LEFT:");
-            this.put("#34", "   - '[player] You clicked the left button!'");
+            this.put("#34", "   - '[message] You clicked the left button!'");
             this.put("#35", " RIGHT:");
-            this.put("#36", "   - '[player] You clicked the right button!'");
+            this.put("#36", "   - '[message] You clicked the right button!'");
             this.put("#37", " MIDDLE:");
             this.put("#38", "   - '[console] ban %player_name%'");
 
