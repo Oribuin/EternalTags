@@ -208,10 +208,10 @@ public abstract class PluginMenu {
      * @return The tag icon actions
      * @since 1.1.7
      */
-    protected final Map<ClickType, List<Action>> getTagActions() {
+    protected final @NotNull Map<ClickType, List<Action>> getTagActions() {
         var customActions = this.config.getConfigurationSection("tag-item.commands");
         if (customActions == null)
-            return null;
+            return new HashMap<>();
 
         var actions = new HashMap<ClickType, List<Action>>();
 
@@ -244,20 +244,18 @@ public abstract class PluginMenu {
      * @param actions      The actions to run
      * @param event        The event to run the actions for
      * @param placeholders The placeholders to use
-     * @return The true if the actions were run, false if not
      */
-    public boolean runActions(@NotNull Map<ClickType, List<Action>> actions, @NotNull InventoryClickEvent event, @NotNull StringPlaceholders placeholders) {
-
+    public void runActions(@NotNull Map<ClickType, List<Action>> actions, @NotNull InventoryClickEvent event, @NotNull StringPlaceholders placeholders) {
         if (actions.isEmpty())
-            return false;
+            return;
 
-        actions.forEach((clickType, x) -> {
-            if (event.getClick() == clickType) {
-                x.forEach(action -> action.execute((Player) event.getWhoClicked(), placeholders));
-            }
-        });
+        List<Action> newActions = actions.get(event.getClick());
+        if (newActions == null || newActions.isEmpty())
+            return;
 
-        return true;
+        for (Action action : newActions) {
+            action.execute((Player) event.getWhoClicked(), placeholders);
+        }
     }
 
     /**

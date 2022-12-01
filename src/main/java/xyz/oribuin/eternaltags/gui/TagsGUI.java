@@ -169,17 +169,20 @@ public class TagsGUI extends PluginMenu {
                 if (!player.hasPermission(tag.getPermission()))
                     return;
 
-                if (tagActions != null && this.runActions(tagActions, event, this.getTagPlaceholders(tag, player)))
-                    return;
+                if (tagActions.size() == 0) {
+                    if (event.isShiftClick()) {
+                        this.toggleFavourite(player, tag);
+                        this.addTags(gui, player, keyword);
+                        return;
+                    }
 
-                if (event.isShiftClick()) {
-                    this.toggleFavourite(player, tag);
-                    this.addTags(gui, player, keyword);
+                    this.setTag(player, tag);
+                    gui.close(player);
                     return;
                 }
 
-                this.setTag(player, tag);
-                gui.close(player);
+                this.runActions(tagActions, event, this.getTagPlaceholders(tag, player));
+
             }));
         });
 
@@ -230,12 +233,8 @@ public class TagsGUI extends PluginMenu {
      * @param tag    The tag
      */
     private void setTag(Player player, Tag tag) {
-
         var activeTag = this.manager.getUserTag(player);
-        if (activeTag == null)
-            return;
-
-        if (activeTag.equals(tag) && Setting.RE_EQUIP_CLEAR.getBoolean()) {
+        if (activeTag != null && activeTag.equals(tag) && Setting.RE_EQUIP_CLEAR.getBoolean()) {
             this.clearTag(player);
             return;
         }
