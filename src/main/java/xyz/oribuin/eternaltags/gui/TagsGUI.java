@@ -10,7 +10,6 @@ import dev.triumphteam.gui.guis.ScrollingGui;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -31,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
 public class TagsGUI extends PluginMenu {
 
@@ -304,10 +302,25 @@ public class TagsGUI extends PluginMenu {
             this.put("#22", "flags - The item flags for the reward item.");
             this.put("#23", "enchants - The enchantments for the reward item.");
 
-            // GUI Settings
+            // Commands Options
             this.put("#24", " ");
-            this.put("#25", "GUI Settings");
+            this.put("#25", "Icon Actions");
             this.put("#26", " ");
+            this.put("#27", "Actions is an optional configuration option that can replace an item's functionality with a new one.");
+            this.put("#28", "Available Actions: [BROADCAST, CLOSE, CONSOLE, MESSAGE, PLAYER, SOUND]");
+            this.put("#29", "These actions can be defined in the `commands` section of the item, They require a ClickType to be defined.");
+            this.put("#30", "Available ClickTypes: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/event/inventory/ClickType.html");
+            this.put("#31", "Here is an example of how to use actions:");
+            this.put("#32", "commands:");
+            this.put("#33", " LEFT:");
+            this.put("#34", "   - '[player] You clicked the left button!'");
+            this.put("#35", " RIGHT:");
+            this.put("#36", "   - '[player] You clicked the right button!'");
+            this.put("#37", " MIDDLE:");
+            this.put("#38", "   - '[console] ban %player_name%'");
+
+            // GUI Settings
+            this.put("#39", "GUI Settings");
             this.put("gui-settings.title", "EternalTags | %page%/%total%");
             this.put("gui-settings.rows", 5);
             this.put("gui-settings.sort-type", "ALPHABETICAL");
@@ -320,9 +333,7 @@ public class TagsGUI extends PluginMenu {
             this.put("gui-settings.scrolling-type", "HORIZONTAL");
 
             // Tag Item
-            this.put("#27", " ");
-            this.put("#28", "Tag Item - The item that represents each tag in the GUI");
-            this.put("#29", " ");
+            this.put("#40", "Tag Item - The item that represents each tag in the GUI");
             this.put("tag-item.material", Material.NAME_TAG.name());
             this.put("tag-item.amount", 1);
             this.put("tag-item.name", "%tag%");
@@ -339,9 +350,7 @@ public class TagsGUI extends PluginMenu {
             this.put("tag-item.glow", true);
 
             // Next Page Item
-            this.put("#30", " ");
-            this.put("#31", "Next Page Item - Changes the current page to the next page");
-            this.put("#32", " ");
+            this.put("#41", "Next Page Item - Changes the current page to the next page ");
             this.put("next-page.material", Material.PAPER.name());
             this.put("next-page.name", "#00B4DB&lNext Page");
             this.put("next-page.lore", Arrays.asList(
@@ -353,9 +362,7 @@ public class TagsGUI extends PluginMenu {
             this.put("next-page.slot", 7);
 
             // Previous Page Item
-            this.put("#33", " ");
-            this.put("#34", "Previous Page Item - Changes the current page to the previous page");
-            this.put("#35", " ");
+            this.put("#42", "Previous Page Item - Changes the current page to the previous page");
             this.put("previous-page.material", Material.PAPER.name());
             this.put("previous-page.name", "#00B4DB&lPrevious Page");
             this.put("previous-page.lore", Arrays.asList(
@@ -365,11 +372,8 @@ public class TagsGUI extends PluginMenu {
                     ""
             ));
             this.put("previous-page.slot", 1);
-
             // Clear Tag Item
-            this.put("#36", " ");
-            this.put("#37", "Clear Tag Item - Clears the player's active tag");
-            this.put("#38", " ");
+            this.put("#43", "Clear Tag Item - Clears the player's active tag");
             this.put("clear-tag.enabled", true);
             this.put("clear-tag.material", Material.PLAYER_HEAD.name());
             this.put("clear-tag.name", "#00B4DB&lClear Tag");
@@ -386,9 +390,7 @@ public class TagsGUI extends PluginMenu {
 
 
             // Search Function
-            this.put("#42", " ");
-            this.put("#43", "Search Item - Allows the player to search for tags");
-            this.put("#44", " ");
+            this.put("#44", "Search Item - Allows the player to search for tags");
             this.put("search.enabled", true);
             this.put("search.material", Material.OAK_SIGN.name());
             this.put("search.name", "#00B4DB&lSearch");
@@ -401,9 +403,7 @@ public class TagsGUI extends PluginMenu {
             this.put("search.slot", 4);
 
             // Favourites Tag Item
-            this.put("#39", " ");
-            this.put("#40", "Favourites Tag Item - Shows the player's favourite tags");
-            this.put("#41", " ");
+            this.put("#45", "Favourites Tag Item - Shows the player's favourite tags");
             this.put("favorite-tags.enabled", true);
             this.put("favorite-tags.material", Material.PLAYER_HEAD.name());
             this.put("favorite-tags.name", "#00B4DB&lFavourite Tags");
@@ -417,9 +417,7 @@ public class TagsGUI extends PluginMenu {
             this.put("favorite-tags.slot", 5);
 
 
-            this.put("#45", " ");
-            this.put("#46", "Extra Items - Allows you to add extra items to the GUI [These are placed in the gui first]");
-            this.put("#47", " ");
+            this.put("#46", "Extra Items - Allows you to add extra items to the GUI [These are placed in the gui first] ");
             this.put("extra-items.border-item.enabled", true);
             this.put("extra-items.border-item.material", Material.GRAY_STAINED_GLASS_PANE.name());
             this.put("extra-items.border-item.name", " ");
