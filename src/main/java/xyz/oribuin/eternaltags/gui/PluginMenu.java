@@ -345,6 +345,7 @@ public abstract class PluginMenu {
     protected StringPlaceholders getTagPlaceholders(Tag tag, OfflinePlayer player) {
         return StringPlaceholders.builder()
                 .addPlaceholder("tag", this.rosePlugin.getManager(TagsManager.class).getDisplayTag(tag, player))
+                .addPlaceholder("tag_stripped", tag.getTag())
                 .addPlaceholder("id", tag.getId())
                 .addPlaceholder("name", tag.getName())
                 .addPlaceholder("description", String.join(Setting.DESCRIPTION_DELIMITER.getString(), tag.getDescription()))
