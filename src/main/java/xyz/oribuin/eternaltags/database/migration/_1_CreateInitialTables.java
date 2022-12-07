@@ -19,13 +19,13 @@ public class _1_CreateInitialTables extends DataMigration {
             statement.executeUpdate("CREATE TABLE IF NOT EXISTS " + tablePrefix + "tags (" +
                     "player VARCHAR(36), " +
                     "tagID TEXT, " +
-                    "PRIMARY KEY(player))");
+                    "PRIMARY KEY(`player`(50)) ENGINE=InnoDB)");
         }
 
         try (Statement statement = connection.createStatement()) {
             statement.executeUpdate("CREATE TABLE IF NOT EXISTS " + tablePrefix + "favourites (" +
                     "player VARCHAR(36), " +
-                    "tagID TEXT)");
+                    "tagID TEXT) ENGINE=InnoDB");
         }
     }
 

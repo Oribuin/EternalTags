@@ -24,7 +24,7 @@ public class _2_CreateNewTagTables extends DataMigration {
                     "description TEXT, " +
                     "`order` INTEGER DEFAULT 0, " +
                     "`icon` TEXT NULL, " +
-                    "PRIMARY KEY(tagId))");
+                    "PRIMARY KEY(`tagId`(50))) ENGINE=InnoDB");
         }
     }
 
