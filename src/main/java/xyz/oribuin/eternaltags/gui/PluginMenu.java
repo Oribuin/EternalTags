@@ -197,9 +197,7 @@ public abstract class PluginMenu {
         }
 
 
-        return new ItemBuilder(baseItem)
-                .setLore(lore)
-                .create();
+        return item.create();
     }
 
     /**

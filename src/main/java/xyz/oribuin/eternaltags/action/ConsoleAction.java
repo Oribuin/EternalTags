@@ -18,7 +18,7 @@ public class ConsoleAction extends Action {
         if (this.getMessage().length() == 0)
             return;
 
-        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), HexUtils.colorify(PlaceholderAPI.setPlaceholders(player, placeholders.apply(this.getMessage()))));
+        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), PlaceholderAPI.setPlaceholders(player, placeholders.apply(this.getMessage())));
     }
 
 }

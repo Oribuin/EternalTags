@@ -58,6 +58,9 @@ public class DataManager extends AbstractDataManager {
      */
     public void deleteUserTag(String id) {
         for (var entry : this.cachedUsers.entrySet()) {
+            if (entry.getValue() == null)
+                continue;
+
             if (entry.getValue().getId().equalsIgnoreCase(id))
                 this.cachedUsers.remove(entry.getKey());
         }
@@ -239,7 +242,7 @@ public class DataManager extends AbstractDataManager {
      *
      * @param tag The tag to save.
      */
-    public void saveTagData(Tag tag) {
+    public void saveTagData(@NotNull Tag tag) {
         this.async(task -> this.databaseConnector.connect(connection -> {
             final var query = "REPLACE INTO " + this.getTablePrefix() + "tag_data (tagId, `name`, description, tag, permission, `order`, icon) VALUES (?, ?, ?, ?, ?, ?, ?)";
             try (var statement = connection.prepareStatement(query)) {

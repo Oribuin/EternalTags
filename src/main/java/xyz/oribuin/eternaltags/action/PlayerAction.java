@@ -1,6 +1,5 @@
 package xyz.oribuin.eternaltags.action;
 
-import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
@@ -18,7 +17,7 @@ public class PlayerAction extends Action {
         if (this.getMessage().length() == 0)
             return;
 
-        Bukkit.dispatchCommand(player, HexUtils.colorify(PlaceholderAPI.setPlaceholders(player, placeholders.apply(this.getMessage()))));
+        Bukkit.dispatchCommand(player, PlaceholderAPI.setPlaceholders(player, placeholders.apply(this.getMessage())));
     }
 
 }

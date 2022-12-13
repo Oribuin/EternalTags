@@ -5,14 +5,17 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.manager.DataManager;
+import xyz.oribuin.eternaltags.manager.TagsManager;
 
 public class PlayerListeners implements Listener {
 
-    private final DataManager data = EternalTags.getInstance().getManager(DataManager.class);
+    private final TagsManager manager = EternalTags.getInstance().getManager(TagsManager.class);
+    private final DataManager dataManager = EternalTags.getInstance().getManager(DataManager.class);
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        this.data.loadUser(event.getPlayer().getUniqueId());
+        this.dataManager.loadUser(event.getPlayer().getUniqueId());
+        this.manager.getUserTag(event.getPlayer());
     }
 
 }

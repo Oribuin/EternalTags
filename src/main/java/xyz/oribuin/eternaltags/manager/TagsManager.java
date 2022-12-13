@@ -148,17 +148,22 @@ public class TagsManager extends Manager {
         if (event.isCancelled())
             return false;
 
+        this.cachedTags.put(tag.getId(), tag);
         // Save to mysql instead of tags.yml
         if (Setting.MYSQL_TAGDATA.getBoolean()) {
             this.rosePlugin.getManager(DataManager.class).saveTagData(tag);
+            return true;
         }
 
-        this.cachedTags.put(tag.getId(), tag);
+        if (this.config == null)
+            return false;
+
         this.config.set("tags." + tag.getId() + ".name", tag.getName());
         this.config.set("tags." + tag.getId() + ".tag", tag.getTag());
         this.config.set("tags." + tag.getId() + ".description", tag.getDescription());
         this.config.set("tags." + tag.getId() + ".permission", tag.getPermission());
         this.config.set("tags." + tag.getId() + ".order", tag.getOrder());
+        this.config.set("tags." + tag.getId() + ".icon", tag.getIcon().name());
         this.config.save();
 
         return true;
@@ -277,13 +282,13 @@ public class TagsManager extends Manager {
      */
     public @Nullable Tag getUserTag(UUID uuid) {
         final var dataManager = this.rosePlugin.getManager(DataManager.class);
+        final var player = Bukkit.getPlayer(uuid);
         var tag = dataManager.getCachedUsers().get(uuid);
         if (tag == null)
             dataManager.loadUser(uuid);
 
         // Check if the plugin wants to remove the tag.
         if (removeInaccessible && tag != null) {
-            var player = Bukkit.getPlayer(uuid);
             if (player == null)
                 return null;
 
@@ -293,6 +298,11 @@ public class TagsManager extends Manager {
                 return defaultTag;
             }
         }
+
+        // If the user is still null, return the default tag.
+        var newTag = dataManager.getCachedUsers().get(uuid);
+        if (newTag == null && player != null)
+            return this.getDefaultTag(player);
 
         return dataManager.getCachedUsers().get(uuid);
     }
