@@ -7,6 +7,8 @@ import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.manager.DataManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 
+import java.util.List;
+
 public class PlayerListeners implements Listener {
 
     private final TagsManager manager = EternalTags.getInstance().getManager(TagsManager.class);

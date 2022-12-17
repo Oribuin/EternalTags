@@ -11,12 +11,16 @@ import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import xyz.oribuin.eternaltags.manager.ConfigurationManager;
+import xyz.oribuin.eternaltags.manager.TagsManager;
+import xyz.oribuin.eternaltags.obj.Tag;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -42,6 +42,12 @@ public class TagsGUI extends PluginMenu {
 
     public void open(@NotNull Player player, @Nullable String keyword) {
 
+        var menuTitle = this.config.getString("gui-settings.title");
+        if (menuTitle == null)
+            menuTitle = "EternalTags | %page%/%total%";
+
+        var finalMenuTitle = menuTitle;
+
         var scrollingGui = this.config.getBoolean("gui-settings.scrolling-gui", false);
         var scrollingType = this.match(this.config.getString("gui-settings.scrolling-type"));
 
@@ -60,14 +66,20 @@ public class TagsGUI extends PluginMenu {
         MenuItem.create(this.config)
                 .path("next-page")
                 .player(player)
-                .action(event -> gui.next())
+                .action(event -> {
+                    gui.next();
+                    gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui)));
+                })
                 .player(player)
                 .place(gui);
 
         MenuItem.create(this.config)
                 .path("previous-page")
                 .player(player)
-                .action(event -> gui.previous())
+                .action(event -> {
+                    gui.previous();
+                    gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui)));
+                })
                 .place(gui);
 
         MenuItem.create(this.config)
