@@ -6,7 +6,7 @@ plugins {
 }
 
 group "xyz.oribuin"
-version "1.1.7-pre3"
+version "1.1.7-pre4"
 
 java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(17))
