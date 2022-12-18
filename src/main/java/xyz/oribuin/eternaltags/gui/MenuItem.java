@@ -5,12 +5,19 @@ import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.triumphteam.gui.guis.BaseGui;
 import dev.triumphteam.gui.guis.GuiItem;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
+import xyz.oribuin.eternaltags.EternalTags;
+import xyz.oribuin.eternaltags.action.Action;
+import xyz.oribuin.eternaltags.action.PluginAction;
 import xyz.oribuin.eternaltags.util.TagsUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public class MenuItem {
@@ -23,6 +30,7 @@ public class MenuItem {
     private Consumer<InventoryClickEvent> action; // The action to be performed when the item is clicked
     private List<Integer> slots; // The slots the item should be placed in
     private boolean condition; // The condition for the item to be displayed
+    private final Map<ClickType, List<Action>> customActions; // The actions to be performed when the item is clicked
 
     public MenuItem() {
         throw new UnsupportedOperationException("This class cannot be instantiated, Use MenuItem.create() instead.");
@@ -37,6 +45,7 @@ public class MenuItem {
         this.action = inventoryClickEvent -> {}; // Do nothing
         this.slots = new ArrayList<>();
         this.condition = true;
+        this.customActions = new HashMap<>();
     }
 
     /**
@@ -93,9 +102,51 @@ public class MenuItem {
                 ? this.customItem
                 : TagsUtils.getItemStack(this.config, this.itemPath, this.player, this.placeholders);
 
+
+        this.addActions();
         this.slots.forEach(slot -> gui.setItem(slot, new GuiItem(item, this.action::accept)));
         gui.update();
 
+    }
+
+
+    /**
+     * Add all the custom actions to the item
+     *
+     * @since 1.1.7
+     */
+    private void addActions() {
+        var customActions = this.config.getConfigurationSection(this.itemPath + ".commands");
+        if (customActions == null)
+            return;
+
+        for (var key : customActions.getKeys(false)) {
+            var clickType = TagsUtils.getEnum(ClickType.class, key.toUpperCase());
+            if (clickType == null) {
+                EternalTags.getInstance().getLogger().warning("Invalid click type [" + key + "] in the " + this.itemPath + ".commands section of the [" + this.config.getName() + "] menu.");
+                continue;
+            }
+
+            var actionList = new ArrayList<Action>();
+            this.config.getStringList(this.itemPath + ".commands." + key)
+                    .stream()
+                    .map(PluginAction::parse)
+                    .filter(Objects::nonNull)
+                    .forEach(actionList::add);
+
+            this.customActions.put(clickType, actionList);
+        }
+
+        if (this.customActions.isEmpty())
+            return;
+
+        this.action = event -> {
+            List<Action> actions = this.customActions.get(event.getClick());
+            if (actions == null)
+                return;
+
+            actions.forEach(action -> action.execute((Player) event.getWhoClicked(), this.placeholders));
+        };
     }
 
     /**
@@ -184,6 +235,10 @@ public class MenuItem {
     public MenuItem conditional(boolean condition) {
         this.condition = condition;
         return this;
+    }
+
+    public Map<ClickType, List<Action>> getCustomActions() {
+        return customActions;
     }
 
 }

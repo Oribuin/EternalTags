@@ -11,15 +11,18 @@ import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import xyz.oribuin.eternaltags.manager.ConfigurationManager;
+import xyz.oribuin.eternaltags.manager.TagsManager;
+import xyz.oribuin.eternaltags.obj.Tag;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -195,6 +198,7 @@ public final class TagsUtils {
 
         return builder.create();
     }
+
     /**
      * Get ItemStack from CommentedFileSection path
      *
@@ -280,5 +284,22 @@ public final class TagsUtils {
         return String.join(delimiter, list);
     }
 
+    /**
+     * Get an enum from a string value
+     *
+     * @param enumClass The enum class
+     * @param name      The name of the enum
+     * @param <T>       The enum type
+     * @return The enum
+     */
+    public static <T extends Enum<T>> T getEnum(Class<T> enumClass, String name) {
+        for (T t : enumClass.getEnumConstants()) {
+            if (t.name().equalsIgnoreCase(name)) {
+                return t;
+            }
+        }
+
+        return null;
+    }
 
 }

@@ -30,7 +30,6 @@ public class ConversionManager extends Manager {
 
     public void reload() {
         if (!this.shouldConvert()) {
-            this.rosePlugin.getLogger().info("Plugin files are up to date!");
             return;
         }
 

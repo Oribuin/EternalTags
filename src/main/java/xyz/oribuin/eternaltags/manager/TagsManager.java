@@ -5,6 +5,7 @@ import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import dev.rosewood.rosegarden.manager.Manager;
 import dev.rosewood.rosegarden.utils.HexUtils;
+import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -40,7 +41,6 @@ public class TagsManager extends Manager {
     private final Random random = new Random();
 
     private CommentedFileConfiguration config;
-    private boolean removeInaccessible;
 
     public TagsManager(RosePlugin plugin) {
         super(plugin);
@@ -48,11 +48,9 @@ public class TagsManager extends Manager {
 
     @Override
     public void reload() {
-
         // Load all tags from mysql instead of tags.yml
         if (Setting.MYSQL_TAGDATA.getBoolean()) {
-            this.cachedTags.clear();
-            this.cachedTags.putAll(this.rosePlugin.getManager(DataManager.class).loadTagData());
+            this.rosePlugin.getManager(DataManager.class).loadTagData(this.cachedTags);
             return;
         }
 
@@ -81,7 +79,7 @@ public class TagsManager extends Manager {
 
         // Load plugin tags.
         this.loadTags();
-        this.removeInaccessible = ConfigurationManager.Setting.REMOVE_TAGS.getBoolean();
+
     }
 
     @Override
@@ -148,17 +146,27 @@ public class TagsManager extends Manager {
         if (event.isCancelled())
             return false;
 
+        this.cachedTags.put(tag.getId(), tag);
+
         // Save to mysql instead of tags.yml
         if (Setting.MYSQL_TAGDATA.getBoolean()) {
             this.rosePlugin.getManager(DataManager.class).saveTagData(tag);
+            return true;
         }
 
-        this.cachedTags.put(tag.getId(), tag);
+        if (this.config == null)
+            return false;
+
         this.config.set("tags." + tag.getId() + ".name", tag.getName());
         this.config.set("tags." + tag.getId() + ".tag", tag.getTag());
         this.config.set("tags." + tag.getId() + ".description", tag.getDescription());
         this.config.set("tags." + tag.getId() + ".permission", tag.getPermission());
         this.config.set("tags." + tag.getId() + ".order", tag.getOrder());
+
+        if (tag.getIcon() != null)
+            this.config.set("tags." + tag.getId() + ".icon", tag.getIcon().name());
+
+
         this.config.save();
 
         return true;
@@ -197,6 +205,7 @@ public class TagsManager extends Manager {
 
         if (Setting.MYSQL_TAGDATA.getBoolean()) {
             this.rosePlugin.getManager(DataManager.class).saveTagData(tags);
+            return;
         }
 
         CompletableFuture.runAsync(() -> tags.forEach((id, tag) -> {
@@ -277,13 +286,13 @@ public class TagsManager extends Manager {
      */
     public @Nullable Tag getUserTag(UUID uuid) {
         final var dataManager = this.rosePlugin.getManager(DataManager.class);
+        final var player = Bukkit.getPlayer(uuid);
         var tag = dataManager.getCachedUsers().get(uuid);
         if (tag == null)
             dataManager.loadUser(uuid);
 
         // Check if the plugin wants to remove the tag.
-        if (removeInaccessible && tag != null) {
-            var player = Bukkit.getPlayer(uuid);
+        if (Setting.REMOVE_TAGS.getBoolean() && tag != null) {
             if (player == null)
                 return null;
 
@@ -293,6 +302,11 @@ public class TagsManager extends Manager {
                 return defaultTag;
             }
         }
+
+        // If the user is still null, return the default tag.
+        var newTag = dataManager.getCachedUsers().get(uuid);
+        if (newTag == null && player != null)
+            return this.getDefaultTag(player);
 
         return dataManager.getCachedUsers().get(uuid);
     }
@@ -501,7 +515,7 @@ public class TagsManager extends Manager {
      */
     public String getDisplayTag(@Nullable Tag tag, OfflinePlayer player, @NotNull String placeholder) {
         return HexUtils.colorify(PlaceholderAPI.setPlaceholders(player, tag != null
-                ? Setting.TAG_PREFIX.getString() + tag.getTag() + Setting.TAG_SUFFIX.getString()
+                ? this.getTagPlaceholders(tag).apply(Setting.TAG_PREFIX.getString() + tag.getTag() + Setting.TAG_SUFFIX.getString())
                 : placeholder)
         );
     }
@@ -525,6 +539,22 @@ public class TagsManager extends Manager {
      */
     public void clearFavourites(UUID uuid) {
         this.rosePlugin.getManager(DataManager.class).clearFavourites(uuid);
+    }
+
+    /**
+     * Get the tag placeholders for the given player
+     *
+     * @param tag The tag
+     * @return The tag placeholders
+     */
+    private StringPlaceholders getTagPlaceholders(Tag tag) {
+        return StringPlaceholders.builder()
+                .addPlaceholder("id", tag.getId())
+                .addPlaceholder("name", tag.getName())
+                .addPlaceholder("description", String.join(Setting.DESCRIPTION_DELIMITER.getString(), tag.getDescription()))
+                .addPlaceholder("permission", tag.getPermission())
+                .addPlaceholder("order", tag.getOrder())
+                .build();
     }
 
     /**

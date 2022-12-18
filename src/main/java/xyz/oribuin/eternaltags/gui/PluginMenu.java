@@ -11,8 +11,12 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import xyz.oribuin.eternaltags.action.Action;
+import xyz.oribuin.eternaltags.action.PluginAction;
 import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
@@ -22,8 +26,10 @@ import xyz.oribuin.eternaltags.util.TagsUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public abstract class PluginMenu {
@@ -91,7 +97,6 @@ public abstract class PluginMenu {
                 }
             });
         }
-
 
 
         this.config.save();
@@ -192,9 +197,63 @@ public abstract class PluginMenu {
         }
 
 
-        return new ItemBuilder(baseItem)
-                .setLore(lore)
-                .create();
+        return item.create();
+    }
+
+    /**
+     * Get all the tag icon actions.
+     *
+     * @return The tag icon actions
+     * @since 1.1.7
+     */
+    protected final @NotNull Map<ClickType, List<Action>> getTagActions() {
+        var customActions = this.config.getConfigurationSection("tag-item.commands");
+        if (customActions == null)
+            return new HashMap<>();
+
+        var actions = new HashMap<ClickType, List<Action>>();
+
+        for (var key : customActions.getKeys(false)) {
+            var clickType = TagsUtils.getEnum(ClickType.class, key.toUpperCase());
+            if (clickType == null) {
+                this.rosePlugin.getLogger().warning("Invalid click type [" + key + "] in the tag-item.commands section of the [" + this.getMenuName() + "] menu.");
+                continue;
+            }
+
+            var actionList = new ArrayList<Action>();
+            customActions.getStringList(key)
+                    .stream()
+                    .map(PluginAction::parse)
+                    .filter(Objects::nonNull)
+                    .forEach(actionList::add);
+
+            if (actionList.isEmpty())
+                continue;
+
+            actions.put(clickType, actionList);
+        }
+
+        return actions;
+    }
+
+    /**
+     * Run the tag icon actions for the given event and placeholder values
+     *
+     * @param actions      The actions to run
+     * @param event        The event to run the actions for
+     * @param placeholders The placeholders to use
+     */
+    public void runActions(@NotNull Map<ClickType, List<Action>> actions, @NotNull InventoryClickEvent event, @NotNull StringPlaceholders placeholders) {
+        if (actions.isEmpty())
+            return;
+
+        List<Action> newActions = actions.get(event.getClick());
+        if (newActions == null || newActions.isEmpty())
+            return;
+
+        for (Action action : newActions) {
+            action.execute((Player) event.getWhoClicked(), placeholders);
+        }
     }
 
     /**
@@ -284,6 +343,7 @@ public abstract class PluginMenu {
     protected StringPlaceholders getTagPlaceholders(Tag tag, OfflinePlayer player) {
         return StringPlaceholders.builder()
                 .addPlaceholder("tag", this.rosePlugin.getManager(TagsManager.class).getDisplayTag(tag, player))
+                .addPlaceholder("tag_stripped", tag.getTag())
                 .addPlaceholder("id", tag.getId())
                 .addPlaceholder("name", tag.getName())
                 .addPlaceholder("description", String.join(Setting.DESCRIPTION_DELIMITER.getString(), tag.getDescription()))

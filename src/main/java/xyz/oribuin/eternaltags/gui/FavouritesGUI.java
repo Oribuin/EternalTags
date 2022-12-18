@@ -38,6 +38,12 @@ public class FavouritesGUI extends PluginMenu {
 
     public void open(@NotNull Player player) {
 
+        var menuTitle = this.config.getString("gui-settings.title");
+        if (menuTitle == null)
+            menuTitle = "EternalTags | %page%/%total%";
+
+        var finalMenuTitle = menuTitle;
+
         var scrollingGui = this.config.getBoolean("gui-settings.scrolling-gui", false);
         var scrollingType = this.match(this.config.getString("gui-settings.scrolling-type"));
 
@@ -56,14 +62,20 @@ public class FavouritesGUI extends PluginMenu {
         MenuItem.create(this.config)
                 .path("next-page")
                 .player(player)
-                .action(event -> gui.next())
+                .action(event -> {
+                    gui.next();
+                    gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui)));
+                })
                 .player(player)
                 .place(gui);
 
         MenuItem.create(this.config)
                 .path("previous-page")
                 .player(player)
-                .action(event -> gui.previous())
+                .action(event -> {
+                    gui.previous();
+                    gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui)));
+                })
                 .place(gui);
 
         MenuItem.create(this.config)
@@ -136,6 +148,8 @@ public class FavouritesGUI extends PluginMenu {
         if (gui instanceof ScrollingGui scrollingGui) // Remove all items from the GUI
             scrollingGui.clearPageItems();
 
+
+        var tagActions = this.getTagActions();
         this.getTags(player).forEach(tag -> {
             var item = this.getTagItem(player, tag);
 
@@ -143,14 +157,19 @@ public class FavouritesGUI extends PluginMenu {
                 if (!player.hasPermission(tag.getPermission()))
                     return;
 
-                if (event.isShiftClick()) {
-                    this.toggleFavourite(player, tag);
-                    this.addTags(gui, player);
+                if (tagActions.size() == 0) {
+                    if (event.isShiftClick()) {
+                        this.toggleFavourite(player, tag);
+                        this.addTags(gui, player);
+                        return;
+                    }
+
+                    this.setTag(player, tag);
+                    gui.close(player);
                     return;
                 }
 
-                this.setTag(player, tag);
-                gui.close(player);
+                this.runActions(tagActions, event, this.getTagPlaceholders(tag, player));
             }));
         });
 
@@ -181,12 +200,8 @@ public class FavouritesGUI extends PluginMenu {
      * @param tag    The tag
      */
     private void setTag(Player player, Tag tag) {
-
         var activeTag = this.manager.getUserTag(player);
-        if (activeTag == null)
-            return;
-
-        if (activeTag.equals(tag) && Setting.RE_EQUIP_CLEAR.getBoolean()) {
+        if (activeTag != null && activeTag.equals(tag) && Setting.RE_EQUIP_CLEAR.getBoolean()) {
             this.clearTag(player);
             return;
         }
@@ -258,10 +273,25 @@ public class FavouritesGUI extends PluginMenu {
             this.put("#20", "flags - The item flags for the reward item.");
             this.put("#21", "enchants - The enchantments for the reward item.");
 
-            // GUI Settings
+            // Commands Options
             this.put("#22", " ");
-            this.put("#23", "GUI Settings");
+            this.put("#23", "Icon Actions");
             this.put("#24", " ");
+            this.put("#25", "Actions is an optional configuration option that can replace an item's functionality with a new one.");
+            this.put("#26", "Available Actions: [BROADCAST, CLOSE, CONSOLE, MESSAGE, PLAYER, SOUND]");
+            this.put("#27", "These actions can be defined in the `commands` section of the item, They require a ClickType to be defined.");
+            this.put("#28", "Available ClickTypes: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/event/inventory/ClickType.html");
+            this.put("#29", "Here is an example of how to use actions:");
+            this.put("#30", "commands:");
+            this.put("#31", " LEFT:");
+            this.put("#32", "   - '[message] You clicked the left button!'");
+            this.put("#33", " RIGHT:");
+            this.put("#34", "   - '[message] You clicked the right button!'");
+            this.put("#35", " MIDDLE:");
+            this.put("#36", "   - '[console] ban %player_name%'");
+
+            // GUI Settings
+            this.put("#37", "GUI Settings");
             this.put("gui-settings.title", "Favourite Tags | %page%/%total%");
             this.put("gui-settings.rows", 5);
             this.put("gui-settings.sort-type", "ALPHABETICAL");
@@ -272,9 +302,7 @@ public class FavouritesGUI extends PluginMenu {
             this.put("gui-settings.scrolling-type", "HORIZONTAL");
 
             // Tag Item
-            this.put("#25", " ");
-            this.put("#26", "Tag Item - The item that represents each tag in the GUI");
-            this.put("#27", " ");
+            this.put("#38", "Tag Item - The item that represents each tag in the GUI");
             this.put("tag-item.material", Material.NAME_TAG.name());
             this.put("tag-item.amount", 1);
             this.put("tag-item.name", "%tag%");
@@ -291,9 +319,7 @@ public class FavouritesGUI extends PluginMenu {
             this.put("tag-item.glow", true);
 
             // Next Page Item
-            this.put("#28", " ");
-            this.put("#29", "Next Page Item - Changes the current page to the next page");
-            this.put("#30", " ");
+            this.put("#39", "Next Page Item - Changes the current page to the next page");
             this.put("next-page.material", Material.PAPER.name());
             this.put("next-page.name", "#00B4DB&lNext Page");
             this.put("next-page.lore", Arrays.asList(
@@ -305,9 +331,7 @@ public class FavouritesGUI extends PluginMenu {
             this.put("next-page.slot", 7);
 
             // Previous Page Item
-            this.put("#31", " ");
-            this.put("#32", "Previous Page Item - Changes the current page to the previous page");
-            this.put("#33", " ");
+            this.put("#40", "Previous Page Item - Changes the current page to the previous page");
             this.put("previous-page.material", Material.PAPER.name());
             this.put("previous-page.name", "#00B4DB&lPrevious Page");
             this.put("previous-page.lore", Arrays.asList(
@@ -319,9 +343,7 @@ public class FavouritesGUI extends PluginMenu {
             this.put("previous-page.slot", 1);
 
             // Clear Tag Item
-            this.put("#34", " ");
-            this.put("#35", "Clear Tag Item - Clears the player's active tag");
-            this.put("#36", " ");
+            this.put("#41", "Clear Tag Item - Clears the player's active tag");
             this.put("clear-tag.enabled", true);
             this.put("clear-tag.material", Material.PLAYER_HEAD.name());
             this.put("clear-tag.name", "#00B4DB&lClear Tag");
@@ -337,9 +359,7 @@ public class FavouritesGUI extends PluginMenu {
             this.put("clear-tag.slot", 3);
 
             // Favourites Tag Item
-            this.put("#37", " ");
-            this.put("#38", "Main Menu Item - Goes back to the main menu");
-            this.put("#39", " ");
+            this.put("#42", "Main Menu Item - Goes back to the main menu");
             this.put("main-menu.enabled", true);
             this.put("main-menu.material", Material.BARRIER.name());
             this.put("main-menu.name", "#00B4DB&lMain Menu");
@@ -351,9 +371,7 @@ public class FavouritesGUI extends PluginMenu {
             ));
             this.put("main-menu.slot", 4);
 
-            this.put("#40", " ");
-            this.put("#41", "Reset Favourites - Allows the player to remove all of their favourite tags");
-            this.put("#42", " ");
+            this.put("#43", "Reset Favourites - Allows the player to remove all of their favourite tags");
             this.put("reset-favourites.enabled", true);
             this.put("reset-favourites.material", Material.OAK_SIGN.name());
             this.put("reset-favourites.name", "#00B4DB&lReset Favourites");
@@ -367,9 +385,7 @@ public class FavouritesGUI extends PluginMenu {
             ));
             this.put("reset-favourites.slot", 5);
 
-            this.put("#43", " ");
             this.put("#44", "Extra Items - Allows you to add extra items to the GUI [These are placed in the gui first]");
-            this.put("#45", " ");
             this.put("extra-items.border-item.enabled", true);
             this.put("extra-items.border-item.material", Material.GRAY_STAINED_GLASS_PANE.name());
             this.put("extra-items.border-item.name", " ");
