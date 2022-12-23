@@ -110,12 +110,14 @@ public class FavouritesGUI extends PluginMenu {
                 }
 
                 this.addTags(gui, player);
+                this.sync(() -> gui.updateTitle(this.formatString(player, this.config.getString("gui-settings.title"), this.getPagePlaceholders(gui))));
             }, 0, dynamicSpeed);
         } else {
-            this.async(() -> this.addTags(gui, player));
+            this.async(() -> {
+                this.addTags(gui, player);
+                this.sync(() -> gui.updateTitle(this.formatString(player, this.config.getString("gui-settings.title"), this.getPagePlaceholders(gui))));
+            });
         }
-
-        gui.updateTitle(this.formatString(player, this.config.getString("gui-settings.title"), this.getPagePlaceholders(gui)));
     }
 
     /**
@@ -398,5 +400,7 @@ public class FavouritesGUI extends PluginMenu {
         return "favorites-gui";
     }
 
-
+    private void sync(Runnable runnable) {
+        Bukkit.getScheduler().runTask(this.rosePlugin, runnable);
+    }
 }

@@ -111,12 +111,14 @@ public class TagsGUI extends PluginMenu {
                 }
 
                 this.addTags(gui, player, keyword);
+                this.sync(() -> gui.updateTitle(this.formatString(player, this.config.getString("gui-settings.title"), this.getPagePlaceholders(gui))));
             }, 0, dynamicSpeed);
         } else {
-            this.async(() -> this.addTags(gui, player, keyword));
+            this.async(() -> {
+                this.addTags(gui, player, keyword);
+                this.sync(() -> gui.updateTitle(this.formatString(player, this.config.getString("gui-settings.title"), this.getPagePlaceholders(gui))));
+            });
         }
-
-        gui.updateTitle(this.formatString(player, this.config.getString("gui-settings.title"), this.getPagePlaceholders(gui)));
     }
 
     /**
