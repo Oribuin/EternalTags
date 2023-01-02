@@ -26,6 +26,11 @@ public class Expansion extends PlaceholderExpansion {
 
     @Override
     public String onRequest(OfflinePlayer player, String params) {
+
+        // Require a player for these placeholders
+        if (player == null)
+            return "requires player";
+
         // Allow the ability to get any tag from the id
         final String[] args = params.split("_");
 
@@ -54,7 +59,6 @@ public class Expansion extends PlaceholderExpansion {
                 return HexUtils.colorify(unlocked ? Setting.TAG_UNLOCKED_FORMAT.getString() : Setting.TAG_LOCKED_FORMAT.getString());
             }
         }
-
 
         final Tag activeTag = this.manager.getUserTag(player);
         return switch (params.toLowerCase()) {
