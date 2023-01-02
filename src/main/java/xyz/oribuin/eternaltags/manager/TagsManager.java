@@ -15,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.oribuin.eternaltags.event.TagDeleteEvent;
 import xyz.oribuin.eternaltags.event.TagSaveEvent;
+import xyz.oribuin.eternaltags.hook.BungeeListeners;
 import xyz.oribuin.eternaltags.hook.OraxenHook;
 import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
 import xyz.oribuin.eternaltags.obj.Tag;
@@ -148,6 +149,9 @@ public class TagsManager extends Manager {
 
         this.cachedTags.put(tag.getId(), tag);
 
+        // Send the tag to bungee if enabled.
+        BungeeListeners.modifyTag(tag);
+
         // Save to mysql instead of tags.yml
         if (Setting.MYSQL_TAGDATA.getBoolean()) {
             this.rosePlugin.getManager(DataManager.class).saveTagData(tag);
@@ -232,6 +236,7 @@ public class TagsManager extends Manager {
         if (event.isCancelled())
             return;
 
+        BungeeListeners.deleteTag(id);
 
         // remove anyone with the tag active.
         this.rosePlugin.getManager(DataManager.class).deleteUserTag(id);
