@@ -215,6 +215,9 @@ public class TagsManager extends Manager {
             return;
         }
 
+        // Send the tags to bungee if enabled.
+        tags.values().forEach(BungeeListener::modifyTag);
+
         CompletableFuture.runAsync(() -> tags.forEach((id, tag) -> {
             this.config.set("tags." + id + ".name", tag.getName());
             this.config.set("tags." + id + ".tag", tag.getTag());
