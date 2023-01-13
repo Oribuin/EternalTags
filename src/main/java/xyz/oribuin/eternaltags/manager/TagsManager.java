@@ -15,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.oribuin.eternaltags.event.TagDeleteEvent;
 import xyz.oribuin.eternaltags.event.TagSaveEvent;
+import xyz.oribuin.eternaltags.hook.BungeeListener;
 import xyz.oribuin.eternaltags.hook.OraxenHook;
 import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
 import xyz.oribuin.eternaltags.obj.Tag;
@@ -148,6 +149,9 @@ public class TagsManager extends Manager {
 
         this.cachedTags.put(tag.getId(), tag);
 
+        // Send the tag to bungee if enabled.
+        BungeeListener.modifyTag(tag);
+
         // Save to mysql instead of tags.yml
         if (Setting.MYSQL_TAGDATA.getBoolean()) {
             this.rosePlugin.getManager(DataManager.class).saveTagData(tag);
@@ -232,6 +236,7 @@ public class TagsManager extends Manager {
         if (event.isCancelled())
             return;
 
+        BungeeListener.deleteTag(id);
 
         // remove anyone with the tag active.
         this.rosePlugin.getManager(DataManager.class).deleteUserTag(id);
@@ -514,10 +519,10 @@ public class TagsManager extends Manager {
      * @return The display tag.
      */
     public String getDisplayTag(@Nullable Tag tag, OfflinePlayer player, @NotNull String placeholder) {
-        return HexUtils.colorify(PlaceholderAPI.setPlaceholders(player, tag != null
-                ? this.getTagPlaceholders(tag).apply(Setting.TAG_PREFIX.getString() + tag.getTag() + Setting.TAG_SUFFIX.getString())
-                : placeholder)
-        );
+        if (tag == null)
+            return placeholder;
+
+        return HexUtils.colorify(PlaceholderAPI.setPlaceholders(player, this.getTagPlaceholders(tag).apply(Setting.TAG_PREFIX.getString() + tag.getTag() + Setting.TAG_SUFFIX.getString())));
     }
 
     /**

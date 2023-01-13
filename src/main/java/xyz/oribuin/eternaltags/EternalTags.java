@@ -4,6 +4,7 @@ import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.manager.Manager;
 import dev.rosewood.rosegarden.utils.NMSUtil;
 import org.bukkit.plugin.PluginManager;
+import xyz.oribuin.eternaltags.hook.BungeeListener;
 import xyz.oribuin.eternaltags.hook.Expansion;
 import xyz.oribuin.eternaltags.listener.PlayerListeners;
 import xyz.oribuin.eternaltags.manager.CommandManager;
@@ -54,6 +55,10 @@ public class EternalTags extends RosePlugin {
         // Register Plugin Listeners
         pluginManager.registerEvents(new PlayerListeners(), this);
 
+        // Register Plugin Messaging Channels
+        this.getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
+        this.getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", new BungeeListener(this));
+
         // Register Event Waiter
         eventWaiter = new EventWaiter();
 
@@ -63,7 +68,8 @@ public class EternalTags extends RosePlugin {
 
     @Override
     public void disable() {
-        // Unused
+        this.getServer().getMessenger().unregisterIncomingPluginChannel(this);
+        this.getServer().getMessenger().unregisterOutgoingPluginChannel(this);
     }
 
     @Override

@@ -56,7 +56,7 @@ public abstract class PluginMenu {
     /**
      * Create the menu file if it doesn't exist and add the default values
      */
-    public final void load() {
+    public void load() {
         final var folder = new File(this.rosePlugin.getDataFolder(), "menus");
         var newFile = false;
         if (!folder.exists()) {

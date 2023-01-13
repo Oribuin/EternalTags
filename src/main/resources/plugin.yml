@@ -4,7 +4,7 @@ version: '@version@'
 author: Oribuin
 api-version: "1.13"
 description: A simple tag plugin alternative to other Tag plugins (With Hex Support)
-website: https://oribuin.xyz/
+website: https://www.spigotmc.org/resources/eternaltags.91842/
 softdepend:
   - PlaceholderAPI
   - Oraxen

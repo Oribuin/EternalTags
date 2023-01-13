@@ -32,8 +32,18 @@ public class FavouritesGUI extends PluginMenu {
     private final TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
     private final LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
 
+    private final Map<Tag, GuiItem> tagItems = new LinkedHashMap<>(); // Cache the tag items so we don't have to create them every time.
+
+
     public FavouritesGUI(RosePlugin rosePlugin) {
         super(rosePlugin);
+    }
+
+    @Override
+    public void load() {
+        super.load();
+
+        this.tagItems.clear();
     }
 
     public void open(@NotNull Player player) {
@@ -153,9 +163,14 @@ public class FavouritesGUI extends PluginMenu {
 
         var tagActions = this.getTagActions();
         this.getTags(player).forEach(tag -> {
-            var item = this.getTagItem(player, tag);
 
-            gui.addItem(new GuiItem(item, event -> {
+            // If the tag is already in the cache, use that instead of creating a new one.
+            if (this.tagItems.containsKey(tag)) {
+                gui.addItem(this.tagItems.get(tag));
+                return;
+            }
+
+            var item = new GuiItem(this.getTagItem(player, tag), event -> {
                 if (!player.hasPermission(tag.getPermission()))
                     return;
 
@@ -172,7 +187,12 @@ public class FavouritesGUI extends PluginMenu {
                 }
 
                 this.runActions(tagActions, event, this.getTagPlaceholders(tag, player));
-            }));
+            });
+
+            // Add the tag to the cache
+            this.tagItems.put(tag, item);
+            gui.addItem(item);
+
         });
 
         gui.update();
