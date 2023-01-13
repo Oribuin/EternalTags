@@ -158,6 +158,10 @@ public class TagsManager extends Manager {
             return true;
         }
 
+        return this.saveToConfig(tag);
+    }
+
+    public boolean saveToConfig(Tag tag) {
         if (this.config == null)
             return false;
 
@@ -172,7 +176,6 @@ public class TagsManager extends Manager {
 
 
         this.config.save();
-
         return true;
     }
 
