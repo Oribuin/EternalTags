@@ -23,12 +23,7 @@ import xyz.oribuin.eternaltags.manager.MenuManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class TagsGUI extends PluginMenu {
@@ -36,8 +31,17 @@ public class TagsGUI extends PluginMenu {
     private final TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
     private final LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
 
+    private final Map<Tag, GuiItem> tagItems = new LinkedHashMap<>(); // Cache the tag items so we don't have to create them every time.
+
     public TagsGUI(RosePlugin rosePlugin) {
         super(rosePlugin);
+    }
+
+    @Override
+    public void load() {
+        super.load();
+
+        this.tagItems.clear(); // Clear the cache so we don't have any old items.
     }
 
     public void open(@NotNull Player player, @Nullable String keyword) {
@@ -177,9 +181,15 @@ public class TagsGUI extends PluginMenu {
 
         var tagActions = this.getTagActions();
         this.getTags(player, keyword).forEach(tag -> {
-            var item = this.getTagItem(player, tag);
 
-            gui.addItem(new GuiItem(item, event -> {
+            // If the tag is already in the cache, use that instead of creating a new one.
+            if (this.tagItems.containsKey(tag)) {
+                gui.addItem(this.tagItems.get(tag));
+                return;
+            }
+
+            // Create the item for the tag and add it to the cache.
+            var item = new GuiItem(this.getTagItem(player, tag), event -> {
                 if (!player.hasPermission(tag.getPermission()))
                     return;
 
@@ -196,8 +206,10 @@ public class TagsGUI extends PluginMenu {
                 }
 
                 this.runActions(tagActions, event, this.getTagPlaceholders(tag, player));
+            });
 
-            }));
+            this.tagItems.put(tag, item);
+            gui.addItem(item);
         });
 
         gui.update();

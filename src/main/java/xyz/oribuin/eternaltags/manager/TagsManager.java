@@ -519,10 +519,10 @@ public class TagsManager extends Manager {
      * @return The display tag.
      */
     public String getDisplayTag(@Nullable Tag tag, OfflinePlayer player, @NotNull String placeholder) {
-        return HexUtils.colorify(PlaceholderAPI.setPlaceholders(player, tag != null
-                ? this.getTagPlaceholders(tag).apply(Setting.TAG_PREFIX.getString() + tag.getTag() + Setting.TAG_SUFFIX.getString())
-                : placeholder)
-        );
+        if (tag == null)
+            return placeholder;
+
+        return HexUtils.colorify(PlaceholderAPI.setPlaceholders(player, this.getTagPlaceholders(tag).apply(Setting.TAG_PREFIX.getString() + tag.getTag() + Setting.TAG_SUFFIX.getString())));
     }
 
     /**
