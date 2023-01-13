@@ -1,32 +1,26 @@
 package xyz.oribuin.eternaltags.hook;
 
-import com.google.common.collect.Iterables;
-import com.google.common.io.ByteArrayDataOutput;
-import dev.rosewood.rosegarden.RosePlugin;
-import dev.rosewood.rosegarden.manager.Manager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.EternalTags;
-import xyz.oribuin.eternaltags.manager.DataManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 
 import java.io.*;
 import java.util.List;
-import java.util.Locale;
 
-public class BungeeListeners implements PluginMessageListener {
+public class BungeeListener implements PluginMessageListener {
 
-    private final EternalTags plugin;
     private final TagsManager manager;
 
-    public BungeeListeners(EternalTags plugin) {
-        this.plugin = plugin;
+    public BungeeListener(EternalTags plugin) {
         this.manager = plugin.getManager(TagsManager.class);
     }
+
+
 
     @Override
     public void onPluginMessageReceived(@NotNull String channel, @NotNull Player player, byte[] message) {
@@ -56,21 +50,23 @@ public class BungeeListeners implements PluginMessageListener {
 
             // Delete the tag
             if (command.equalsIgnoreCase("delete")) {
-                String tagId = receivedSplit[2];
+                String tagId = receivedSplit[0];
                 this.manager.getCachedTags().remove(tagId);
                 return;
             }
 
             if (command.equalsIgnoreCase("modify")) {
                 // id, name, tag, permission, order, icon, lore
-                Tag newTag = new Tag(receivedSplit[1].toLowerCase(), receivedSplit[2], receivedSplit[3]);
-                newTag.setPermission(receivedSplit[4]);
-                newTag.setOrder(Integer.parseInt(receivedSplit[5]));
-                newTag.setIcon(Material.getMaterial(receivedSplit[6]));
-                newTag.setDescription(List.of(receivedSplit[7].split("\n")));
+                Tag newTag = new Tag(receivedSplit[0].toLowerCase(), receivedSplit[1], receivedSplit[2]);
+                newTag.setPermission(receivedSplit[3]);
+                newTag.setOrder(Integer.parseInt(receivedSplit[4]));
+                String icon = receivedSplit[5];
+                if (icon.equalsIgnoreCase("none"))
+                    newTag.setIcon(Material.getMaterial(icon));
 
-                this.manager.getCachedTags().put(newTag.getId().toLowerCase(), newTag);
-                return;
+                newTag.setDescription(List.of(receivedSplit[6].split("\n")));
+
+                this.manager.saveTag(newTag);
             }
 
         } catch (IOException ex) {
@@ -90,11 +86,11 @@ public class BungeeListeners implements PluginMessageListener {
         try {
             out.writeUTF("Forward");
             out.writeUTF("ALL");
-            out.writeUTF("eternaltags");
+            out.writeUTF("eternaltags:modify");
 
             // id, name, tag, permission, order, icon, lore
             String lore = String.join("\n", tag.getDescription());
-            String message = "modify:" + tag.getId() + ":" + tag.getName() + ":" + tag.getTag() + ":" + tag.getPermission() + ":" + tag.getOrder() + ":" + tag.getIcon().name() + ":" + lore;
+            String message = tag.getId() + ":" + tag.getName() + ":" + tag.getTag() + ":" + tag.getPermission() + ":" + tag.getOrder() + ":" + (tag.getIcon() == null ? "null" : tag.getIcon().name()) + ":" + lore;
             sendPluginMessage(outputStream, out, message);
 
         } catch (IOException ex) {
@@ -115,9 +111,9 @@ public class BungeeListeners implements PluginMessageListener {
         try {
             out.writeUTF("Forward");
             out.writeUTF("ALL");
-            out.writeUTF("eternaltags");
+            out.writeUTF("eternaltags:delete");
 
-            sendPluginMessage(outputStream, out, "delete:" + name);
+            sendPluginMessage(outputStream, out, name);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -139,9 +135,7 @@ public class BungeeListeners implements PluginMessageListener {
 
             stream.writeShort(msgBytes.toByteArray().length);
             stream.write(msgBytes.toByteArray());
-            Player player = Iterables.getFirst(Bukkit.getOnlinePlayers(), null);
-            if (player != null)
-                player.sendPluginMessage(EternalTags.getInstance(), "BungeeCord", outputStream.toByteArray());
+            Bukkit.getServer().sendPluginMessage(EternalTags.getInstance(), "BungeeCord", outputStream.toByteArray());
         } catch (IOException ex) {
             ex.printStackTrace();
         }
