@@ -21,11 +21,7 @@ import xyz.oribuin.eternaltags.manager.MenuManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class FavouritesGUI extends PluginMenu {
 
@@ -165,7 +161,7 @@ public class FavouritesGUI extends PluginMenu {
         this.getTags(player).forEach(tag -> {
 
             // If the tag is already in the cache, use that instead of creating a new one.
-            if (this.tagItems.containsKey(tag)) {
+            if (Setting.CACHE_GUI_TAGS.getBoolean() && this.tagItems.containsKey(tag)) {
                 gui.addItem(this.tagItems.get(tag));
                 return;
             }
@@ -190,7 +186,9 @@ public class FavouritesGUI extends PluginMenu {
             });
 
             // Add the tag to the cache
-            this.tagItems.put(tag, item);
+            if (Setting.CACHE_GUI_TAGS.getBoolean())
+                this.tagItems.put(tag, item);
+
             gui.addItem(item);
 
         });

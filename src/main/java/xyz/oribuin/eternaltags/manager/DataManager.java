@@ -39,7 +39,7 @@ public class DataManager extends AbstractDataManager {
      * @param uuid The player's uuid
      * @param tag  The tag
      */
-    public void saveUser(UUID uuid, @NotNull Tag tag) {
+    public void saveUser(@NotNull UUID uuid, @NotNull Tag tag) {
         this.cachedUsers.put(uuid, tag);
         final var query = "REPLACE INTO " + this.getTablePrefix() + "tags (player, tagID) VALUES (?, ?)";
         this.async(task -> this.databaseConnector.connect(connection -> {

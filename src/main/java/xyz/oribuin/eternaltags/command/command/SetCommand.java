@@ -33,6 +33,7 @@ public class SetCommand extends RoseCommand {
             return;
         }
 
+        // Setting another player's tag
         if (player != null) {
             if (!sender.hasPermission("eternaltags.set.other")) {
                 locale.sendMessage(sender, "no-permission");
@@ -56,6 +57,7 @@ public class SetCommand extends RoseCommand {
             return;
         }
 
+        // Setting own tag
         if (!(sender instanceof final Player pl)) {
             locale.sendMessage(sender, "only-player");
             return;

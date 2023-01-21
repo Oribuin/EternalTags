@@ -183,7 +183,7 @@ public class TagsGUI extends PluginMenu {
         this.getTags(player, keyword).forEach(tag -> {
 
             // If the tag is already in the cache, use that instead of creating a new one.
-            if (this.tagItems.containsKey(tag)) {
+            if (Setting.CACHE_GUI_TAGS.getBoolean() && this.tagItems.containsKey(tag)) {
                 gui.addItem(this.tagItems.get(tag));
                 return;
             }
@@ -208,7 +208,10 @@ public class TagsGUI extends PluginMenu {
                 this.runActions(tagActions, event, this.getTagPlaceholders(tag, player));
             });
 
-            this.tagItems.put(tag, item);
+
+            if (Setting.CACHE_GUI_TAGS.getBoolean())
+                this.tagItems.put(tag, item);
+
             gui.addItem(item);
         });
 

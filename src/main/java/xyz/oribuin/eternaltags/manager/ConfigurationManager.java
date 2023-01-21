@@ -20,6 +20,10 @@ public class ConfigurationManager extends AbstractConfigurationManager {
         MYSQL_TAGDATA("save-tagdata-sql", false, "Should the tag data be stored in a MySQL/SQLite database? (Tags that would be saved in tags.yml)"),
         RE_EQUIP_CLEAR("reequip-clear", false, "Should the player's tag be cleared when they re-equip the same tag?"),
         DESCRIPTION_DELIMITER("description-delimiter", "\n", "The delimiter that will be used for %eternaltags_tag_description%"),
+        CACHE_GUI_TAGS("cache-gui-tags", true, "Should the tag items be cached? (Keeps the items in memory instead of creating them every time the GUI is opened)",
+                "This will reduce the amount of lag when opening the GUI, but will use more memory.",
+                "This will also make tags with placeholders not update until the plugin is reloaded."
+        ),
         ;
 
         private final String key;
