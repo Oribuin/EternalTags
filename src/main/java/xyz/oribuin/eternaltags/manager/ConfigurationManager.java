@@ -18,6 +18,7 @@ public class ConfigurationManager extends AbstractConfigurationManager {
         TAG_PREFIX("tag-prefix", "", "The prefix that will be added in front of the tag in the placeholder"),
         TAG_SUFFIX("tag-suffix", "", "The suffix that will be added after the tag in the placeholder"),
         MYSQL_TAGDATA("save-tagdata-sql", false, "Should the tag data be stored in a MySQL/SQLite database? (Tags that would be saved in tags.yml)"),
+        PLUGIN_MESSAGING("plugin-messaging", false, "Should the plugin use plugin messaging to sync tag data across servers? (Recommended to keep save-tagdata-sql as false if this is enabled)"),
         RE_EQUIP_CLEAR("reequip-clear", false, "Should the player's tag be cleared when they re-equip the same tag?"),
         DESCRIPTION_DELIMITER("description-delimiter", "\n", "The delimiter that will be used for %eternaltags_tag_description%"),
         CACHE_GUI_TAGS("cache-gui-tags", true, "Should the tag items be cached? (Keeps the items in memory instead of creating them every time the GUI is opened)",

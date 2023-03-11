@@ -15,8 +15,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.oribuin.eternaltags.event.TagDeleteEvent;
 import xyz.oribuin.eternaltags.event.TagSaveEvent;
-import xyz.oribuin.eternaltags.hook.BungeeListener;
 import xyz.oribuin.eternaltags.hook.OraxenHook;
+import xyz.oribuin.eternaltags.listener.BungeeListener;
 import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
 import xyz.oribuin.eternaltags.obj.Tag;
 
@@ -150,7 +150,9 @@ public class TagsManager extends Manager {
         this.cachedTags.put(tag.getId(), tag);
 
         // Send the tag to bungee if enabled.
-        BungeeListener.modifyTag(tag);
+        if (Setting.PLUGIN_MESSAGING.getBoolean()) {
+            BungeeListener.modifyTag(tag);
+        }
 
         // Save to mysql instead of tags.yml
         if (Setting.MYSQL_TAGDATA.getBoolean()) {
@@ -216,7 +218,9 @@ public class TagsManager extends Manager {
         }
 
         // Send the tags to bungee if enabled.
-        tags.values().forEach(BungeeListener::modifyTag);
+        if (Setting.PLUGIN_MESSAGING.getBoolean()) {
+            tags.values().forEach(BungeeListener::modifyTag);
+        }
 
         CompletableFuture.runAsync(() -> tags.forEach((id, tag) -> {
             this.config.set("tags." + id + ".name", tag.getName());
@@ -242,7 +246,9 @@ public class TagsManager extends Manager {
         if (event.isCancelled())
             return;
 
-        BungeeListener.deleteTag(id);
+        if (Setting.PLUGIN_MESSAGING.getBoolean()) {
+            BungeeListener.deleteTag(id);
+        }
 
         // remove anyone with the tag active.
         this.rosePlugin.getManager(DataManager.class).deleteUserTag(id);
@@ -256,6 +262,10 @@ public class TagsManager extends Manager {
 
         this.config.set("tags." + id, null);
         this.config.save();
+    }
+
+    public void clearTagFromUsers(String id) {
+        this.rosePlugin.getManager(DataManager.class).deleteUserTag(id);
     }
 
     /**
@@ -299,27 +309,18 @@ public class TagsManager extends Manager {
         final var dataManager = this.rosePlugin.getManager(DataManager.class);
         final var player = Bukkit.getPlayer(uuid);
         var tag = dataManager.getCachedUsers().get(uuid);
-        if (tag == null)
-            dataManager.loadUser(uuid);
 
-        // Check if the plugin wants to remove the tag.
-        if (Setting.REMOVE_TAGS.getBoolean() && tag != null) {
-            if (player == null)
-                return null;
+        if (tag == null && player != null) {
+            tag = this.getDefaultTag(player);
+        }
 
+        if (tag != null && Setting.REMOVE_TAGS.getBoolean() && player != null) {
             if (!player.hasPermission(tag.getPermission())) {
-                var defaultTag = this.getDefaultTag(player);
-                dataManager.saveUser(uuid, defaultTag);
-                return defaultTag;
+                tag = null;
             }
         }
 
-        // If the user is still null, return the default tag.
-        var newTag = dataManager.getCachedUsers().get(uuid);
-        if (newTag == null && player != null)
-            return this.getDefaultTag(player);
-
-        return dataManager.getCachedUsers().get(uuid);
+        return tag;
     }
 
     /**
@@ -460,6 +461,7 @@ public class TagsManager extends Manager {
      * @param player The player
      * @return The default tag.
      */
+    @Nullable
     public Tag getDefaultTag(@Nullable OfflinePlayer player) {
         var defaultTagID = Setting.DEFAULT_TAG.getString();
 

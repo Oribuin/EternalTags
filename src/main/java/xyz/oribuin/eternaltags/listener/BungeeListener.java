@@ -1,4 +1,4 @@
-package xyz.oribuin.eternaltags.hook;
+package xyz.oribuin.eternaltags.listener;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -11,6 +11,7 @@ import xyz.oribuin.eternaltags.obj.Tag;
 
 import java.io.*;
 import java.util.List;
+import java.util.UUID;
 
 public class BungeeListener implements PluginMessageListener {
 
@@ -51,6 +52,7 @@ public class BungeeListener implements PluginMessageListener {
             // Delete the tag
             if (command.equalsIgnoreCase("delete")) {
                 String tagId = receivedSplit[0];
+                this.manager.clearTagFromUsers(tagId);
                 this.manager.getCachedTags().remove(tagId);
                 return;
             }
@@ -67,6 +69,7 @@ public class BungeeListener implements PluginMessageListener {
                 newTag.setDescription(List.of(receivedSplit[6].split("\n")));
 
                 this.manager.saveTag(newTag);
+                this.manager.updateActiveTag(newTag);
             }
 
         } catch (IOException ex) {

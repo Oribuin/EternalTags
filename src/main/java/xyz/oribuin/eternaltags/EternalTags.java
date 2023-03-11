@@ -4,17 +4,11 @@ import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.manager.Manager;
 import dev.rosewood.rosegarden.utils.NMSUtil;
 import org.bukkit.plugin.PluginManager;
-import xyz.oribuin.eternaltags.hook.BungeeListener;
+import xyz.oribuin.eternaltags.listener.BungeeListener;
 import xyz.oribuin.eternaltags.hook.Expansion;
 import xyz.oribuin.eternaltags.listener.PlayerListeners;
-import xyz.oribuin.eternaltags.manager.CommandManager;
-import xyz.oribuin.eternaltags.manager.ConfigurationManager;
-import xyz.oribuin.eternaltags.manager.ConversionManager;
-import xyz.oribuin.eternaltags.manager.DataManager;
-import xyz.oribuin.eternaltags.manager.LocaleManager;
-import xyz.oribuin.eternaltags.manager.MenuManager;
-import xyz.oribuin.eternaltags.manager.PluginConversionManager;
-import xyz.oribuin.eternaltags.manager.TagsManager;
+import xyz.oribuin.eternaltags.manager.*;
+import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
 import xyz.oribuin.eternaltags.util.EventWaiter;
 
 import java.util.Arrays;
@@ -56,8 +50,10 @@ public class EternalTags extends RosePlugin {
         pluginManager.registerEvents(new PlayerListeners(), this);
 
         // Register Plugin Messaging Channels
-        this.getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
-        this.getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", new BungeeListener(this));
+        if (Setting.PLUGIN_MESSAGING.getBoolean()) {
+            this.getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
+            this.getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", new BungeeListener(this));
+        }
 
         // Register Event Waiter
         eventWaiter = new EventWaiter();
@@ -68,8 +64,10 @@ public class EternalTags extends RosePlugin {
 
     @Override
     public void disable() {
-        this.getServer().getMessenger().unregisterIncomingPluginChannel(this);
-        this.getServer().getMessenger().unregisterOutgoingPluginChannel(this);
+        if (Setting.PLUGIN_MESSAGING.getBoolean()) {
+            this.getServer().getMessenger().unregisterIncomingPluginChannel(this);
+            this.getServer().getMessenger().unregisterOutgoingPluginChannel(this);
+        }
     }
 
     @Override
