@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.util.TagsUtils;
 
 import java.util.Arrays;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class SoundAction extends Action {
@@ -22,10 +23,10 @@ public class SoundAction extends Action {
         if (this.getMessage().length() == 0)
             return;
 
-        var args = this.getMessage().split(" ");
-        var volume = 100f;
+        String[] args = this.getMessage().split(" ");
+        float volume = 100f;
         if (args.length <= 2) {
-            var volumeMatch = volumeRegex.matcher(args[1]);
+            Matcher volumeMatch = volumeRegex.matcher(args[1]);
             if (volumeMatch.find()) {
                 volume = Float.parseFloat(volumeMatch.group(1));
             }

@@ -34,7 +34,7 @@ public class ClearCommand extends RoseCommand {
                 return;
             }
 
-            Tag activeTag = manager.getUserTag(player.getUniqueId());
+            Tag activeTag = manager.getUserTag(player);
             final TagUnequipEvent event = new TagUnequipEvent(player, activeTag);
             Bukkit.getPluginManager().callEvent(event);
             if (event.isCancelled())
@@ -54,7 +54,7 @@ public class ClearCommand extends RoseCommand {
             return;
         }
 
-        Tag activeTag = manager.getUserTag(playerSender.getUniqueId());
+        Tag activeTag = manager.getUserTag(playerSender);
         final TagUnequipEvent event = new TagUnequipEvent(playerSender, activeTag);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled())

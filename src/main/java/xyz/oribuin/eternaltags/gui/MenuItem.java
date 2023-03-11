@@ -1,5 +1,6 @@
 package xyz.oribuin.eternaltags.gui;
 
+import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.triumphteam.gui.guis.BaseGui;
@@ -86,19 +87,19 @@ public class MenuItem {
         // Add any slots that were not added
         if (this.slots.isEmpty()) {
             // We check for the singular slot first
-            var slot = (Integer) this.config.get(this.itemPath + ".slot");
-            if (slot != null) {
+            int slot = (int) this.config.get(this.itemPath + ".slot", -1);
+            if (slot != -1) {
                 this.slot(slot);
             }
 
             // Then we check for the multiple slots
-            var hasMultiSlots = this.config.get(this.itemPath + ".slots") != null;
+            boolean hasMultiSlots = this.config.get(this.itemPath + ".slots") != null;
             if (hasMultiSlots) {
                 this.slots(TagsUtils.parseList(this.config.getStringList(this.itemPath + ".slots")));
             }
         }
 
-        var item = this.customItem != null
+        ItemStack item = this.customItem != null
                 ? this.customItem
                 : TagsUtils.getItemStack(this.config, this.itemPath, this.player, this.placeholders);
 
@@ -116,18 +117,18 @@ public class MenuItem {
      * @since 1.1.7
      */
     private void addActions() {
-        var customActions = this.config.getConfigurationSection(this.itemPath + ".commands");
+        CommentedConfigurationSection customActions = this.config.getConfigurationSection(this.itemPath + ".commands");
         if (customActions == null)
             return;
 
-        for (var key : customActions.getKeys(false)) {
-            var clickType = TagsUtils.getEnum(ClickType.class, key.toUpperCase());
+        for (String key : customActions.getKeys(false)) {
+            ClickType clickType = TagsUtils.getEnum(ClickType.class, key.toUpperCase());
             if (clickType == null) {
                 EternalTags.getInstance().getLogger().warning("Invalid click type [" + key + "] in the " + this.itemPath + ".commands section of the [" + this.config.getName() + "] menu.");
                 continue;
             }
 
-            var actionList = new ArrayList<Action>();
+            List<Action> actionList = new ArrayList<>();
             this.config.getStringList(this.itemPath + ".commands." + key)
                     .stream()
                     .map(PluginAction::parse)

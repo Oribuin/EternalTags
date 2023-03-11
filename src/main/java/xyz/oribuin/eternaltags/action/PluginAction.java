@@ -8,6 +8,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -45,7 +46,7 @@ public final class PluginAction {
      */
     public static void registerAction(String name, Supplier<Action> actionSupplier) {
         registerAction(name, s -> {
-            var action = actionSupplier.get();
+            Action action = actionSupplier.get();
             action.setMessage(s);
             return action;
         });
@@ -59,14 +60,15 @@ public final class PluginAction {
      */
     public static @Nullable Action parse(String text) {
         // Check if the text matches the pattern ("[<action>] <message>") and get the action and message
-        final var matcher = ACTION_PATTERN.matcher(text);
+        final Matcher matcher = ACTION_PATTERN.matcher(text);
         if (!matcher.find()) {
             return null;
         }
-        final var actionName = matcher.group(1).toLowerCase(Locale.ROOT); // toLowerCase to avoid case-sensitive issues
-        final var actionText = matcher.group(2);
 
-        var action = ACTIONS.get(actionName);
+        final String actionName = matcher.group(1).toLowerCase(Locale.ROOT); // toLowerCase to avoid case-sensitive issues
+        final String actionText = matcher.group(2);
+
+        Function<String, Action> action = ACTIONS.get(actionName);
 
         if (action == null)
             return null;
@@ -74,7 +76,8 @@ public final class PluginAction {
         return action.apply(actionText);
     }
 
-    public static @Nullable String getName(Action action) {
+    @Nullable
+    public static  String getName(Action action) {
         for (Map.Entry<String, Function<String, Action>> entry : ACTIONS.entrySet()) {
             if (entry.getKey().equalsIgnoreCase(action.getName())) {
                 return entry.getKey();

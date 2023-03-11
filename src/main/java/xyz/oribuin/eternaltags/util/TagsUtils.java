@@ -150,26 +150,26 @@ public final class TagsUtils {
 
     public static ItemStack getItemStack(CommentedConfigurationSection config, String path, Player player, StringPlaceholders placeholders) {
 
-        var material = Material.getMaterial(get(config, path + ".material", "STONE"));
+        Material material = Material.getMaterial(get(config, path + ".material", "STONE"));
         if (material == null) {
             return new ItemStack(Material.STONE);
         }
 
         // Format the item lore
-        var lore = new ArrayList<String>(get(config, path + ".lore", new ArrayList<>()))
+        List<String> lore = new ArrayList<String>(get(config, path + ".lore", new ArrayList<>()))
                 .stream()
                 .map(s -> format(player, s, placeholders))
                 .collect(Collectors.toList());
 
         // Get item flags
-        var flags = get(config, path + ".flags", new ArrayList<String>())
+        ItemFlag[] flags = get(config, path + ".flags", new ArrayList<String>())
                 .stream()
                 .map(String::toUpperCase)
                 .map(ItemFlag::valueOf)
                 .toArray(ItemFlag[]::new);
 
         // Build the item stack
-        var builder = new ItemBuilder(material)
+        ItemBuilder builder = new ItemBuilder(material)
                 .setName(format(player, get(config, path + ".name", null), placeholders))
                 .setLore(lore)
                 .setAmount(Math.max(get(config, path + ".amount", 1), 1))
@@ -180,15 +180,15 @@ public final class TagsUtils {
                 .setModel(get(config, path + ".model-data", -1));
 
         // Get item owner
-        var owner = get(config, path + ".owner", null);
+        String owner = get(config, path + ".owner", null);
         if (owner != null)
-            builder.setOwner(Bukkit.getOfflinePlayer(UUID.fromString((String) owner)));
+            builder.setOwner(Bukkit.getOfflinePlayer(UUID.fromString(owner)));
 
         // Get item enchantments
-        final var enchants = config.getConfigurationSection(path + ".enchants");
+        CommentedConfigurationSection enchants = config.getConfigurationSection(path + ".enchants");
         if (enchants != null) {
             enchants.getKeys(false).forEach(key -> {
-                var enchantment = Enchantment.getByKey(NamespacedKey.minecraft(key.toLowerCase()));
+                Enchantment enchantment = Enchantment.getByKey(NamespacedKey.minecraft(key.toLowerCase()));
                 if (enchantment == null)
                     return;
 
@@ -240,9 +240,9 @@ public final class TagsUtils {
      * @return The parsed list
      */
     public static List<Integer> parseList(List<String> list) {
-        var newList = new ArrayList<Integer>();
-        for (var s : list) {
-            var split = s.split("-");
+        List<Integer> newList = new ArrayList<>();
+        for (String s : list) {
+            String[] split = s.split("-");
             if (split.length != 2) {
                 continue;
             }
@@ -265,7 +265,7 @@ public final class TagsUtils {
             return List.of(start);
         }
 
-        final var list = new ArrayList<Integer>();
+        final List<Integer> list = new ArrayList<>();
         for (int i = start; i <= end; i++) {
             list.add(i);
         }

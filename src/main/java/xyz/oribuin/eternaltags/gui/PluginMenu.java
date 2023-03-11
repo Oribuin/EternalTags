@@ -1,6 +1,7 @@
 package xyz.oribuin.eternaltags.gui;
 
 import dev.rosewood.rosegarden.RosePlugin;
+import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.triumphteam.gui.components.ScrollType;
@@ -31,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public abstract class PluginMenu {
 
@@ -57,13 +59,13 @@ public abstract class PluginMenu {
      * Create the menu file if it doesn't exist and add the default values
      */
     public void load() {
-        final var folder = new File(this.rosePlugin.getDataFolder(), "menus");
-        var newFile = false;
+        final File folder = new File(this.rosePlugin.getDataFolder(), "menus");
+        boolean newFile = false;
         if (!folder.exists()) {
             folder.mkdirs();
         }
 
-        final var file = new File(folder, this.getMenuName() + ".yml");
+        final File file = new File(folder, this.getMenuName() + ".yml");
         try {
             if (!file.exists()) {
                 file.createNewFile();
@@ -77,7 +79,7 @@ public abstract class PluginMenu {
 
         // Move the old configs into a different folder.
         if (config.get("menu-name") != null && !newFile) {
-            var oldGuis = new File(folder, "old-guis");
+            File oldGuis = new File(folder, "old-guis");
             if (!oldGuis.exists()) {
                 oldGuis.mkdirs();
             }
@@ -111,8 +113,8 @@ public abstract class PluginMenu {
      */
     protected final @NotNull PaginatedGui createPagedGUI(Player player) {
 
-        final var rows = this.config.getInt("gui-settings.rows");
-        final var title = this.config.getString("gui-settings.title");
+        final int rows = this.config.getInt("gui-settings.rows");
+        final String title = this.config.getString("gui-settings.title");
 
         return Gui.paginated()
                 .rows(rows == 0 ? 6 : rows)
@@ -128,8 +130,8 @@ public abstract class PluginMenu {
      * @return The created GUI
      */
     protected final @NotNull Gui createGUI(Player player) {
-        final var rows = this.config.getInt("gui-settings.rows");
-        final var title = this.config.getString("gui-settings.title");
+        final int rows = this.config.getInt("gui-settings.rows");
+        final String title = this.config.getString("gui-settings.title");
 
         return Gui.gui()
                 .rows(rows == 0 ? 6 : rows)
@@ -146,8 +148,9 @@ public abstract class PluginMenu {
      */
     protected final @NotNull ScrollingGui createScrollingGui(Player player, ScrollType scrollType) {
 
-        final var rows = this.config.getInt("gui-settings.rows");
-        final var title = this.config.getString("gui-settings.title");
+        final int rows = this.config.getInt("gui-settings.rows");
+        final String title = this.config.getString("gui-settings.title");
+
         return Gui.scrolling()
                 .scrollType(scrollType)
                 .rows(rows == 0 ? 6 : rows)
@@ -165,9 +168,9 @@ public abstract class PluginMenu {
      * @return The created item
      */
     public ItemStack getTagItem(Player player, Tag tag) {
-        var baseItem = TagsUtils.getItemStack(this.config, "tag-item", player, this.getTagPlaceholders(tag, player));
+        ItemStack baseItem = TagsUtils.getItemStack(this.config, "tag-item", player, this.getTagPlaceholders(tag, player));
 
-        var configLore = this.config.getStringList("tag-item.lore");
+        List<String> configLore = this.config.getStringList("tag-item.lore");
         List<String> lore = new ArrayList<>();
 
         // im not happy about this but it works
@@ -191,7 +194,7 @@ public abstract class PluginMenu {
 
         lore = lore.stream().map(line -> TagsUtils.format(player, line, this.getTagPlaceholders(tag, player))).collect(Collectors.toList());
 
-        var item = new ItemBuilder(baseItem).setLore(lore);
+        ItemBuilder item = new ItemBuilder(baseItem).setLore(lore);
         if (tag.getIcon() != null) {
             item.setMaterial(tag.getIcon());
         }
@@ -207,20 +210,20 @@ public abstract class PluginMenu {
      * @since 1.1.7
      */
     protected final @NotNull Map<ClickType, List<Action>> getTagActions() {
-        var customActions = this.config.getConfigurationSection("tag-item.commands");
+        CommentedConfigurationSection customActions = this.config.getConfigurationSection("tag-item.commands");
         if (customActions == null)
             return new HashMap<>();
 
-        var actions = new HashMap<ClickType, List<Action>>();
+        Map<ClickType, List<Action>> actions = new HashMap<>();
 
-        for (var key : customActions.getKeys(false)) {
-            var clickType = TagsUtils.getEnum(ClickType.class, key.toUpperCase());
+        for (String key : customActions.getKeys(false)) {
+            ClickType clickType = TagsUtils.getEnum(ClickType.class, key.toUpperCase());
             if (clickType == null) {
                 this.rosePlugin.getLogger().warning("Invalid click type [" + key + "] in the tag-item.commands section of the [" + this.getMenuName() + "] menu.");
                 continue;
             }
 
-            var actionList = new ArrayList<Action>();
+            List<Action> actionList = new ArrayList<Action>();
             customActions.getStringList(key)
                     .stream()
                     .map(PluginAction::parse)

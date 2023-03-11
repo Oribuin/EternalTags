@@ -305,33 +305,35 @@ public class TagsManager extends Manager {
      * @return The active tag if present
      * @since 1.1.6
      */
-    public @Nullable Tag getUserTag(UUID uuid) {
-        final var dataManager = this.rosePlugin.getManager(DataManager.class);
-        final var player = Bukkit.getPlayer(uuid);
-        var tag = dataManager.getCachedUsers().get(uuid);
-
-        if (tag == null && player != null) {
-            tag = this.getDefaultTag(player);
-        }
-
-        if (tag != null && Setting.REMOVE_TAGS.getBoolean() && player != null) {
-            if (!player.hasPermission(tag.getPermission())) {
-                tag = null;
-            }
-        }
-
-        return tag;
+    @Nullable
+    public Tag getUserTag(@NotNull UUID uuid) {
+        return this.rosePlugin.getManager(DataManager.class).getCachedUsers().get(uuid);
     }
 
     /**
-     * Get a tag by the user object, If the user isn't cached, return null.
+     * Get a tag by the player, this method is intended to be used for checking
+     * if a player needs to have their tag updated. (Remove Inactive Tags or Default Tags)
      *
      * @param player The player object.
      * @return The active tag if present
-     * @
      */
-    public @Nullable Tag getUserTag(Player player) {
-        return this.getUserTag(player.getUniqueId());
+    @Nullable
+    public Tag getUserTag(@NotNull Player player) {
+        final DataManager dataManager = this.rosePlugin.getManager(DataManager.class);
+        Tag tag = dataManager.getCachedUsers().get(player.getUniqueId());
+
+        if (tag == null) {
+            tag = this.getDefaultTag(player);
+            dataManager.getCachedUsers().put(player.getUniqueId(), tag); // Assign the default tag to the user.
+            return tag; // We don't need to check for a permission here, as the default tag should always be available.
+        }
+
+        if (Setting.REMOVE_TAGS.getBoolean() && !player.hasPermission(tag.getPermission())) {
+            this.rosePlugin.getManager(DataManager.class).removeUser(player.getUniqueId()); // Remove the user's tag.
+            return null;
+        }
+
+        return tag;
     }
 
 
@@ -342,7 +344,8 @@ public class TagsManager extends Manager {
      * @return The active tag if present
      * @since 1.1.6
      */
-    public @Nullable Tag getUserTag(OfflinePlayer player) {
+    @Nullable
+    public Tag getOfflineUserTag(@NotNull OfflinePlayer player) {
         return this.getUserTag(player.getUniqueId());
     }
 
@@ -351,12 +354,12 @@ public class TagsManager extends Manager {
      *
      * @param offlinePlayer The player.
      * @return The active tag if present
-     * @deprecated Use {@link TagsManager#getUserTag(OfflinePlayer)} instead.
+     * @deprecated Use {@link TagsManager#getOfflineUserTag(OfflinePlayer)} instead.
      */
     @Nullable
     @Deprecated
     public Tag getPlayersTag(@NotNull OfflinePlayer offlinePlayer) {
-        return this.getUserTag(offlinePlayer);
+        return this.getOfflineUserTag(offlinePlayer);
     }
 
     /**
@@ -463,7 +466,7 @@ public class TagsManager extends Manager {
      */
     @Nullable
     public Tag getDefaultTag(@Nullable OfflinePlayer player) {
-        var defaultTagID = Setting.DEFAULT_TAG.getString();
+        String defaultTagID = Setting.DEFAULT_TAG.getString();
 
         if (defaultTagID == null || defaultTagID.equalsIgnoreCase("none"))
             return null;

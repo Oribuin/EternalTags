@@ -3,6 +3,7 @@ package xyz.oribuin.eternaltags.gui;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
+import dev.triumphteam.gui.components.ScrollType;
 import dev.triumphteam.gui.guis.BaseGui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
@@ -10,10 +11,12 @@ import dev.triumphteam.gui.guis.ScrollingGui;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.oribuin.eternaltags.EternalTags;
+import xyz.oribuin.eternaltags.action.Action;
 import xyz.oribuin.eternaltags.event.TagEquipEvent;
 import xyz.oribuin.eternaltags.event.TagUnequipEvent;
 import xyz.oribuin.eternaltags.gui.enums.SortType;
@@ -46,16 +49,16 @@ public class TagsGUI extends PluginMenu {
 
     public void open(@NotNull Player player, @Nullable String keyword) {
 
-        var menuTitle = this.config.getString("gui-settings.title");
+        String  menuTitle = this.config.getString("gui-settings.title");
         if (menuTitle == null)
             menuTitle = "EternalTags | %page%/%total%";
 
-        var finalMenuTitle = menuTitle;
+        String  finalMenuTitle = menuTitle;
 
-        var scrollingGui = this.config.getBoolean("gui-settings.scrolling-gui", false);
-        var scrollingType = this.match(this.config.getString("gui-settings.scrolling-type"));
+        boolean scrollingGui = this.config.getBoolean("gui-settings.scrolling-gui", false);
+        ScrollType scrollingType = this.match(this.config.getString("gui-settings.scrolling-type"));
 
-        var gui = (scrollingGui && scrollingType != null) ? this.createScrollingGui(player, scrollingType) : this.createPagedGUI(player);
+        PaginatedGui gui = (scrollingGui && scrollingType != null) ? this.createScrollingGui(player, scrollingType) : this.createPagedGUI(player);
 
         final CommentedConfigurationSection extraItems = this.config.getConfigurationSection("extra-items");
         if (extraItems != null) {
@@ -72,7 +75,7 @@ public class TagsGUI extends PluginMenu {
                 .player(player)
                 .action(event -> {
                     gui.next();
-                    gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui)));
+                    this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
                 })
                 .player(player)
                 .place(gui);
@@ -82,7 +85,7 @@ public class TagsGUI extends PluginMenu {
                 .player(player)
                 .action(event -> {
                     gui.previous();
-                    gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui)));
+                    this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
                 })
                 .place(gui);
 
@@ -106,7 +109,7 @@ public class TagsGUI extends PluginMenu {
 
 
         gui.open(player);
-        var dynamicSpeed = this.config.getInt("gui-settings.dynamic-speed", 3);
+        int dynamicSpeed = this.config.getInt("gui-settings.dynamic-speed", 3);
         if (this.config.getBoolean("gui-settings.dynamic-gui", false) && dynamicSpeed > 0) {
             this.rosePlugin.getServer().getScheduler().runTaskTimerAsynchronously(this.rosePlugin, task -> {
                 if (gui.getInventory().getViewers().isEmpty()) {
@@ -115,12 +118,12 @@ public class TagsGUI extends PluginMenu {
                 }
 
                 this.addTags(gui, player, keyword);
-                this.sync(() -> gui.updateTitle(this.formatString(player, this.config.getString("gui-settings.title"), this.getPagePlaceholders(gui))));
+                this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
             }, 0, dynamicSpeed);
         } else {
             this.async(() -> {
                 this.addTags(gui, player, keyword);
-                this.sync(() -> gui.updateTitle(this.formatString(player, this.config.getString("gui-settings.title"), this.getPagePlaceholders(gui))));
+                this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
             });
         }
     }
@@ -131,9 +134,9 @@ public class TagsGUI extends PluginMenu {
      * @param player The player to clear the tag for
      */
     private void clearTag(Player player) {
-        var tag = this.manager.getUserTag(player.getUniqueId());
+        Tag tag = this.manager.getUserTag(player);
 
-        var event = new TagUnequipEvent(player, tag);
+        TagUnequipEvent event = new TagUnequipEvent(player, tag);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled())
             return;
@@ -179,7 +182,7 @@ public class TagsGUI extends PluginMenu {
         if (gui instanceof ScrollingGui scrollingGui) // Remove all items from the GUI
             scrollingGui.clearPageItems();
 
-        var tagActions = this.getTagActions();
+        Map<ClickType, List<Action>> tagActions = this.getTagActions();
         this.getTags(player, keyword).forEach(tag -> {
 
             // If the tag is already in the cache, use that instead of creating a new one.
@@ -189,7 +192,7 @@ public class TagsGUI extends PluginMenu {
             }
 
             // Create the item for the tag and add it to the cache.
-            var item = new GuiItem(this.getTagItem(player, tag), event -> {
+            GuiItem item = new GuiItem(this.getTagItem(player, tag), event -> {
                 if (!player.hasPermission(tag.getPermission()))
                     return;
 
@@ -226,7 +229,7 @@ public class TagsGUI extends PluginMenu {
      * @return A list of tags
      */
     private @NotNull List<Tag> getTags(@NotNull Player player, @Nullable String keyword) {
-        var sortType = SortType.match(this.config.getString("gui-settings.sort-type"));
+        SortType sortType = SortType.match(this.config.getString("gui-settings.sort-type"));
         if (sortType == null)
             sortType = SortType.ALPHABETICAL;
 
@@ -237,13 +240,13 @@ public class TagsGUI extends PluginMenu {
             sortType.sort(tags);
         }
 
-        var playerTags = new ArrayList<>(this.manager.getPlayerTags(player)); // Get the player's tags
+        List<Tag> playerTags = new ArrayList<>(this.manager.getPlayerTags(player)); // Get the player's tags
         sortType.sort(playerTags); // Individually sort the player's tags
         tags.addAll(playerTags); // Add all the list of tags
 
         // We're adding all the remaining tags to the list if the option is enabled
         if (this.config.getBoolean("gui-settings.add-all-tags")) {
-            var allTags = new ArrayList<>(this.manager.getCachedTags().values());
+            List<Tag> allTags = new ArrayList<>(this.manager.getCachedTags().values());
             sortType.sort(allTags);
             tags.addAll(allTags);
         }
@@ -262,7 +265,7 @@ public class TagsGUI extends PluginMenu {
      * @param tag    The tag
      */
     private void setTag(Player player, Tag tag) {
-        var activeTag = this.manager.getUserTag(player);
+        Tag activeTag = this.manager.getUserTag(player);
         if (activeTag != null && activeTag.equals(tag) && Setting.RE_EQUIP_CLEAR.getBoolean()) {
             this.clearTag(player);
             return;
@@ -293,7 +296,7 @@ public class TagsGUI extends PluginMenu {
             this.manager.addFavourite(player.getUniqueId(), tag);
 
 
-        var message = locale.getLocaleMessage(isFavourite ? "command-favorite-off" : "command-favorite-on");
+        String message = locale.getLocaleMessage(isFavourite ? "command-favorite-off" : "command-favorite-on");
         this.locale.sendMessage(player, "command-favorite-toggled", StringPlaceholders.builder("tag", this.manager.getDisplayTag(tag, player))
                 .addPlaceholder("toggled", message)
                 .build());
