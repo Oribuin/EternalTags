@@ -17,7 +17,7 @@ public class PlayerListeners implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        this.manager.getUserTag(event.getPlayer());
+       this.dataManager.loadUser(event.getPlayer().getUniqueId());
     }
 
     @EventHandler
