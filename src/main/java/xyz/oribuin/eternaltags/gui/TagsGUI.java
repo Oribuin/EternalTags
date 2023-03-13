@@ -3,6 +3,7 @@ package xyz.oribuin.eternaltags.gui;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
+import dev.triumphteam.gui.components.GuiAction;
 import dev.triumphteam.gui.components.ScrollType;
 import dev.triumphteam.gui.guis.BaseGui;
 import dev.triumphteam.gui.guis.GuiItem;
@@ -12,6 +13,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -28,6 +30,7 @@ import xyz.oribuin.eternaltags.obj.Tag;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class TagsGUI extends PluginMenu {
 
@@ -185,14 +188,7 @@ public class TagsGUI extends PluginMenu {
         Map<ClickType, List<Action>> tagActions = this.getTagActions();
         this.getTags(player, keyword).forEach(tag -> {
 
-            // If the tag is already in the cache, use that instead of creating a new one.
-            if (Setting.CACHE_GUI_TAGS.getBoolean() && this.tagItems.containsKey(tag)) {
-                gui.addItem(this.tagItems.get(tag));
-                return;
-            }
-
-            // Create the item for the tag and add it to the cache.
-            GuiItem item = new GuiItem(this.getTagItem(player, tag), event -> {
+            GuiAction<InventoryClickEvent> action = event -> {
                 if (!player.hasPermission(tag.getPermission()))
                     return;
 
@@ -209,8 +205,21 @@ public class TagsGUI extends PluginMenu {
                 }
 
                 this.runActions(tagActions, event, this.getTagPlaceholders(tag, player));
-            });
+            };
 
+            // If the tag is already in the cache, use that instead of creating a new one.
+            if (Setting.CACHE_GUI_TAGS.getBoolean() && this.tagItems.containsKey(tag)) {
+                GuiItem item = this.tagItems.get(tag);
+                item.setAction(action);
+
+                gui.addItem(item);
+                return;
+            }
+
+
+
+             // Create the item for the tag and add it to the cache.
+            GuiItem item = new GuiItem(this.getTagItem(player, tag), action);
 
             if (Setting.CACHE_GUI_TAGS.getBoolean())
                 this.tagItems.put(tag, item);
