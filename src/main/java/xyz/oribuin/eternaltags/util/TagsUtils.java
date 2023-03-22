@@ -181,10 +181,13 @@ public final class TagsUtils {
 
         // Get item owner
         String owner = get(config, path + ".owner", null);
-        if (owner != null)
-            builder.setOwner(Bukkit.getOfflinePlayer(UUID.fromString(owner)));
+        if (owner != null) {
+            if (owner.equalsIgnoreCase("self"))
+                builder.setOwner(player);
+            else
+                builder.setOwner(Bukkit.getOfflinePlayer(owner));
+        }
 
-        // Get item enchantments
         CommentedConfigurationSection enchants = config.getConfigurationSection(path + ".enchants");
         if (enchants != null) {
             enchants.getKeys(false).forEach(key -> {
