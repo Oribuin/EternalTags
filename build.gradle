@@ -3,6 +3,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 plugins {
     id "java"
     id "com.github.johnrengelman.shadow" version "7.1.0"
+    id "maven-publish"
 }
 
 group "xyz.oribuin"
@@ -65,6 +66,32 @@ processResources {
         include '**/*.yml'
         filter ReplaceTokens, tokens: ["version": project.property("version")]
         duplicatesStrategy DuplicatesStrategy.INCLUDE
+    }
+}
+
+publishing {
+    publications {
+        shadow(MavenPublication) { publication ->
+            project.shadow.component(publication)
+            artifactId = 'eternaltags'
+            pom {
+                name = 'eternaltags'
+            }
+        }
+    }
+    repositories {
+        if (project.hasProperty('mavenUser') && project.hasProperty('mavenPassword')) {
+            maven {
+                credentials {
+                    username project.mavenUser
+                    password project.mavenPassword
+                }
+
+                def releasesRepoUrl = 'https://repo.rosewooddev.io/repository/public-releases/'
+                def snapshotsRepoUrl = 'https://repo.rosewooddev.io/repository/public-snapshots/'
+                url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+            }
+        }
     }
 }
 
