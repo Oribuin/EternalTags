@@ -20,7 +20,7 @@ public class SearchCommand extends RoseCommand {
     public void execute(CommandContext context, GreedyString keyword) {
         this.rosePlugin.getManager(MenuManager.class)
                 .get(TagsGUI.class)
-                .open((Player) context.getSender(), keyword.get());
+                .open((Player) context.getSender(), tag -> tag.getId().contains(keyword.get()) || tag.getName().contains(keyword.get()));
     }
 
     @Override

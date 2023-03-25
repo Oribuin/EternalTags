@@ -28,9 +28,14 @@ import xyz.oribuin.eternaltags.manager.MenuManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class TagsGUI extends PluginMenu {
 
@@ -50,13 +55,13 @@ public class TagsGUI extends PluginMenu {
         this.tagItems.clear(); // Clear the cache so we don't have any old items.
     }
 
-    public void open(@NotNull Player player, @Nullable String keyword) {
+    public void open(@NotNull Player player, @Nullable Predicate<Tag> filter) {
 
-        String  menuTitle = this.config.getString("gui-settings.title");
+        String menuTitle = this.config.getString("gui-settings.title");
         if (menuTitle == null)
             menuTitle = "EternalTags | %page%/%total%";
 
-        String  finalMenuTitle = menuTitle;
+        String finalMenuTitle = menuTitle;
 
         boolean scrollingGui = this.config.getBoolean("gui-settings.scrolling-gui", false);
         ScrollType scrollingType = this.match(this.config.getString("gui-settings.scrolling-type"));
@@ -120,12 +125,12 @@ public class TagsGUI extends PluginMenu {
                     return;
                 }
 
-                this.addTags(gui, player, keyword);
+                this.addTags(gui, player, filter);
                 this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
             }, 0, dynamicSpeed);
         } else {
             this.async(() -> {
-                this.addTags(gui, player, keyword);
+                this.addTags(gui, player, filter);
                 this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
             });
         }
@@ -163,7 +168,7 @@ public class TagsGUI extends PluginMenu {
                 event -> event.getPlayer().getUniqueId().equals(player.getUniqueId()),
                 event -> {
                     event.setCancelled(true);
-                    this.sync(() -> this.open(player, event.getMessage()));
+                    this.sync(() -> this.open(player, tag -> tag.getId().contains(event.getMessage()) || tag.getName().contains(event.getMessage())));
                 },
                 60,
                 TimeUnit.SECONDS,
@@ -174,11 +179,11 @@ public class TagsGUI extends PluginMenu {
     /**
      * Add the tags to the GUI
      *
-     * @param gui     The GUI to add the tags to
-     * @param player  The player viewing the GUI
-     * @param keyword The keyword to search for
+     * @param gui    The GUI to add the tags to
+     * @param player The player viewing the GUI
+     * @param filter The filter to apply to the tags
      */
-    private void addTags(@NotNull BaseGui gui, @NotNull Player player, @Nullable String keyword) {
+    private void addTags(@NotNull BaseGui gui, @NotNull Player player, @Nullable Predicate<Tag> filter) {
         if (gui instanceof PaginatedGui paginatedGui) // Remove all items from the GUI
             paginatedGui.clearPageItems();
 
@@ -186,7 +191,7 @@ public class TagsGUI extends PluginMenu {
             scrollingGui.clearPageItems();
 
         Map<ClickType, List<Action>> tagActions = this.getTagActions();
-        this.getTags(player, keyword).forEach(tag -> {
+        this.getTags(player, filter).forEach(tag -> {
 
             GuiAction<InventoryClickEvent> action = event -> {
                 if (!player.hasPermission(tag.getPermission()))
@@ -195,7 +200,7 @@ public class TagsGUI extends PluginMenu {
                 if (tagActions.size() == 0) {
                     if (event.isShiftClick()) {
                         this.toggleFavourite(player, tag);
-                        this.addTags(gui, player, keyword);
+                        this.addTags(gui, player, filter);
                         return;
                     }
 
@@ -217,8 +222,7 @@ public class TagsGUI extends PluginMenu {
             }
 
 
-
-             // Create the item for the tag and add it to the cache.
+            // Create the item for the tag and add it to the cache.
             GuiItem item = new GuiItem(this.getTagItem(player, tag), action);
 
             if (Setting.CACHE_GUI_TAGS.getBoolean())
@@ -237,7 +241,7 @@ public class TagsGUI extends PluginMenu {
      * @param keyword The keyword to search for
      * @return A list of tags
      */
-    private @NotNull List<Tag> getTags(@NotNull Player player, @Nullable String keyword) {
+    private @NotNull List<Tag> getTags(@NotNull Player player, Predicate<Tag> filter) {
         SortType sortType = SortType.match(this.config.getString("gui-settings.sort-type"));
         if (sortType == null)
             sortType = SortType.ALPHABETICAL;
@@ -261,8 +265,8 @@ public class TagsGUI extends PluginMenu {
         }
 
         // If the keyword is not null, filter the list of tags
-        if (keyword != null)
-            tags = tags.stream().filter(tag -> tag.getName().toLowerCase().contains(keyword.toLowerCase())).toList();
+        if (filter != null)
+            tags = tags.stream().filter(filter).toList();
 
         return tags.stream().distinct().filter(Objects::nonNull).toList();
     }
