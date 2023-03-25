@@ -9,8 +9,10 @@ import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.database.migration._1_CreateInitialTables;
 import xyz.oribuin.eternaltags.database.migration._2_CreateNewTagTables;
+import xyz.oribuin.eternaltags.database.migration._3_CategoriesTable;
 import xyz.oribuin.eternaltags.obj.Tag;
 import xyz.oribuin.eternaltags.obj.TagDescription;
+import xyz.oribuin.eternaltags.util.TagsUtils;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -215,13 +217,12 @@ public class DataManager extends AbstractDataManager {
                 while (result.next()) {
                     final String id = result.getString("tagId");
                     final List<String> description = gson.fromJson(result.getString("description"), TagDescription.class).getDescription();
-                    final String icon = result.getString("icon");
 
                     Tag tag = new Tag(id, result.getString("name"), result.getString("tag"));
                     tag.setPermission(result.getString("permission"));
                     tag.setDescription(description);
                     tag.setOrder(result.getInt("order"));
-                    tag.setIcon(icon == null ? null : Material.valueOf(icon));
+                    tag.setIcon(TagsUtils.deserializeItem(result.getBytes("icon")));
                     cachedTags.put(id, tag);
                 }
             }
@@ -243,7 +244,7 @@ public class DataManager extends AbstractDataManager {
                 statement.setString(4, tag.getTag());
                 statement.setString(5, tag.getPermission());
                 statement.setInt(6, tag.getOrder());
-                statement.setString(7, tag.getIcon() != null ? tag.getIcon().name() : null);
+                statement.setBytes(7 , tag.getIcon() != null ? TagsUtils.serializeItem(tag.getIcon()) : null);
                 statement.executeUpdate();
             }
         }));
@@ -266,7 +267,7 @@ public class DataManager extends AbstractDataManager {
                     statement.setString(4, tag.getTag());
                     statement.setString(5, tag.getPermission());
                     statement.setInt(6, tag.getOrder());
-                    statement.setString(7, tag.getIcon() != null ? tag.getIcon().name() : null);
+                    statement.setBytes(7 , tag.getIcon() != null ? TagsUtils.serializeItem(tag.getIcon()) : null);
                     statement.addBatch();
                 }
 
@@ -304,7 +305,7 @@ public class DataManager extends AbstractDataManager {
 
     @Override
     public List<Class<? extends DataMigration>> getDataMigrations() {
-        return Arrays.asList(_1_CreateInitialTables.class, _2_CreateNewTagTables.class);
+        return Arrays.asList(_1_CreateInitialTables.class, _2_CreateNewTagTables.class, _3_CategoriesTable.class);
     }
 
     private void async(Consumer<BukkitTask> callback) {

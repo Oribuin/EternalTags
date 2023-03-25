@@ -11,6 +11,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.oribuin.eternaltags.event.TagDeleteEvent;
@@ -18,7 +19,9 @@ import xyz.oribuin.eternaltags.event.TagSaveEvent;
 import xyz.oribuin.eternaltags.hook.OraxenHook;
 import xyz.oribuin.eternaltags.listener.BungeeListener;
 import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
+import xyz.oribuin.eternaltags.obj.Category;
 import xyz.oribuin.eternaltags.obj.Tag;
+import xyz.oribuin.eternaltags.util.TagsUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,14 +37,17 @@ import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class TagsManager extends Manager {
 
     private final Map<String, Tag> cachedTags = new HashMap<>();
+    private final Map<String, Category> cachedCategories = new HashMap<>();
     private final Random random = new Random();
 
-    private CommentedFileConfiguration config;
+    private CommentedFileConfiguration tagConfig;
+    private CommentedFileConfiguration categoryConfig;
 
     public TagsManager(RosePlugin plugin) {
         super(plugin);
@@ -52,10 +58,35 @@ public class TagsManager extends Manager {
         // Load all tags from mysql instead of tags.yml
         if (Setting.MYSQL_TAGDATA.getBoolean()) {
             this.rosePlugin.getManager(DataManager.class).loadTagData(this.cachedTags);
+            // TODO Load categories from mysql
+//            this.rosePlugin.getManager(DataManager.class).loadCategoryData(this.cachedCategories);
             return;
         }
 
-        final File file = new File(this.rosePlugin.getDataFolder(), "tags.yml");
+        // Load the tags.yml file and the categories.yml file.
+        this.createDefaultFile("tags.yml", this.getDefaultTags(), config -> this.tagConfig = config);
+        this.createDefaultFile("categories.yml", this.getDefaultCategories(), config -> this.categoryConfig = config);
+
+        // Load plugin tags.
+        this.loadTags();
+        this.loadCategories();
+
+    }
+
+    @Override
+    public void disable() {
+        // Unused
+    }
+
+    /**
+     * Create the default files for the plugin and assign them to the variables.
+     *
+     * @param name          The name of the file.
+     * @param defaultValues The default values for the file.
+     * @param consumer      The consumer to accept the file.
+     */
+    private void createDefaultFile(String name, Map<String, Object> defaultValues, Consumer<CommentedFileConfiguration> consumer) {
+        final File file = new File(this.rosePlugin.getDataFolder(), name);
         boolean newFile = false;
         try {
             if (!file.exists()) {
@@ -66,26 +97,19 @@ public class TagsManager extends Manager {
             ex.printStackTrace();
         }
 
-        this.config = CommentedFileConfiguration.loadConfiguration(file);
+        CommentedFileConfiguration config = CommentedFileConfiguration.loadConfiguration(file);
         if (newFile) {
-            this.getDefaultTags().forEach((path, object) -> {
+            defaultValues.forEach((path, object) -> {
                 if (path.startsWith("#"))
-                    this.config.addPathedComments(path, object.toString());
+                    config.addPathedComments(path, object.toString());
                 else
-                    this.config.set(path, object);
+                    config.set(path, object);
             });
 
-            this.config.save();
+            config.save();
         }
 
-        // Load plugin tags.
-        this.loadTags();
-
-    }
-
-    @Override
-    public void disable() {
-        // Unused
+        consumer.accept(config);
     }
 
     /**
@@ -94,21 +118,18 @@ public class TagsManager extends Manager {
     public void loadTags() {
         this.cachedTags.clear();
 
-        CommentedConfigurationSection tagSection = this.config.getConfigurationSection("tags");
+        CommentedConfigurationSection tagSection = this.tagConfig.getConfigurationSection("tags");
         if (tagSection == null) {
             this.rosePlugin.getLogger().severe("Couldn't find tags configuration section.");
             return;
         }
 
-        for (String key : tagSection.getKeys(false)) {
-            String name = tagSection.getString(key + ".name");
+        tagSection.getKeys(false).forEach(key -> {
+            String name = tagSection.getString(key + ".name", key);
             String tag = tagSection.getString(key + ".tag");
 
-            if (name == null)
-                name = key;
-
-            if (tag == null)
-                continue;
+            if (name == null || tag == null)
+                return;
 
             final Tag obj = new Tag(key.toLowerCase(), name, tag);
             List<String> description = tagSection.get(key + ".description") instanceof String
@@ -117,22 +138,53 @@ public class TagsManager extends Manager {
 
             obj.setDescription(description);
 
-            if (tagSection.getString(key + ".permission") != null)
-                obj.setPermission(tagSection.getString(key + ".permission"));
+            String permission = tagSection.getString(key + ".permission", null);
+            if (permission != null)
+                obj.setPermission(permission);
 
-            if (tagSection.getString(key + ".order") != null)
-                obj.setOrder(tagSection.getInt(key + ".order"));
+            int order = tagSection.getInt(key + ".order", -1);
+            if (order != -1)
+                obj.setOrder(order);
 
-            final String iconName = tagSection.getString(key + ".icon");
-            if (iconName != null)
-                obj.setIcon(Material.matchMaterial(iconName) != null ? Material.matchMaterial(iconName) : Material.NAME_TAG);
+            // TODO: Add support for ItemStacks.
+            Material icon = Material.matchMaterial(tagSection.getString(key + ".icon", ""));
+            if (icon != null)
+                obj.setIcon(icon);
 
-            if (OraxenHook.enabled()) {
+            if (OraxenHook.enabled())
                 obj.setTag(OraxenHook.parseGlyph(tag));
-            }
 
             this.cachedTags.put(key.toLowerCase(), obj);
+        });
+    }
+
+    /**
+     * Load all the categories from the plugin config.
+     */
+    public void loadCategories() {
+        this.cachedCategories.clear();
+
+        CommentedConfigurationSection categorySection = this.categoryConfig.getConfigurationSection("categories");
+        if (categorySection == null) {
+            this.rosePlugin.getLogger().severe("Couldn't find categories configuration section.");
+            return;
         }
+
+        categorySection.getKeys(false).forEach(key -> {
+            String displayName = categorySection.getString(key + ".display-name", key);
+            List<String> tags = categorySection.getStringList(key + ".tags"); // List of tags in the category.
+            ItemStack icon = TagsUtils.getItemStack(categorySection, key + ".icon");
+            int order = categorySection.getInt(key + ".order", -1);
+
+            Category obj = new Category(key.toLowerCase());
+            obj.setDisplayName(displayName);
+            obj.setTags(tags);
+            obj.setIcon(icon);
+            obj.setOrder(order);
+
+
+            this.cachedCategories.put(key.toLowerCase(), obj);
+        });
     }
 
     /**
@@ -164,20 +216,20 @@ public class TagsManager extends Manager {
     }
 
     public boolean saveToConfig(Tag tag) {
-        if (this.config == null)
+        if (this.tagConfig == null)
             return false;
 
-        this.config.set("tags." + tag.getId() + ".name", tag.getName());
-        this.config.set("tags." + tag.getId() + ".tag", tag.getTag());
-        this.config.set("tags." + tag.getId() + ".description", tag.getDescription());
-        this.config.set("tags." + tag.getId() + ".permission", tag.getPermission());
-        this.config.set("tags." + tag.getId() + ".order", tag.getOrder());
+        this.tagConfig.set("tags." + tag.getId() + ".name", tag.getName());
+        this.tagConfig.set("tags." + tag.getId() + ".tag", tag.getTag());
+        this.tagConfig.set("tags." + tag.getId() + ".description", tag.getDescription());
+        this.tagConfig.set("tags." + tag.getId() + ".permission", tag.getPermission());
+        this.tagConfig.set("tags." + tag.getId() + ".order", tag.getOrder());
 
         if (tag.getIcon() != null)
-            this.config.set("tags." + tag.getId() + ".icon", tag.getIcon().name());
+            this.tagConfig.set("tags." + tag.getId() + ".icon", tag.getIcon().name());
 
 
-        this.config.save();
+        this.tagConfig.save();
         return true;
     }
 
@@ -223,12 +275,12 @@ public class TagsManager extends Manager {
         }
 
         CompletableFuture.runAsync(() -> tags.forEach((id, tag) -> {
-            this.config.set("tags." + id + ".name", tag.getName());
-            this.config.set("tags." + id + ".tag", tag.getTag());
-            this.config.set("tags." + id + ".description", tag.getDescription());
-            this.config.set("tags." + id + ".permission", tag.getPermission());
-            this.config.set("tags." + id + ".order", tag.getOrder());
-        })).thenRun(() -> this.config.save());
+            this.tagConfig.set("tags." + id + ".name", tag.getName());
+            this.tagConfig.set("tags." + id + ".tag", tag.getTag());
+            this.tagConfig.set("tags." + id + ".description", tag.getDescription());
+            this.tagConfig.set("tags." + id + ".permission", tag.getPermission());
+            this.tagConfig.set("tags." + id + ".order", tag.getOrder());
+        })).thenRun(() -> this.tagConfig.save());
     }
 
     /**
@@ -260,8 +312,8 @@ public class TagsManager extends Manager {
             return;
         }
 
-        this.config.set("tags." + id, null);
-        this.config.save();
+        this.tagConfig.set("tags." + id, null);
+        this.tagConfig.save();
     }
 
     public void clearTagFromUsers(String id) {
@@ -279,8 +331,8 @@ public class TagsManager extends Manager {
         }
 
         CompletableFuture.runAsync(() -> this.cachedTags.forEach((id, tag)
-                -> this.config.set("tags." + id, null))).thenRun(()
-                -> this.config.save());
+                -> this.tagConfig.set("tags." + id, null))).thenRun(()
+                -> this.tagConfig.save());
 
         this.cachedTags.clear();
     }
@@ -578,7 +630,8 @@ public class TagsManager extends Manager {
      *
      * @return A map of all the original tags.
      */
-    public @NotNull Map<String, Object> getDefaultTags() {
+    @NotNull
+    public Map<String, Object> getDefaultTags() {
         return new LinkedHashMap<>() {{
 
             // First Tag
@@ -614,6 +667,17 @@ public class TagsManager extends Manager {
             this.put("tags.automatic-gradient.description", Arrays.asList("A gradient tag that", "will update with every", "message that you send."));
             this.put("tags.automatic-gradient.permission", "eternaltags.tag.animated-gradient");
         }};
+    }
+
+    public Map<String, Object> getDefaultCategories() {
+        return new LinkedHashMap<>() {{
+            this.put("categories.default.name", "Default");
+            this.put("categories.default.description", Collections.singletonList("The default EternalTags category."));
+            this.put("categories.default.permission", "eternaltags.category.default");
+            this.put("categories.default.order", 1);
+            this.put("categories.default.icon", "NAME_TAG");
+        }};
+
     }
 
     public Map<String, Tag> getCachedTags() {

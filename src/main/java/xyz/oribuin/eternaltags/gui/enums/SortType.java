@@ -13,7 +13,6 @@ public enum SortType {
     NONE,
     RANDOM;
 
-
     public void sort(List<Tag> tags) {
         switch (this) {
             case ALPHABETICAL -> tags.sort(Comparator.comparing(Tag::getName));

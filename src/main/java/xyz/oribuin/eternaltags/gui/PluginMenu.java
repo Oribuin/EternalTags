@@ -168,7 +168,7 @@ public abstract class PluginMenu {
      * @return The created item
      */
     public ItemStack getTagItem(Player player, Tag tag) {
-        ItemStack baseItem = TagsUtils.getItemStack(this.config, "tag-item", player, this.getTagPlaceholders(tag, player));
+        ItemStack baseItem = TagsUtils.getItemStack(this.config, "tag-item", player, this.getTagPlaceholders(tag, player)).clone();
 
         List<String> configLore = this.config.getStringList("tag-item.lore");
         List<String> lore = new ArrayList<>();
@@ -194,13 +194,10 @@ public abstract class PluginMenu {
 
         lore = lore.stream().map(line -> TagsUtils.format(player, line, this.getTagPlaceholders(tag, player))).collect(Collectors.toList());
 
-        ItemBuilder item = new ItemBuilder(baseItem).setLore(lore);
-        if (tag.getIcon() != null) {
-            item.setMaterial(tag.getIcon());
-        }
+        if (tag.getIcon() != null)
+            baseItem = tag.getIcon().clone();
 
-
-        return item.create();
+        return new ItemBuilder(baseItem).setLore(lore).create();
     }
 
     /**
