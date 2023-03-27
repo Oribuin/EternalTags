@@ -184,11 +184,13 @@ public abstract class PluginMenu {
                 continue;
 
             // get the content before the line includes the %description% tag
-            String before = line.substring(0, line.indexOf("%description%"));
+            String descFormat = config.getString("gui-settings.description-format");
+            if (descFormat == null)
+                descFormat = line.substring(0, line.indexOf("%description%"));
 
             lore.add(TagsUtils.format(player, line.replace("%description%", tag.getDescription().get(0))));
             for (int j = 1; j < tag.getDescription().size(); j++) {
-                lore.add(before + tag.getDescription().get(j));
+                lore.add(descFormat + tag.getDescription().get(j));
             }
         }
 
