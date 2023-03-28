@@ -4,6 +4,7 @@ import dev.rosewood.rosegarden.utils.HexUtils;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
 import xyz.oribuin.eternaltags.manager.TagsManager;
@@ -25,11 +26,11 @@ public class Expansion extends PlaceholderExpansion {
     }
 
     @Override
-    public String onRequest(OfflinePlayer player, String params) {
+    public String onRequest(@Nullable OfflinePlayer offlineUser, @NotNull String params) {
 
         // Require a player for these placeholders
-        if (player == null)
-            return "requires player";
+        if (offlineUser == null)
+            return "Error: Player is null";
 
         // Allow the ability to get any tag from the id
         final String[] args = params.split("_");
@@ -40,31 +41,30 @@ public class Expansion extends PlaceholderExpansion {
             final Tag tag = this.manager.getTagFromId(tagId);
             // Can't use the switch statement here
             if (args[0].equalsIgnoreCase("get") && tag != null) {
-                return this.manager.getDisplayTag(tag, player, this.formattedPlaceholder);
+                return this.manager.getDisplayTag(tag, offlineUser, this.formattedPlaceholder);
             }
 
             // Got this is so ugly, but it works
             if (args[0].equalsIgnoreCase("get-formatted") && tag != null) {
-                return this.manager.getDisplayTag(tag, player, this.formattedPlaceholder);
+                return this.manager.getDisplayTag(tag, offlineUser, this.formattedPlaceholder);
             }
 
             // I really need a better system for this
             if (args[0].equalsIgnoreCase("has") && tag != null) {
-                return player.getPlayer() != null && player.getPlayer().hasPermission(tag.getPermission()) ? "true" : "false";
+                return offlineUser.getPlayer() != null && manager.canUseTag(offlineUser.getPlayer(), tag) ? "true" : "false";
             }
 
             // Yeah what a yikes
-            if (args[0].equalsIgnoreCase("has-unlocked") && tag != null) {
-                boolean unlocked = player.getPlayer() != null && player.getPlayer().hasPermission(tag.getPermission());
-                return HexUtils.colorify(unlocked ? Setting.TAG_UNLOCKED_FORMAT.getString() : Setting.TAG_LOCKED_FORMAT.getString());
+            if (args[0].equalsIgnoreCase("has-unlocked") && tag != null && offlineUser.getPlayer() != null) {
+                return HexUtils.colorify(manager.canUseTag(offlineUser.getPlayer(), tag) ? Setting.TAG_UNLOCKED_FORMAT.getString() : Setting.TAG_LOCKED_FORMAT.getString());
             }
         }
 
-        final Tag activeTag = this.manager.getOfflineUserTag(player);
+        final Tag activeTag = this.manager.getOfflineUserTag(offlineUser);
         return switch (params.toLowerCase()) {
             // Set bracket placeholders to allow \o/ Placeholder Inception \o/
-            case "tag" -> this.manager.getDisplayTag(activeTag, player, "");
-            case "tag_formatted" -> this.manager.getDisplayTag(activeTag, player, this.formattedPlaceholder);
+            case "tag" -> this.manager.getDisplayTag(activeTag, offlineUser, "");
+            case "tag_formatted" -> this.manager.getDisplayTag(activeTag, offlineUser, this.formattedPlaceholder);
 
             // We're separating these tags from the other ones because of placeholder inception
             case "tag_stripped" -> activeTag != null ? activeTag.getTag() : "";
@@ -76,14 +76,13 @@ public class Expansion extends PlaceholderExpansion {
             case "tag_permission" -> activeTag != null ? activeTag.getPermission() : this.formattedPlaceholder;
             case "tag_description" -> activeTag != null ? TagsUtils.formatList(activeTag.getDescription(), Setting.DESCRIPTION_DELIMITER.getString()) : this.formattedPlaceholder;
             case "tag_order" -> activeTag != null ? String.valueOf(activeTag.getOrder()) : this.formattedPlaceholder;
-            case "tag_icon" -> activeTag != null ? activeTag.getIcon().toString() : this.formattedPlaceholder;
             case "active" -> String.valueOf(activeTag != null);
 
             // These are the tags that return a number.
             case "total" -> String.valueOf(this.manager.getCachedTags().size());
-            case "joined" -> this.joinTags(this.manager.getPlayerTags(player.getPlayer()));
-            case "unlocked" -> player.getPlayer() != null ? String.valueOf(this.manager.getPlayerTags(player.getPlayer()).size()) : "0";
-            case "favorites" -> player.getPlayer() != null ? String.valueOf(this.manager.getUsersFavourites(player.getUniqueId()).size()) : "0";
+            case "joined" -> this.joinTags(this.manager.getPlayerTags(offlineUser.getPlayer()));
+            case "unlocked" -> offlineUser.getPlayer() != null ? String.valueOf(this.manager.getPlayerTags(offlineUser.getPlayer()).size()) : "0";
+            case "favorites" -> offlineUser.getPlayer() != null ? String.valueOf(this.manager.getUsersFavourites(offlineUser.getUniqueId()).size()) : "0";
             default -> null;
         };
     }

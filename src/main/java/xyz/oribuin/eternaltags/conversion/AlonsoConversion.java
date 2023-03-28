@@ -51,7 +51,8 @@ public class AlonsoConversion extends ConversionPlugin {
                         if (icon.equalsIgnoreCase("CUSTOM_HEAD"))
                             icon = "PLAYER_HEAD";
 
-                        tag.setIcon(Optional.ofNullable(Material.matchMaterial(icon)).orElse(Material.NAME_TAG));
+
+                        tag.setIcon(Material.matchMaterial(icon));
                     }
 
                     convertedTags.put(key, tag);

@@ -29,13 +29,13 @@ public class DeluxeConversion extends ConversionPlugin {
                 .stream()
                 .filter(s -> !manager.checkTagExists(s))
                 .forEach(key -> {
-                    final Tag tag = new Tag(key, StringUtils.capitalize(key), section.getString(key + ".tag"));
+                    final Tag tag = new Tag(key, StringUtils.capitalize(key), section.getString(key + ".tag", ""));
 
                     if (section.get(key + ".description") != null)
                         tag.setDescription(Collections.singletonList(section.getString(key + ".description")));
 
                     if (section.getString(key + ".permission") != null)
-                        tag.setPermission(section.getString(key + ".permission"));
+                        tag.setPermission(section.getString(key + ".permission", ""));
 
                     if (section.get(key + ".order") != null)
                         tag.setOrder(section.getInt(key + ".order"));

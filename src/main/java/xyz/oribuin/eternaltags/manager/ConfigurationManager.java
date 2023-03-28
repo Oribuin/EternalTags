@@ -25,6 +25,12 @@ public class ConfigurationManager extends AbstractConfigurationManager {
                 "This will reduce the amount of lag when opening the GUI, but will use more memory.",
                 "This will also make tags with placeholders not update until the plugin is reloaded."
         ),
+
+        CACHE_GUI_CATEGORIES("cache-gui-categories", true, "Should the category items be cached? (Keeps the items in memory instead of creating them every time the GUI is opened)",
+                "This will reduce the amount of lag when opening the GUI, but will use more memory.",
+                "This will also make categories with placeholders not update until the plugin is reloaded."
+        ),
+        OPEN_CATEGORY_GUI_FIRST("open-category-gui-first", false, "Should the category GUI be opened first when a player types /tags?"),
         ;
 
         private final String key;

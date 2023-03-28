@@ -6,9 +6,11 @@ import dev.rosewood.rosegarden.command.framework.CommandContext;
 import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import org.bukkit.entity.Player;
-import xyz.oribuin.eternaltags.gui.TagsGUI;
+import xyz.oribuin.eternaltags.gui.MenuProvider;
+import xyz.oribuin.eternaltags.gui.menu.CategoryGUI;
+import xyz.oribuin.eternaltags.gui.menu.TagsGUI;
+import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
-import xyz.oribuin.eternaltags.manager.MenuManager;
 
 public class TagsCommand extends BaseCommand {
 
@@ -26,7 +28,10 @@ public class TagsCommand extends BaseCommand {
             return;
         }
 
-        this.rosePlugin.getManager(MenuManager.class).get(TagsGUI.class).open(player, null);
+        if (Setting.OPEN_CATEGORY_GUI_FIRST.getBoolean())
+            MenuProvider.get(CategoryGUI.class).open(player);
+        else
+            MenuProvider.get(TagsGUI.class).open(player, null);
     }
 
     @Override

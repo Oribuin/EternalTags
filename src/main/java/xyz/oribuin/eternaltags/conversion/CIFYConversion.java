@@ -29,7 +29,7 @@ public class CIFYConversion extends ConversionPlugin {
                 .stream()
                 .filter(s -> !manager.checkTagExists(s))
                 .forEach(key -> {
-                    final Tag tag = new Tag(key, StringUtils.capitalize(key), section.getString(key + ".prefix"));
+                    final Tag tag = new Tag(key, StringUtils.capitalize(key), section.getString(key + ".prefix", ""));
 
                     if (section.get(key + ".description") != null)
                         tag.setDescription(Collections.singletonList(section.getString(key + ".description")));

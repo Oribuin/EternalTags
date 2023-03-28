@@ -1,5 +1,6 @@
 package xyz.oribuin.eternaltags.util;
 
+import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.rosegarden.utils.NMSUtil;
@@ -22,7 +23,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -122,13 +127,12 @@ public final class TagsUtils {
         return WordUtils.capitalizeFully(material.name().toLowerCase().replace("_", " "));
     }
 
-    @NotNull
+    @Nullable
     public static ItemStack getItemStack(@NotNull CommentedConfigurationSection config, @NotNull String path, @Nullable Player player, @Nullable StringPlaceholders placeholders) {
 
         Material material = Material.getMaterial(config.getString(path + ".material", ""));
-        if (material == null) {
-            return new ItemStack(Material.NAME_TAG);
-        }
+        if (material == null)
+            return null;
 
         if (placeholders == null)
             placeholders = StringPlaceholders.empty();
@@ -153,10 +157,11 @@ public final class TagsUtils {
                 .setLore(lore)
                 .setAmount(config.getInt(path + ".amount", 1))
                 .setFlags(flags)
-                .glow(config.getBoolean(path + ".glow", false))
                 .setTexture(config.getString(path + ".texture"))
+                .glow(Boolean.parseBoolean(format(player, config.getString(path + ".glow", "false"), placeholders)))
                 .setPotionColor(fromHex(config.getString(path + ".potion-color", null)))
                 .setModel(config.getInt(path + ".model-data", -1));
+
 
         // Get item owner
         String owner = config.getString(path + ".owner", null);
@@ -320,6 +325,66 @@ public final class TagsUtils {
 
         return itemStack;
 
+    }
+
+    /**
+     * Create a file from the plugin's resources
+     *
+     * @param rosePlugin The plugin
+     * @param fileName   The file name
+     * @return The file
+     */
+    @NotNull
+    public static File createFile(@NotNull RosePlugin rosePlugin, @NotNull String fileName) {
+        File file = new File(rosePlugin.getDataFolder(), fileName); // Create the file
+
+        if (file.exists())
+            return file;
+
+        try (InputStream inStream = rosePlugin.getResource(fileName)) {
+            if (inStream == null) {
+                file.createNewFile();
+                return file;
+            }
+
+            Files.copy(inStream, Paths.get(file.getAbsolutePath()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return file;
+    }
+
+    /**
+     * Create a file in a folder from the plugin's resources
+     *
+     * @param rosePlugin The plugin
+     * @param folderName The folder name
+     * @param fileName   The file name
+     * @return The file
+     */
+    @NotNull
+    public static File createFile(@NotNull RosePlugin rosePlugin, @NotNull String folderName, @NotNull String fileName) {
+        File folder = new File(rosePlugin.getDataFolder(), folderName); // Create the folder
+        File file = new File(folder, fileName); // Create the file
+        if (!folder.exists())
+            folder.mkdirs();
+
+        if (file.exists())
+            return file;
+
+        try (InputStream stream = rosePlugin.getResource(folderName + "/" + fileName)) {
+            if (stream == null) {
+                file.createNewFile();
+                return file;
+            }
+
+            Files.copy(stream, Paths.get(file.getAbsolutePath()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return file;
     }
 
 }

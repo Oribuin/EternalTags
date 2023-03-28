@@ -10,13 +10,14 @@ import java.util.List;
 
 public class Tag {
 
-    private final @NotNull String id;
-    private @NotNull String name;
-    private @NotNull String tag;
-    private @NotNull String permission;
-    private @NotNull List<String> description;
-    private int order;
-    private @Nullable ItemStack icon;
+    private final @NotNull String id; // The id of the tag
+    private @NotNull String name; // The name of the tag
+    private @NotNull String tag; // The tag to be added to the player
+    private @Nullable String permission;   // The permission required to use the tag
+    private @NotNull List<String> description; // The description of the tag
+    private int order; // The order of the tag
+    private @Nullable ItemStack icon; // The icon of the tag
+    private @Nullable String category; // The category the tag is in
 
     public Tag(@NotNull String id, @NotNull String name, @NotNull String tag) {
         this.id = id;
@@ -26,6 +27,7 @@ public class Tag {
         this.permission = "eternaltags.tag." + id.toLowerCase();
         this.order = -1;
         this.icon = null;
+        this.category = null;
     }
 
     public @NotNull String getId() {
@@ -48,11 +50,11 @@ public class Tag {
         this.tag = tag;
     }
 
-    public @NotNull String getPermission() {
+    public @Nullable String getPermission() {
         return permission;
     }
 
-    public void setPermission(@NotNull String permission) {
+    public void setPermission(@Nullable String permission) {
         this.permission = permission;
     }
 
@@ -79,4 +81,22 @@ public class Tag {
     public void setIcon(@Nullable ItemStack icon) {
         this.icon = icon;
     }
+
+    public void setIcon(@Nullable Material material) {
+        if (material == null) {
+            this.icon = null;
+            return;
+        }
+
+        this.icon = new ItemStack(material);
+    }
+
+    public @Nullable String getCategory() {
+        return category;
+    }
+
+    public void setCategory(@Nullable String category) {
+        this.category = category;
+    }
+
 }

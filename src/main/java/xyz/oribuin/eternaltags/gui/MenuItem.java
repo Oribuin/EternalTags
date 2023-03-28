@@ -73,7 +73,7 @@ public class MenuItem {
 
         // Check if the item path is null
         if (this.config.get(this.itemPath) == null && this.customItem == null) {
-            throw new IllegalArgumentException("Item path does not exist in config (" + this.itemPath + ")");
+            return; // The item path is null and the custom item is null, so we don't need to do anything
         }
 
         // Check if the item is enabled
@@ -103,6 +103,10 @@ public class MenuItem {
                 ? this.customItem
                 : TagsUtils.getItemStack(this.config, this.itemPath, this.player, this.placeholders);
 
+        if (item == null) {
+            EternalTags.getInstance().getLogger().warning("Item [" + this.itemPath + "] in the [" + this.config.getName() + "] menu is invalid.");
+            return;
+        }
 
         this.addActions();
         this.slots.forEach(slot -> gui.setItem(slot, new GuiItem(item, this.action::accept)));

@@ -1,4 +1,4 @@
-package xyz.oribuin.eternaltags.util;
+package xyz.oribuin.eternaltags.util.nms;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;

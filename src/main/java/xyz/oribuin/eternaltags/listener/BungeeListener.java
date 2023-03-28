@@ -1,17 +1,22 @@
 package xyz.oribuin.eternaltags.listener;
 
+import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
+import xyz.oribuin.eternaltags.util.TagsUtils;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 public class BungeeListener implements PluginMessageListener {
 
@@ -20,7 +25,6 @@ public class BungeeListener implements PluginMessageListener {
     public BungeeListener(EternalTags plugin) {
         this.manager = plugin.getManager(TagsManager.class);
     }
-
 
 
     @Override
@@ -60,13 +64,24 @@ public class BungeeListener implements PluginMessageListener {
             if (command.equalsIgnoreCase("modify")) {
                 // id, name, tag, permission, order, icon, lore
                 Tag newTag = new Tag(receivedSplit[0].toLowerCase(), receivedSplit[1], receivedSplit[2]);
-                newTag.setPermission(receivedSplit[3]);
-                newTag.setOrder(Integer.parseInt(receivedSplit[4]));
-                String icon = receivedSplit[5];
-                if (icon.equalsIgnoreCase("none"))
-                    newTag.setIcon(Material.getMaterial(icon));
 
-                newTag.setDescription(List.of(receivedSplit[6].split("\n")));
+                if (!receivedSplit[3].equalsIgnoreCase("null"))
+                    newTag.setPermission(receivedSplit[3]);
+
+                newTag.setOrder(Integer.parseInt(receivedSplit[4]));
+
+                if (!receivedSplit[5].equalsIgnoreCase("null"))
+                    newTag.setCategory(receivedSplit[5]);
+
+                String iconString = receivedSplit[6];
+
+                if (iconString != null) {
+                    byte[] icon = iconString.getBytes();
+                    if (icon.length == 0)
+                        newTag.setIcon(TagsUtils.deserializeItem(icon));
+                }
+
+                newTag.setDescription(List.of(receivedSplit[7].split("\n")));
 
                 this.manager.saveTag(newTag);
                 this.manager.updateActiveTag(newTag);
@@ -93,7 +108,16 @@ public class BungeeListener implements PluginMessageListener {
 
             // id, name, tag, permission, order, icon, lore
             String lore = String.join("\n", tag.getDescription());
-            String message = tag.getId() + ":" + tag.getName() + ":" + tag.getTag() + ":" + tag.getPermission() + ":" + tag.getOrder() + ":" + (tag.getIcon() == null ? "null" : tag.getIcon().name()) + ":" + lore;
+
+            String message = tag.getId() + ":" +
+                    tag.getName() + ":" +
+                    tag.getTag() + ":" +
+                    (tag.getPermission() == null ? "null" : tag.getPermission()) + ":" +
+                    tag.getOrder() + ":" +
+                    (tag.getCategory() == null ? "null" : tag.getCategory()) + ":" +
+                    Arrays.toString(TagsUtils.serializeItem(tag.getIcon())) + ":" +
+                    lore;
+
             sendPluginMessage(outputStream, out, message);
 
         } catch (IOException ex) {

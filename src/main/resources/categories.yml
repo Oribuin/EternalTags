@@ -1,0 +1,48 @@
+# Here are all the categories you can use
+# categories:
+#  test: # The ID of the category (Must be unique)
+#    display-name: Test # The display name of the category
+#    order: 1 # The order of the category in the GUI
+#    default: false # Wether all tags with an undefined category should be in this category by default
+#    global: false # Whether this category will contain all tags
+#    permission: # The permission required to see this category (only applies with options in the category gui config)
+#    unlocks-all-tags: false # Will allow player to use all tags in this category (Overrides the tag's permission, requires the category permission)
+#    tags: # The tags in this category
+#      - test # The ID of the tag
+#      - test2 # The ID of the tag
+categories:
+  animated:
+    display-name: 'Animated Tags'
+    order: 1
+    default: false
+    global: false
+    permission: 'eternaltags.category.animated'
+    unlocks-all-tags: false
+  static:
+    display-name: 'Static Tags'
+    order: 2
+    default: false
+    global: false
+    permission: 'eternaltags.category.static'
+    unlocks-all-tags: false
+  placeholders:
+    display-name: 'PlaceholderAPI Tags'
+    order: 3
+    default: false
+    global: false
+    permission: 'eternaltags.category.placeholders'
+    unlocks-all-tags: false
+  undefined:
+    display-name: 'Uncategorized Tags'
+    order: 4
+    default: true
+    global: false
+    permission: 'eternaltags.category.undefined'
+    unlocks-all-tags: false
+  all-tags:
+    display-name: 'All Tags'
+    order: 5
+    default: false
+    global: true
+    permission: 'eternaltags.category.all-tags'
+    unlocks-all-tags: false

@@ -75,7 +75,6 @@ public class EternalTags extends RosePlugin {
         return Arrays.asList(
                 ConversionManager.class,
                 TagsManager.class,
-                MenuManager.class,
                 PluginConversionManager.class
         );
     }

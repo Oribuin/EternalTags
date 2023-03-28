@@ -1,0 +1,120 @@
+# Configure all the tags you want to use in your server here.
+# Here are all the options you can use
+# tags:
+#  test: # The ID of the tag
+#    name: Test # The name of the tag
+#    description: # The description of the tag
+#     - '&7This is a test tag'
+#     - '&7It has multiple lines'
+#    permission: # The permission required to use this tag
+#    order: 1 # The order of the tag in the GUI
+#    icon: # The icon of the tag, Item Names, Lore, Are Overwritten by the tag
+#      material: PLAYER_HEAD # The material of the icon
+#      texture: You can use a base64 texture here # The texture of the icon, if using HeadDB you can use 'hdb:<id>'
+#      glow: true # Whether the icon should glow (You can use a placeholder here too)
+#      owner: <username> # The owner of the icon, if using a player head (Set to 'self' to use the player's name)
+#      model-data: 1 # The model data of the icon
+#      enchantments: # The enchantments of the icon
+#       DURABILITY: 1 # The enchantment and level
+#      flags: # The item flags of the icon
+#       - HIDE_ENCHANTS # The item flags
+tags:
+  animated-rainbow:
+    name: 'Animated Rainbow'
+    tag: '&f&l<<r#15:0.7>&lRainbow&f&l>'
+    description:
+      - ' &f| &7This tag is animated!'
+      - ' &f| &7It will cycle through all'
+      - ' &f| &7the colors of the rainbow'
+      - ' &f| &7on each message sent.'
+    permission: 'eternaltags.tag.animated-rainbow'
+    order: 1
+    category: animated
+
+  animated-gradient:
+    name: 'Animated Gradient'
+    tag: '&f&l<<g#15:#5433FF:#20BDFF:#A5FECB>&lGradient&f&l>'
+    description:
+      - ' &f| &7This tag is animated!'
+      - ' &f| &7It will cycle three different'
+      - ' &f| &7colors, &#5433FFBlue&7, #20BDFFLight Blue&7, and #A5FECBGreen'
+      - ' &f| &7on each message sent.'
+    permission: 'eternaltags.tag.animated-gradient'
+    order: 2
+    category: animated
+
+  static-rainbow:
+    name: 'Static Rainbow'
+    tag: '&f&l<<r:0.7>&lRainbow&f&l>'
+    description:
+      - ' &f| &7This tag is static!'
+      - ' &f| &7It will always be the same'
+      - ' &f| &7every time you send a message.'
+    permission: 'eternaltags.tag.static-rainbow'
+    order: 3
+    category: static
+
+  static-gradient:
+    name: 'Static Gradient'
+    tag: '&f&l<<g:#5433FF:#20BDFF:#A5FECB>&lGradient&f&l>'
+    description:
+      - ' '
+      - ' &f| &7This tag is static!'
+      - ' &f| &7It will always be the same'
+      - ' &f| &7every time you send a message.'
+    permission: 'eternaltags.tag.static-gradient'
+    order: 4
+    category: static
+
+  blocks-broken:
+    name: 'Blocks Broken'
+    tag: '&f&l<<#20BDFF>Mined %statistic_mine_block% Blocks&f&l>'
+    description:
+      - ' '
+      - ' &f| &7This will display the amount of'
+      - ' &f| &7blocks the player has broken'
+      - ' &f| &7in the tag.'
+      - ' '
+      - ' &f| &7This tag uses PlaceholderAPI'
+    permission: 'eternaltags.tag.blocks-broken'
+    order: 5
+    category: placeholders
+
+  mob-kills:
+    name: 'Mob Kills'
+    tag: '&f&l<<#20BDFF>Killed %statistic_mob_kills% Mobs&f&l>'
+    description:
+      - ' '
+      - ' &f| &7This will display the amount of'
+      - ' &f| &7mobs the player has killed'
+      - ' &f| &7in the tag.'
+      - ' '
+      - ' &f| &7This tag uses PlaceholderAPI'
+    permission: 'eternaltags.tag.mob-kills'
+    order: 6
+    category: placeholders
+
+  playtime:
+    name: 'Playtime'
+    tag: '&f&l<<#20BDFF>%statistic_hours_played%h Playtime&f&l>'
+    description:
+      - ' '
+      - ' &f| &7This will display the amount of'
+      - ' &f| &hours the player has played'
+      - ' &f| &7in the tag.'
+      - ' '
+      - ' &f| &7This tag uses PlaceholderAPI'
+    permission: 'eternaltags.tag.playtime'
+    order: 7
+    category: placeholders
+
+  smiley_face:
+    name: 'Smiley Face'
+    tag: '&f&l<#FFD700^-^&f&l>'
+    description:
+      - ' '
+      - ' &f| &7This tag uses unicode characters'
+      - ' &f| &7to display a smiley face in the tag.'
+    permission: 'eternaltags.tag.smiley_face'
+    order: 8
+    category: undefined

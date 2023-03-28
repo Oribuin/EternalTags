@@ -9,7 +9,10 @@ public enum EditOption {
     TAG(Tag::setTag),
     NAME(Tag::setName),
     PERMISSION(Tag::setPermission),
-    DESCRIPTION((tag, description) -> tag.setDescription(Collections.singletonList(description)));
+    DESCRIPTION((tag, description) -> tag.setDescription(Arrays.asList(description.split("\\|")))),
+    CATEGORY(Tag::setCategory)
+    ;
+
 
     private final BiConsumer<Tag, String> action;
 

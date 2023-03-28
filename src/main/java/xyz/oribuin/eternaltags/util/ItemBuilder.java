@@ -1,7 +1,5 @@
 package xyz.oribuin.eternaltags.util;
 
-import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.properties.Property;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -18,15 +16,14 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.Nullable;
+import xyz.oribuin.eternaltags.util.nms.SkullUtils;
 
-import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 public class ItemBuilder {
 
-    private ItemStack item;
+    private final ItemStack item;
 
     public ItemBuilder(Material material) {
         this.item = new ItemStack(material);

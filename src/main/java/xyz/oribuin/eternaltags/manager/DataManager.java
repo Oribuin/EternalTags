@@ -4,12 +4,11 @@ import com.google.gson.Gson;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.database.DataMigration;
 import dev.rosewood.rosegarden.manager.AbstractDataManager;
-import org.bukkit.Material;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.database.migration._1_CreateInitialTables;
 import xyz.oribuin.eternaltags.database.migration._2_CreateNewTagTables;
-import xyz.oribuin.eternaltags.database.migration._3_CategoriesTable;
+import xyz.oribuin.eternaltags.database.migration._3_ModifyTagDataItems;
 import xyz.oribuin.eternaltags.obj.Tag;
 import xyz.oribuin.eternaltags.obj.TagDescription;
 import xyz.oribuin.eternaltags.util.TagsUtils;
@@ -305,7 +304,7 @@ public class DataManager extends AbstractDataManager {
 
     @Override
     public List<Class<? extends DataMigration>> getDataMigrations() {
-        return Arrays.asList(_1_CreateInitialTables.class, _2_CreateNewTagTables.class, _3_CategoriesTable.class);
+        return Arrays.asList(_1_CreateInitialTables.class, _2_CreateNewTagTables.class, _3_ModifyTagDataItems.class);
     }
 
     private void async(Consumer<BukkitTask> callback) {

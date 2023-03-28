@@ -63,7 +63,7 @@ public class SetCommand extends RoseCommand {
             return;
         }
 
-        if (!pl.hasPermission(tag.getPermission())) {
+        if (!manager.canUseTag(pl, tag)) {
             locale.sendMessage(pl, "command-set-no-permission");
             return;
         }
