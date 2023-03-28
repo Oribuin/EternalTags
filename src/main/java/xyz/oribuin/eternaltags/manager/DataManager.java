@@ -35,6 +35,14 @@ public class DataManager extends AbstractDataManager {
         super(plugin);
     }
 
+    @Override
+    public void reload() {
+        super.reload();
+
+        this.cachedUsers.clear();
+        this.cachedFavourites.clear();
+    }
+
     /**
      * Update a user's current tag
      *
@@ -44,7 +52,7 @@ public class DataManager extends AbstractDataManager {
     public void saveUser(@NotNull UUID uuid, @NotNull Tag tag) {
         this.cachedUsers.put(uuid, tag);
 
-        final String query = "REPLACE INTO " + this.getTablePrefix() + "tags (player, tagID) VALUES (?, ?)";
+        final String query = "REPLACE INTO " + this.getTablePrefix()  + "tags (player, tagID) VALUES (?, ?)";
         this.async(task -> this.databaseConnector.connect(connection -> {
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, uuid.toString());
@@ -220,7 +228,7 @@ public class DataManager extends AbstractDataManager {
                     Tag tag = new Tag(id, result.getString("name"), result.getString("tag"));
                     tag.setPermission(result.getString("permission"));
                     tag.setDescription(description);
-                    tag.setOrder(result.getInt("order"));
+                    tag.setOrder(result.getInt("order"));;
                     tag.setIcon(TagsUtils.deserializeItem(result.getBytes("icon")));
                     cachedTags.put(id, tag);
                 }

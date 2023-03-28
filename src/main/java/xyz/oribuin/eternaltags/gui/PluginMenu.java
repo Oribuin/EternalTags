@@ -332,6 +332,7 @@ public abstract class PluginMenu {
         LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
         gui.close(player);
 
+        locale.sendMessage(player, "command-search-start");
         EternalTags.getEventWaiter().waitForEvent(AsyncPlayerChatEvent.class,
                 event -> event.getPlayer().getUniqueId().equals(player.getUniqueId()),
                 event -> {

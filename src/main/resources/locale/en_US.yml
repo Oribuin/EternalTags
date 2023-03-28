@@ -25,6 +25,7 @@ command-convert-invalid-plugin: Please provide a valid plugin to convert from. [
 command-create-description: Creates a new tag ingame.
 command-create-created: You have successfully created a new tag, %tag%&f!
 command-create-tag-exists: This tag already exists.
+command-create-tag-missing: Please provide a display tag.
 
 # Delete Command
 command-delete-description: Deletes a tag from the config.

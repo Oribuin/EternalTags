@@ -16,6 +16,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
 import org.jetbrains.annotations.NotNull;
@@ -29,7 +30,9 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("unchecked")
 public final class TagsUtils {
@@ -313,7 +316,7 @@ public final class TagsUtils {
 
     @Nullable
     public static ItemStack deserializeItem(byte[] data) {
-        if (data.length == 0)
+        if (data == null || data.length == 0)
             return null;
 
         ItemStack itemStack = null;
@@ -324,7 +327,6 @@ public final class TagsUtils {
         }
 
         return itemStack;
-
     }
 
     /**
