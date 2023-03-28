@@ -12,12 +12,7 @@ public enum SortType {
     ALPHABETICAL,
     CUSTOM,
     NONE,
-    RANDOM,
-
-    // Category Sort Type
-    TAG_COUNT
-    ;
-
+    RANDOM;
 
     public void sort(List<Tag> tags) {
         switch (this) {

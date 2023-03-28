@@ -40,23 +40,15 @@ public class Expansion extends PlaceholderExpansion {
             final String tagId = String.join(" ", args).substring(args[0].length() + 1);
             final Tag tag = this.manager.getTagFromId(tagId);
             // Can't use the switch statement here
-            if (args[0].equalsIgnoreCase("get") && tag != null) {
-                return this.manager.getDisplayTag(tag, offlineUser, this.formattedPlaceholder);
-            }
-
-            // Got this is so ugly, but it works
-            if (args[0].equalsIgnoreCase("get-formatted") && tag != null) {
-                return this.manager.getDisplayTag(tag, offlineUser, this.formattedPlaceholder);
-            }
-
-            // I really need a better system for this
-            if (args[0].equalsIgnoreCase("has") && tag != null) {
-                return offlineUser.getPlayer() != null && manager.canUseTag(offlineUser.getPlayer(), tag) ? "true" : "false";
-            }
-
-            // Yeah what a yikes
-            if (args[0].equalsIgnoreCase("has-unlocked") && tag != null && offlineUser.getPlayer() != null) {
-                return HexUtils.colorify(manager.canUseTag(offlineUser.getPlayer(), tag) ? Setting.TAG_UNLOCKED_FORMAT.getString() : Setting.TAG_LOCKED_FORMAT.getString());
+            if (tag != null) {
+                return switch (args[0].toLowerCase()) {
+                    case "get" -> this.manager.getDisplayTag(tag, offlineUser,  "");
+                    case "get-formatted" -> this.manager.getDisplayTag(tag, offlineUser, this.formattedPlaceholder);
+                    case "has" -> (offlineUser.getPlayer() == null ? "false" : this.manager.canUseTag(offlineUser.getPlayer(), tag) ? "true" : "false");
+                    case "has-unlocked" -> (offlineUser.getPlayer() == null ? "false" : this.manager.canUseTag(offlineUser.getPlayer(), tag) ? Setting.TAG_UNLOCKED_FORMAT.getString() : Setting.TAG_LOCKED_FORMAT.getString());
+                    case "active" -> (this.manager.getOfflineUserTag(offlineUser) == tag ? "true" : "false");
+                    default -> "Unknown Placeholder";
+                };
             }
         }
 
