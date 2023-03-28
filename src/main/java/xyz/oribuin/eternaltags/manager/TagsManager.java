@@ -232,7 +232,7 @@ public class TagsManager extends Manager {
         this.tagConfig.set("tags." + tag.getId() + ".category", tag.getCategory());
         this.tagConfig.set("tags." + tag.getId() + ".icon", TagsUtils.serializeItem(tag.getIcon()));
 
-        this.tagConfig.save(this.categoriesFile);
+        this.tagConfig.save(this.tagsFile);
         return true;
     }
 
