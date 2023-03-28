@@ -158,6 +158,7 @@ public class TagsManager extends Manager {
             boolean isDefault = categorySection.getBoolean(key + ".default", false);
             boolean isGlobal = categorySection.getBoolean(key + ".global", false);
             String permission = categorySection.getString(key + ".permission", null);
+            boolean bypass = categorySection.getBoolean(key + ".unlocks-all-tags", false);
 
             Category obj = new Category(key.toLowerCase());
             obj.setDisplayName(displayName);
@@ -165,6 +166,7 @@ public class TagsManager extends Manager {
             obj.setDefault(isDefault);
             obj.setGlobal(isGlobal);
             obj.setPermission(permission);
+            obj.setBypassPermission(bypass);
 
             this.cachedCategories.put(key.toLowerCase(), obj);
         });
@@ -671,24 +673,22 @@ public class TagsManager extends Manager {
      * @return If the player has access to the tag
      */
     public boolean canUseTag(Player player, Tag tag) {
-        boolean isTagUnlocked = tag.getPermission() == null || player.hasPermission(tag.getPermission());
+        boolean hasAccessToTag = tag.getPermission() == null || player.hasPermission(tag.getPermission());
 
         // If there's no categories, or all categories are default, then we can just return the tag unlocked status
-        if (!this.categoriesEnabled)
-            return isTagUnlocked;
+        if (!this.categoriesEnabled) {
+            return hasAccessToTag;
+        }
 
+        // If the tag has the category, the category bypasses tag perms.
         Category category = this.getCategory(tag);
+        if (category != null) {
+            // If the category bypasses tag perms, and the player has the category permission, then they can use the tag or if they have the tag permission
+            if (category.isBypassPermission() && category.getPermission() != null && player.hasPermission(category.getPermission()))
+                return true;
+        }
 
-        if (category == null && this.globalCategory == null)
-            return isTagUnlocked;
-
-        if (category != null && category.isBypassPermission() && category.getPermission() != null)
-            return player.hasPermission(category.getPermission());
-
-        if (this.globalCategory != null && this.globalCategory.isBypassPermission() && this.globalCategory.getPermission() != null)
-            return player.hasPermission(this.globalCategory.getPermission());
-
-        return isTagUnlocked;
+        return hasAccessToTag;
     }
 
     /**

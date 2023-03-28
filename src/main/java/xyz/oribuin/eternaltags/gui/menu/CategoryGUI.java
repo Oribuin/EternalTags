@@ -224,17 +224,16 @@ public class CategoryGUI extends PluginMenu {
         if (sortType == null)
             sortType = SortType.ALPHABETICAL;
 
-        if (this.config.getBoolean("gui-settings.use-category-permissions", true))
+        if (this.config.getBoolean("gui-settings.use-category-permissions"))
             categories.removeIf(category -> {
-                if (category.getPermission() == null)
+                if (category.isGlobal() || category.getPermission() == null)
                     return false;
 
                 return !player.hasPermission(category.getPermission());
             });
 
-        if (this.config.getBoolean("gui-settings.only-unlocked-categories", false))
-            categories.removeIf(category -> this.manager.getAccessibleTagsInCategory(category, player).isEmpty());
-
+        if (this.config.getBoolean("gui-settings.only-unlocked-categories"))
+            categories.removeIf(category -> !category.isGlobal() && this.manager.getAccessibleTagsInCategory(category, player).isEmpty());
 
         categories.removeIf(category -> this.config.getBoolean("categories." + category.getId() + ".hidden", false));
         sortType.sortCategories(categories);
