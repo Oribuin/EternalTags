@@ -196,7 +196,7 @@ public class TagsManager extends Manager {
         if (event.isCancelled())
             return false;
 
-        if (tag.getCategory() != null && this.defaultCategory != null)
+        if (tag.getCategory() == null && this.defaultCategory != null)
             tag.setCategory(this.defaultCategory.getId());
 
         this.cachedTags.put(tag.getId(), tag);
@@ -264,6 +264,9 @@ public class TagsManager extends Manager {
         final DataManager data = this.rosePlugin.getManager(DataManager.class);
 
         for (Map.Entry<UUID, Tag> entry : data.getCachedUsers().entrySet()) {
+            if (entry.getValue() == null)
+                continue;
+
             if (entry.getValue().getId().equalsIgnoreCase(tag.getId()))
                 data.getCachedUsers().put(entry.getKey(), tag);
         }

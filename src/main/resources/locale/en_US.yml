@@ -69,6 +69,7 @@ command-help-list-description-no-args: '&8 - #00B4DB/%cmd% %subcmd% &7- %desc%'
 # Edit Command
 command-edit-description: Edit any tag's values
 command-edit-edited: You have changed the tag's %option% to %value%&f!
+command-edit-invalid-item: Please provide a valid item.
 
 # Plugin Error Messages
 no-tags: You currently do not own any tags.
@@ -79,3 +80,5 @@ argument-handler-player: Please provide an online username.
 argument-handler-plugins: Please provide a valid input for valid plugins.
 argument-handler-tags: '%input% is not a valid tag id.'
 argument-handler-edit-option: Please provide a valid tag value option.
+argument-handler-category: Please provide a valid category.
+argument-handler-material: Please provide a valid material.
