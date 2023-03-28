@@ -37,6 +37,8 @@ gui-settings:
   dynamic-speed: 3
   scrolling-gui: false
   scrolling-type: HORIZONTAL
+  update-title: true
+  add-pages-asynchronously: true
 
 # Categories - These are all the categories that will be shown in the GUI
 # Default: [animated, static, placeholders, symbols, all-tags]

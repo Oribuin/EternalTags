@@ -111,7 +111,7 @@ public class TagsGUI extends PluginMenu {
                 .place(gui);
 
         MenuItem.create(this.config)
-                .path("category-menu")
+                .path("categories")
                 .player(player)
                 .action(event -> MenuProvider.get(CategoryGUI.class).open(player))
                 .place(gui);

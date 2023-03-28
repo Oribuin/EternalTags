@@ -50,6 +50,8 @@ gui-settings:
   description-format: ' &f| &7'
   scrolling-gui: false
   scrolling-type: HORIZONTAL
+  update-title: true
+  add-pages-asynchronously: true
 
 # Tag Item - The item that represents each tag in the GUI
 tag-item:
