@@ -29,7 +29,7 @@ public class EditIconCommand extends RoseSubCommand {
         Player player = (Player) context.getSender();
         ItemStack item = player.getInventory().getItemInMainHand();
 
-        if (item.getType().isAir() || !item.getType().isItem()) {
+        if (item.getType().isAir() || !item.getType().isItem() && !remove) {
             locale.sendMessage(context.getSender(), "command-edit-invalid-item");
             return;
         }
