@@ -18,6 +18,7 @@ public class Tag {
     private int order; // The order of the tag
     private @Nullable ItemStack icon; // The icon of the tag
     private @Nullable String category; // The category the tag is in
+    private boolean handIcon; // Whether the icon is from the player's hand or not, internal method for tag saving
 
     public Tag(@NotNull String id, @NotNull String name, @NotNull String tag) {
         this.id = id;
@@ -28,6 +29,7 @@ public class Tag {
         this.order = -1;
         this.icon = null;
         this.category = null;
+        this.handIcon = false;
     }
 
     public @NotNull String getId() {
@@ -99,4 +101,11 @@ public class Tag {
         this.category = category;
     }
 
+    public boolean isHandIcon() {
+        return handIcon;
+    }
+
+    public void setHandIcon(boolean handIcon) {
+        this.handIcon = handIcon;
+    }
 }

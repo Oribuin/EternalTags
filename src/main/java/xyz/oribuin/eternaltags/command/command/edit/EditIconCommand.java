@@ -22,32 +22,34 @@ public class EditIconCommand extends RoseSubCommand {
     }
 
     @RoseExecutable
-    public void execute(@Inject CommandContext context, Tag tag, @Optional Material material) {
+    public void execute(@Inject CommandContext context, Tag tag, @Optional Boolean remove) {
         TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
         LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
 
         Player player = (Player) context.getSender();
         ItemStack item = player.getInventory().getItemInMainHand();
 
-        if (material != null) {
-            item = new ItemStack(material);
-        }
-
-        if (item.getType().isAir() ||  !item.getType().isItem()) {
+        if (item.getType().isAir() || !item.getType().isItem()) {
             locale.sendMessage(context.getSender(), "command-edit-invalid-item");
             return;
         }
 
-        tag.setIcon(item);
+        if (remove) {
+            item = null;
+        }
+
+        tag.setIcon(item); // If the material is null, then the player is holding the item.
+        tag.setHandIcon(item != null); // If the material is null, then the player is holding the item.
+
         manager.saveTag(tag);
         manager.updateActiveTag(tag);
 
         final StringPlaceholders placeholders = StringPlaceholders.builder()
                 .addPlaceholder("tag", manager.getDisplayTag(tag, player))
-                .addPlaceholder("option", "category")
+                .addPlaceholder("option", "icon")
                 .addPlaceholder("id", tag.getId())
                 .addPlaceholder("name", tag.getName())
-                .addPlaceholder("value", item.getType().name().toLowerCase())
+                .addPlaceholder("value", (item == null ? "None" : item.getType().name().toLowerCase()))
                 .build();
 
         locale.sendMessage(context.getSender(), "command-edit-edited", placeholders);

@@ -37,16 +37,16 @@ public class Expansion extends PlaceholderExpansion {
 
         // Add new specific tags here
         if (args.length >= 2) {
-            final String tagId = String.join(" ", args).substring(args[0].length() + 1);
+            final String tagId = params.substring(args[0].length() + 1);
             final Tag tag = this.manager.getTagFromId(tagId);
             // Can't use the switch statement here
             if (tag != null) {
                 return switch (args[0].toLowerCase()) {
-                    case "get" -> this.manager.getDisplayTag(tag, offlineUser,  "");
+                    case "get" -> this.manager.getDisplayTag(tag, offlineUser, "");
                     case "get-formatted" -> this.manager.getDisplayTag(tag, offlineUser, this.formattedPlaceholder);
                     case "has" -> (offlineUser.getPlayer() == null ? "false" : this.manager.canUseTag(offlineUser.getPlayer(), tag) ? "true" : "false");
                     case "has-unlocked" -> (offlineUser.getPlayer() == null ? "false" : this.manager.canUseTag(offlineUser.getPlayer(), tag) ? Setting.TAG_UNLOCKED_FORMAT.getString() : Setting.TAG_LOCKED_FORMAT.getString());
-                    case "active" -> (this.manager.getOfflineUserTag(offlineUser) == tag ? "true" : "false");
+                    case "active" -> String.valueOf(this.manager.getOfflineUserTag(offlineUser) == tag);
                     default -> "Unknown Placeholder";
                 };
             }

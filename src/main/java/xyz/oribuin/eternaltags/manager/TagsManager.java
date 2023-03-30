@@ -110,6 +110,7 @@ public class TagsManager extends Manager {
             obj.setDescription(description);
             obj.setPermission(tagSection.getString(key + ".permission", null));
             obj.setOrder(tagSection.getInt(key + ".order", -1));
+            obj.setHandIcon(tagSection.getBoolean(key + ".hand-icon", false));
 
             String category = tagSection.getString(key + ".category", null);
             obj.setCategory(category == null ? this.defaultCategory.getId() : category.toLowerCase());
@@ -118,18 +119,29 @@ public class TagsManager extends Manager {
             // Icons can either be a material or a byte array
             Object icon = tagSection.get(key + ".icon");
             if (icon != null) {
+                // Read the material from the string
                 if (icon instanceof String iconString) {
                     Material material = Material.matchMaterial(iconString);
                     if (material != null)
                         obj.setIcon(new ItemStack(material));
                 }
 
-                // check if icon is a byte array
-                if (icon instanceof byte[] iconBytes) {
+                // Read from a configuration section
+                CommentedConfigurationSection iconSection = tagSection.getConfigurationSection(key + ".icon");
+                if (iconSection != null && iconSection.getKeys(false).size() > 0) {
+                    ItemStack itemStack = TagsUtils.getItemStack(tagSection, key + ".icon");
+                    if (itemStack != null)
+                        obj.setIcon(itemStack);
+                }
+
+                // Read from a byte array
+                if (icon instanceof byte[] iconBytes && obj.isHandIcon()) {
                     ItemStack itemStack = TagsUtils.deserializeItem(iconBytes);
                     if (itemStack != null)
                         obj.setIcon(itemStack);
                 }
+
+
             }
 
             if (OraxenHook.enabled())
@@ -232,7 +244,10 @@ public class TagsManager extends Manager {
         this.tagConfig.set("tags." + tag.getId() + ".permission", tag.getPermission());
         this.tagConfig.set("tags." + tag.getId() + ".order", tag.getOrder());
         this.tagConfig.set("tags." + tag.getId() + ".category", tag.getCategory());
-        this.tagConfig.set("tags." + tag.getId() + ".icon", TagsUtils.serializeItem(tag.getIcon()));
+        this.tagConfig.set("tags." + tag.getId() + ".hand-icon", tag.isHandIcon());
+
+        if (tag.getIcon() != null && tag.isHandIcon()) // Only save the icon if it's a hand icon to prevent overwriting config defined items.
+            this.tagConfig.set("tags." + tag.getId() + ".icon", TagsUtils.serializeItem(tag.getIcon()));
 
         this.tagConfig.save(this.tagsFile);
         return true;
@@ -307,6 +322,7 @@ public class TagsManager extends Manager {
             this.tagConfig.set("tags." + id + ".description", tag.getDescription());
             this.tagConfig.set("tags." + id + ".permission", tag.getPermission());
             this.tagConfig.set("tags." + id + ".order", tag.getOrder());
+            this.tagConfig.set("tags." + id + ".hand-icon", tag.isHandIcon());
             this.tagConfig.set("tags." + id + ".icon", TagsUtils.serializeItem(tag.getIcon()));
             this.tagConfig.set("tags." + id + ".category", tag.getCategory());
         })).thenRun(() -> this.tagConfig.save(this.tagsFile));

@@ -16,7 +16,6 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
 import org.jetbrains.annotations.NotNull;
@@ -30,9 +29,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @SuppressWarnings("unchecked")
 public final class TagsUtils {
@@ -142,7 +139,7 @@ public final class TagsUtils {
 
         // Format the item lore
         StringPlaceholders finalPlaceholders = placeholders;
-        List<String> lore = new ArrayList<String>(config.getStringList(path + ".lore"))
+        List<String> lore = new ArrayList<>(config.getStringList(path + ".lore"))
                 .stream()
                 .map(s -> format(player, s, finalPlaceholders))
                 .toList();
@@ -163,8 +160,7 @@ public final class TagsUtils {
                 .setTexture(config.getString(path + ".texture"))
                 .glow(Boolean.parseBoolean(format(player, config.getString(path + ".glow", "false"), placeholders)))
                 .setPotionColor(fromHex(config.getString(path + ".potion-color", null)))
-                .setModel(config.getInt(path + ".model-data", -1));
-
+                .setModel(parseInteger(format(player, config.getString(path + ".model-data", "-1"), placeholders)));
 
         // Get item owner
         String owner = config.getString(path + ".owner", null);
@@ -191,6 +187,23 @@ public final class TagsUtils {
         }
 
         return builder.create();
+    }
+
+    /**
+     * Parse an integer from an object safely
+     *
+     * @param object The object
+     * @return The integer
+     */
+    private static int parseInteger(Object object) {
+        try {
+            if (object instanceof Integer)
+                return (int) object;
+
+            return Integer.parseInt(object.toString());
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 
     /**

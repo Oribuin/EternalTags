@@ -70,7 +70,7 @@ command-help-list-description-no-args: '&8 - #00B4DB/%cmd% %subcmd% &7- %desc%'
 # Edit Command
 command-edit-description: Edit any tag's values
 command-edit-edited: You have changed the tag's %option% to %value%&f!
-command-edit-invalid-item: Please provide a valid item.
+command-edit-invalid-item: Please hold a valid item in your hand.
 
 # Plugin Error Messages
 no-tags: You currently do not own any tags.
