@@ -4,38 +4,33 @@ import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.command.framework.CommandContext;
 import dev.rosewood.rosegarden.command.framework.RoseCommand;
 import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
+import dev.rosewood.rosegarden.command.framework.RoseSubCommand;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
-import dev.rosewood.rosegarden.utils.StringPlaceholders;
-import xyz.oribuin.eternaltags.manager.LocaleManager;
-import xyz.oribuin.eternaltags.manager.TagsManager;
-import xyz.oribuin.eternaltags.obj.EditOption;
+import xyz.oribuin.eternaltags.command.command.edit.EditCategoryCommand;
+import xyz.oribuin.eternaltags.command.command.edit.EditIconCommand;
+import xyz.oribuin.eternaltags.command.command.edit.EditDescriptionCommand;
+import xyz.oribuin.eternaltags.command.command.edit.EditNameCommand;
+import xyz.oribuin.eternaltags.command.command.edit.EditOrderCommand;
+import xyz.oribuin.eternaltags.command.command.edit.EditPermissionCommand;
+import xyz.oribuin.eternaltags.command.command.edit.EditTagCommand;
 import xyz.oribuin.eternaltags.obj.Tag;
 
 public class EditCommand extends RoseCommand {
 
     public EditCommand(RosePlugin rosePlugin, RoseCommandWrapper parent) {
-        super(rosePlugin, parent);
+        super(rosePlugin, parent,
+                EditCategoryCommand.class,
+                EditDescriptionCommand.class,
+                EditIconCommand.class,
+                EditNameCommand.class,
+                EditOrderCommand.class,
+                EditPermissionCommand.class,
+                EditTagCommand.class);
     }
 
     @RoseExecutable
-    public void execute(CommandContext context, Tag tag, EditOption option, String value) {
-        final LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
-        final TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
-
-        option.getAction().accept(tag, value);
-
-        manager.saveTag(tag);
-        manager.updateActiveTag(tag);
-
-        final StringPlaceholders placeholders = StringPlaceholders.builder()
-                .addPlaceholder("tag", manager.getDisplayTag(tag, null))
-                .addPlaceholder("option", option.name().toLowerCase())
-                .addPlaceholder("id", tag.getId())
-                .addPlaceholder("name", tag.getName())
-                .addPlaceholder("value", value)
-                .build();
-
-        locale.sendMessage(context.getSender(), "command-edit-edited", placeholders);
+    public void execute(CommandContext context, RoseSubCommand command) {
+        // Has no functionality, just used to pass the tag to the subcommand
     }
 
     @Override

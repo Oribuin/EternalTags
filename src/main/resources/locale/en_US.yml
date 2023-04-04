@@ -1,0 +1,85 @@
+# en_US translation by Oribuin
+# Plugin Message Prefix
+prefix: <g:#00B4DB:#0083B0>&l{{PLUGIN_NAME}} &8| &f
+
+# Generic Command Messages
+no-permission: You don't have permission for that.
+only-player: This command can only be executed by a player.
+only-console: This command can only be executed by console.
+unknown-command: 'Unknown command, use #00B4DB/%cmd%&f help for more info'
+
+# Categories Command
+command-categories-description: Displays the categories menu.
+
+# Clear Command
+command-clear-description: Clears your active tag.
+command-clear-cleared: You have cleared your current active tag.
+command-clear-cleared-other: You have cleared %player%'s active tag.
+
+# Convert Command
+command-convert-description: Converts tags into EternalTags.
+command-convert-converted: You have converted %total% tags into EternalTags
+command-convert-invalid-plugin: Please provide a valid plugin to convert from. [%options%]
+
+# Create Command
+command-create-description: Creates a new tag ingame.
+command-create-created: You have successfully created a new tag, %tag%&f!
+command-create-tag-exists: This tag already exists.
+command-create-tag-missing: Please provide a display tag.
+
+# Delete Command
+command-delete-description: Deletes a tag from the config.
+command-delete-deleted: You have successfully deleted the tag, %tag%&f!
+
+# Favorite Command
+command-favorite-description: Toggles a tag as a favourite.
+command-favorite-no-permission: You do not have permission to favorite this tag.
+command-favorite-toggled: You have toggled the tag %tag% &fas a favorite %toggled%!
+command-favorite-cleared: You have cleared all your favorite tags.
+command-favorite-on: 'on'
+command-favorite-off: 'off'
+
+# Random Command
+command-random-description: Automatically equips a random tag you own.
+
+# Reload Command
+command-reload-description: Reloads the plugin.
+command-reload-reloaded: Configuration and locale files were reloaded
+
+# Search Command
+command-search-description: Search for a tag that you own.
+command-search-start: Type the name of the tag you want to search for.
+command-search-timeout: You took too long to respond, please try again.
+
+# Set Command
+command-set-description: Change your current active tag.
+command-set-changed: Your active tag has been changed to %tag%&f!
+command-set-changed-other: You have changed %player%'s active tag to %tag%&f!
+command-set-no-permission: You do not have permission to use this tag.
+
+# Set All Command
+command-setall-description: Change all player's active tag.
+command-setall-changed: You have changed everyone's tag to %tag%
+
+# Help Command
+command-help-title: '&fAvailable Commands:'
+command-help-description: Displays the help menu.
+command-help-list-description: '&8 - #00B4DB/%cmd% %subcmd% %args% &7- %desc%'
+command-help-list-description-no-args: '&8 - #00B4DB/%cmd% %subcmd% &7- %desc%'
+
+# Edit Command
+command-edit-description: Edit any tag's values
+command-edit-edited: You have changed the tag's %option% to %value%&f!
+command-edit-invalid-item: Please hold a valid item in your hand.
+
+# Plugin Error Messages
+no-tags: You currently do not own any tags.
+tag-doesnt-exist: The tag you have provided doesn't exist.
+
+# Argument Handler Error Messages
+argument-handler-player: Please provide an online username.
+argument-handler-plugins: Please provide a valid input for valid plugins.
+argument-handler-tags: '%input% is not a valid tag id.'
+argument-handler-edit-option: Please provide a valid tag value option.
+argument-handler-category: Please provide a valid category.
+argument-handler-material: Please provide a valid material.

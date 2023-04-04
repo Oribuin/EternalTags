@@ -5,6 +5,7 @@ import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.triumphteam.gui.components.ScrollType;
+import dev.triumphteam.gui.guis.BaseGui;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.PaginatedGui;
 import dev.triumphteam.gui.guis.ScrollingGui;
@@ -14,25 +15,29 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.action.Action;
 import xyz.oribuin.eternaltags.action.PluginAction;
+import xyz.oribuin.eternaltags.event.TagUnequipEvent;
+import xyz.oribuin.eternaltags.gui.menu.TagsGUI;
 import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
+import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 import xyz.oribuin.eternaltags.util.ItemBuilder;
 import xyz.oribuin.eternaltags.util.TagsUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public abstract class PluginMenu {
 
@@ -44,13 +49,6 @@ public abstract class PluginMenu {
     }
 
     /**
-     * Get the default config values for the GUI
-     *
-     * @return The default config values
-     */
-    public abstract Map<String, Object> getDefaultValues();
-
-    /**
      * @return The name of the GUI
      */
     public abstract String getMenuName();
@@ -59,49 +57,24 @@ public abstract class PluginMenu {
      * Create the menu file if it doesn't exist and add the default values
      */
     public void load() {
-        final File folder = new File(this.rosePlugin.getDataFolder(), "menus");
-        boolean newFile = false;
-        if (!folder.exists()) {
-            folder.mkdirs();
-        }
 
-        final File file = new File(folder, this.getMenuName() + ".yml");
-        try {
-            if (!file.exists()) {
-                file.createNewFile();
-                newFile = true;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        this.config = CommentedFileConfiguration.loadConfiguration(file);
+        File menuFile = TagsUtils.createFile(this.rosePlugin, "menus", this.getMenuName() + ".yml");
+        this.config = CommentedFileConfiguration.loadConfiguration(menuFile);
 
         // Move the old configs into a different folder.
-        if (config.get("menu-name") != null && !newFile) {
-            File oldGuis = new File(folder, "old-guis");
+        if (config.get("menu-name") != null) {
+            File oldGuis = new File(this.rosePlugin.getDataFolder() + File.separator, "old-guis");
             if (!oldGuis.exists()) {
                 oldGuis.mkdirs();
             }
 
-            this.rosePlugin.getLogger().warning("We have detected that you are using an old version of EternalTags GUIs. We will now move file [" + file.getName() + "] to the old-guis folder and create a new one for you.");
-            file.renameTo(new File(oldGuis, file.getName()));
+            this.rosePlugin.getLogger().warning("We have detected that you are using an old version of EternalTags GUIs. We will now move file [" + menuFile.getName() + "] to the old-guis folder and create a new one for you.");
+            menuFile.renameTo(new File(oldGuis, this.getMenuName() + ".yml"));
             this.load();
             return;
         }
 
-        if (newFile) {
-            this.getDefaultValues().forEach((path, object) -> {
-                if (path.startsWith("#")) {
-                    this.config.addPathedComments(path, (String) object);
-                } else {
-                    this.config.set(path, object);
-                }
-            });
-        }
-
-
-        this.config.save();
+        this.config.save(menuFile);
     }
 
 
@@ -114,11 +87,11 @@ public abstract class PluginMenu {
     protected final @NotNull PaginatedGui createPagedGUI(Player player) {
 
         final int rows = this.config.getInt("gui-settings.rows");
-        final String title = this.config.getString("gui-settings.title");
+        final String preTitle = this.config.getString("gui-settings.pre-title", "EternalTags");
 
         return Gui.paginated()
                 .rows(rows == 0 ? 6 : rows)
-                .title(this.format(player, title == null ? "Missing Title" : title))
+                .title(this.format(player, preTitle))
                 .disableAllInteractions()
                 .create();
     }
@@ -131,11 +104,11 @@ public abstract class PluginMenu {
      */
     protected final @NotNull Gui createGUI(Player player) {
         final int rows = this.config.getInt("gui-settings.rows");
-        final String title = this.config.getString("gui-settings.title");
+        final String preTitle = this.config.getString("gui-settings.pre-title", "EternalTags");
 
         return Gui.gui()
                 .rows(rows == 0 ? 6 : rows)
-                .title(this.format(player, title == null ? "Missing Title" : title))
+                .title(this.format(player, preTitle))
                 .disableAllInteractions()
                 .create();
     }
@@ -149,13 +122,13 @@ public abstract class PluginMenu {
     protected final @NotNull ScrollingGui createScrollingGui(Player player, ScrollType scrollType) {
 
         final int rows = this.config.getInt("gui-settings.rows");
-        final String title = this.config.getString("gui-settings.title");
+        final String preTitle = this.config.getString("gui-settings.pre-title", "EternalTags");
 
         return Gui.scrolling()
                 .scrollType(scrollType)
                 .rows(rows == 0 ? 6 : rows)
                 .pageSize(0)
-                .title(this.format(player, title == null ? "Missing Title" : title))
+                .title(this.format(player, preTitle))
                 .disableAllInteractions()
                 .create();
     }
@@ -169,6 +142,10 @@ public abstract class PluginMenu {
      */
     public ItemStack getTagItem(Player player, Tag tag) {
         ItemStack baseItem = TagsUtils.getItemStack(this.config, "tag-item", player, this.getTagPlaceholders(tag, player));
+        if (baseItem == null)
+            return tag.getIcon();
+
+        baseItem = baseItem.clone();
 
         List<String> configLore = this.config.getStringList("tag-item.lore");
         List<String> lore = new ArrayList<>();
@@ -184,23 +161,26 @@ public abstract class PluginMenu {
                 continue;
 
             // get the content before the line includes the %description% tag
-            String before = line.substring(0, line.indexOf("%description%"));
+            String descFormat = config.getString("gui-settings.description-format");
+            if (descFormat == null)
+                descFormat = line.substring(0, line.indexOf("%description%"));
 
             lore.add(TagsUtils.format(player, line.replace("%description%", tag.getDescription().get(0))));
             for (int j = 1; j < tag.getDescription().size(); j++) {
-                lore.add(before + tag.getDescription().get(j));
+                lore.add(descFormat + tag.getDescription().get(j));
             }
         }
 
         lore = lore.stream().map(line -> TagsUtils.format(player, line, this.getTagPlaceholders(tag, player))).collect(Collectors.toList());
 
-        ItemBuilder item = new ItemBuilder(baseItem).setLore(lore);
-        if (tag.getIcon() != null) {
-            item.setMaterial(tag.getIcon());
-        }
 
+        if (tag.getIcon() != null)
+            baseItem = tag.getIcon().clone();
 
-        return item.create();
+        return new ItemBuilder(baseItem)
+                .setName(TagsUtils.format(player, this.config.getString("tag-item.name"), this.getTagPlaceholders(tag, player))) // Override the name
+                .setLore(lore) // Override the lore
+                .create();
     }
 
     /**
@@ -322,21 +302,6 @@ public abstract class PluginMenu {
     }
 
     /**
-     * Get the page placeholders for the gui
-     *
-     * @param gui The gui
-     * @return The page placeholders
-     */
-    public StringPlaceholders getPagePlaceholders(ScrollingGui gui) {
-        return StringPlaceholders.builder()
-                .addPlaceholder("page", gui.getCurrentPageNum())
-                .addPlaceholder("total", Math.max(gui.getPagesNum(), 1))
-                .addPlaceholder("next", gui.getNextPageNum())
-                .addPlaceholder("previous", gui.getPrevPageNum())
-                .build();
-    }
-
-    /**
      * Get the tag placeholders for the given player
      *
      * @param tag    The tag
@@ -356,8 +321,57 @@ public abstract class PluginMenu {
 
     }
 
+    /**
+     * Change the results of the GUI based on a keyword
+     *
+     * @param player The player to change the GUI for
+     * @param gui    The GUI to change
+     */
+    @SuppressWarnings("deprecation")
+    public final void searchTags(Player player, BaseGui gui) {
+        LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
+        gui.close(player);
+
+        locale.sendMessage(player, "command-search-start");
+        EternalTags.getEventWaiter().waitForEvent(AsyncPlayerChatEvent.class,
+                event -> event.getPlayer().getUniqueId().equals(player.getUniqueId()),
+                event -> {
+                    event.setCancelled(true);
+                    String message = event.getMessage().toLowerCase();
+                    this.sync(() -> MenuProvider.get(TagsGUI.class).open(player, tag -> tag.getId().contains(message) || tag.getName().contains(message)
+                    ));
+                },
+                60,
+                TimeUnit.SECONDS,
+                () -> locale.sendMessage(player, "command-search-timeout")
+        );
+    }
+
+    /**
+     * Clear a player's current active tag
+     *
+     * @param player The player to clear the tag for
+     */
+    public final void clearTag(Player player) {
+        TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
+        LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
+        Tag tag = manager.getUserTag(player);
+
+        TagUnequipEvent event = new TagUnequipEvent(player, tag);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled())
+            return;
+
+        manager.clearTag(player.getUniqueId());
+        locale.sendMessage(player, "command-clear-cleared");
+    }
+
     public final void async(Runnable runnable) {
         Bukkit.getScheduler().runTaskAsynchronously(this.rosePlugin, runnable);
+    }
+
+    public final void sync(Runnable runnable) {
+        Bukkit.getScheduler().runTask(this.rosePlugin, runnable);
     }
 
     public ScrollType match(String name) {
@@ -368,6 +382,20 @@ public abstract class PluginMenu {
         }
 
         return null;
+    }
+
+    /**
+     * @return Whether the title should be updated (Used for page placeholders)
+     */
+    public boolean reloadTitle() {
+        return this.config.getBoolean("gui-settings.update-title", true);
+    }
+
+    /**
+     * @return Whether the gui should be updated asynchronously
+     */
+    public boolean addPagesAsynchronously() {
+        return this.config.getBoolean("gui-settings.add-pages-asynchronously", true);
     }
 
 }

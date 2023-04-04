@@ -2,9 +2,11 @@ name: EternalTags
 main: xyz.oribuin.eternaltags.EternalTags
 version: '@version@'
 author: Oribuin
-api-version: "1.13"
+api-version: "1.16"
 description: A simple tag plugin alternative to other Tag plugins (With Hex Support)
 website: https://www.spigotmc.org/resources/eternaltags.91842/
 softdepend:
+  - Vault
   - PlaceholderAPI
   - Oraxen
+  - HeadDatabase

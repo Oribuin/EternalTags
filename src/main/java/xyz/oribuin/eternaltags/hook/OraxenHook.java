@@ -24,11 +24,8 @@ public final class OraxenHook {
             }
         }
 
-        if (matchedGlyph.isEmpty()) {
-            return tag;
-        }
+        return matchedGlyph.map(glyph -> tag.replace(pluginIdentifier + glyph.getName(), String.valueOf(glyph.getCharacter()))).orElse(tag);
 
-        return tag.replace(pluginIdentifier + matchedGlyph.get().getName(), String.valueOf(matchedGlyph.get().getCharacter()));
     }
 
     /**

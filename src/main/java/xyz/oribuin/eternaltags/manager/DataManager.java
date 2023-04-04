@@ -4,13 +4,15 @@ import com.google.gson.Gson;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.database.DataMigration;
 import dev.rosewood.rosegarden.manager.AbstractDataManager;
-import org.bukkit.Material;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.database.migration._1_CreateInitialTables;
 import xyz.oribuin.eternaltags.database.migration._2_CreateNewTagTables;
+import xyz.oribuin.eternaltags.database.migration._3_ModifyTagDataItems;
 import xyz.oribuin.eternaltags.obj.Tag;
 import xyz.oribuin.eternaltags.obj.TagDescription;
+import xyz.oribuin.eternaltags.obj.TagUser;
+import xyz.oribuin.eternaltags.util.TagsUtils;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -25,13 +27,19 @@ import java.util.function.Consumer;
 
 public class DataManager extends AbstractDataManager {
 
-    private final Map<UUID, Tag> cachedUsers = new HashMap<>();
-    private final Map<UUID, Set<Tag>> cachedFavourites = new HashMap<>();
+    private final Map<UUID, TagUser> cachedUsers = new HashMap<>();
 
     private final Gson gson = new Gson();
 
     public DataManager(RosePlugin plugin) {
         super(plugin);
+    }
+
+    @Override
+    public void reload() {
+        super.reload();
+
+        this.cachedUsers.clear();
     }
 
     /**
@@ -41,7 +49,9 @@ public class DataManager extends AbstractDataManager {
      * @param tag  The tag
      */
     public void saveUser(@NotNull UUID uuid, @NotNull Tag tag) {
-        this.cachedUsers.put(uuid, tag);
+        TagUser user = this.cachedUsers.getOrDefault(uuid, new TagUser(uuid));
+        user.setActiveTag(tag.getId());
+        this.cachedUsers.put(uuid, user);
 
         final String query = "REPLACE INTO " + this.getTablePrefix() + "tags (player, tagID) VALUES (?, ?)";
         this.async(task -> this.databaseConnector.connect(connection -> {
@@ -77,7 +87,7 @@ public class DataManager extends AbstractDataManager {
      * @param id The tag id being removed.
      */
     public void deleteUserTag(String id) {
-        this.cachedUsers.values().removeIf(tag -> tag.getId().equalsIgnoreCase(id));
+        this.cachedUsers.values().removeIf(tag -> tag.getActiveTag() != null && tag.getActiveTag().equalsIgnoreCase(id));
 
         final String query = "DELETE FROM " + this.getTablePrefix() + "tags WHERE tagID = ?";
         this.async(task -> this.databaseConnector.connect(connection -> {
@@ -94,7 +104,12 @@ public class DataManager extends AbstractDataManager {
      * @param tag The tag.
      */
     public void updateUsers(Tag tag, List<UUID> players) {
-        players.forEach(player -> this.cachedUsers.put(player, tag));
+        players.forEach(player -> {
+            TagUser user = this.cachedUsers.getOrDefault(player, new TagUser(player));
+            user.setActiveTag(tag.getId());
+            this.cachedUsers.put(player, user);
+        });
+
 
         this.async(task -> this.databaseConnector.connect(connection -> {
             final String query = "REPLACE INTO " + this.getTablePrefix() + "tags (player, tagID) VALUES (?, ?)";
@@ -116,9 +131,10 @@ public class DataManager extends AbstractDataManager {
      * @param tag  The tag being added
      */
     public void addFavourite(UUID uuid, Tag tag) {
-        Map<String, Tag> favourites = this.rosePlugin.getManager(TagsManager.class).getUsersFavourites(uuid);
-        favourites.put(tag.getId(), tag);
-        this.cachedFavourites.put(uuid, new HashSet<>(favourites.values()));
+        TagUser user = this.cachedUsers.getOrDefault(uuid, new TagUser(uuid));
+        user.getFavourites().add(tag.getId());
+        this.cachedUsers.put(uuid, user);
+
 
         this.async(task -> this.databaseConnector.connect(connection -> {
             final String query = "INSERT INTO " + this.getTablePrefix() + "favourites (player, tagID) VALUES (?, ?)";
@@ -137,10 +153,9 @@ public class DataManager extends AbstractDataManager {
      * @param tag  The tag being removed.
      */
     public void removeFavourite(UUID uuid, Tag tag) {
-
-        final Map<String, Tag> favourites = this.rosePlugin.getManager(TagsManager.class).getUsersFavourites(uuid);
-        favourites.remove(tag.getId());
-        this.cachedFavourites.put(uuid, new HashSet<>(favourites.values()));
+        TagUser user = this.cachedUsers.getOrDefault(uuid, new TagUser(uuid));
+        user.getFavourites().remove(tag.getId());
+        this.cachedUsers.put(uuid, user);
 
         this.async(task -> this.databaseConnector.connect(connection -> {
             final String query = "DELETE FROM " + this.getTablePrefix() + "favourites WHERE player = ? AND tagID = ?";
@@ -171,8 +186,7 @@ public class DataManager extends AbstractDataManager {
      * @param uuid The player's uuid
      */
     public void loadUser(@NotNull UUID uuid) {
-        final TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
-        final Set<Tag> favouriteTags = new HashSet<>();
+        final TagUser user = new TagUser(uuid);
 
         this.async(task -> this.databaseConnector.connect(connection -> {
             final String selectTag = "SELECT tagID FROM " + this.getTablePrefix() + "tags WHERE player = ?";
@@ -182,7 +196,7 @@ public class DataManager extends AbstractDataManager {
                 statement.setString(1, uuid.toString());
                 final ResultSet result = statement.executeQuery();
                 if (result.next()) {
-                    this.cachedUsers.put(uuid, manager.getTagFromId(result.getString(1)));
+                    user.setActiveTag(result.getString(1));
                 }
             }
 
@@ -191,10 +205,11 @@ public class DataManager extends AbstractDataManager {
                 statement.setString(1, uuid.toString());
                 final ResultSet result = statement.executeQuery();
                 while (result.next()) {
-                    favouriteTags.add(manager.getTagFromId(result.getString(1)));
-                    this.cachedFavourites.put(uuid, favouriteTags);
+                    user.getFavourites().add(result.getString(1));
                 }
             }
+
+            this.cachedUsers.put(uuid, user);
         }));
     }
 
@@ -215,13 +230,12 @@ public class DataManager extends AbstractDataManager {
                 while (result.next()) {
                     final String id = result.getString("tagId");
                     final List<String> description = gson.fromJson(result.getString("description"), TagDescription.class).getDescription();
-                    final String icon = result.getString("icon");
 
                     Tag tag = new Tag(id, result.getString("name"), result.getString("tag"));
                     tag.setPermission(result.getString("permission"));
                     tag.setDescription(description);
                     tag.setOrder(result.getInt("order"));
-                    tag.setIcon(icon == null ? null : Material.valueOf(icon));
+                    tag.setIcon(TagsUtils.deserializeItem(result.getBytes("icon")));
                     cachedTags.put(id, tag);
                 }
             }
@@ -243,7 +257,7 @@ public class DataManager extends AbstractDataManager {
                 statement.setString(4, tag.getTag());
                 statement.setString(5, tag.getPermission());
                 statement.setInt(6, tag.getOrder());
-                statement.setString(7, tag.getIcon() != null ? tag.getIcon().name() : null);
+                statement.setBytes(7, tag.getIcon() != null ? TagsUtils.serializeItem(tag.getIcon()) : null);
                 statement.executeUpdate();
             }
         }));
@@ -266,7 +280,7 @@ public class DataManager extends AbstractDataManager {
                     statement.setString(4, tag.getTag());
                     statement.setString(5, tag.getPermission());
                     statement.setInt(6, tag.getOrder());
-                    statement.setString(7, tag.getIcon() != null ? tag.getIcon().name() : null);
+                    statement.setBytes(7, tag.getIcon() != null ? TagsUtils.serializeItem(tag.getIcon()) : null);
                     statement.addBatch();
                 }
 
@@ -304,19 +318,15 @@ public class DataManager extends AbstractDataManager {
 
     @Override
     public List<Class<? extends DataMigration>> getDataMigrations() {
-        return Arrays.asList(_1_CreateInitialTables.class, _2_CreateNewTagTables.class);
+        return Arrays.asList(_1_CreateInitialTables.class, _2_CreateNewTagTables.class, _3_ModifyTagDataItems.class);
     }
 
     private void async(Consumer<BukkitTask> callback) {
         this.rosePlugin.getServer().getScheduler().runTaskAsynchronously(rosePlugin, callback);
     }
 
-    public Map<UUID, Tag> getCachedUsers() {
+    public Map<UUID, TagUser> getCachedUsers() {
         return cachedUsers;
-    }
-
-    public Map<UUID, Set<Tag>> getCachedFavourites() {
-        return cachedFavourites;
     }
 
 }

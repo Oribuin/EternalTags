@@ -8,9 +8,9 @@ import dev.rosewood.rosegarden.command.framework.annotation.Optional;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import org.bukkit.entity.Player;
-import xyz.oribuin.eternaltags.gui.FavouritesGUI;
+import xyz.oribuin.eternaltags.gui.MenuProvider;
+import xyz.oribuin.eternaltags.gui.menu.FavouritesGUI;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
-import xyz.oribuin.eternaltags.manager.MenuManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 
@@ -30,11 +30,11 @@ public class FavoriteCommand extends RoseCommand {
         Player sender = (Player) context.getSender();
 
         if (tag == null) {
-            this.rosePlugin.getManager(MenuManager.class).get(FavouritesGUI.class).open(sender);
+            MenuProvider.get(FavouritesGUI.class).open(sender);
             return;
         }
 
-        if (!sender.hasPermission(tag.getPermission())) {
+        if (!manager.canUseTag(sender, tag)) {
             locale.sendMessage(sender, "command-favorite-no-permission");
             return;
         }

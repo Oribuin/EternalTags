@@ -1,0 +1,143 @@
+# pre-title - The title of the GUI before the page numbers are loaded
+# title - The title of the GUI
+# rows - The amount of rows in the GUI
+# sort-type - The type of sorting to use in the GUI [ALPHABETICAL, CUSTOM, NONE, RANDOM]
+# dynamic-gui - Whether the gui should update repeatedly (This is useful for tags that change over time)
+# dynamic-speed - The interval in seconds to update the GUI
+# description-format - The format of the %description% placeholder
+# scrolling-gui - Whether to use a scrolling GUI
+# scrolling-type - The type of scrolling for the GUI [HORIZONTAL, VERTICAL]
+# update-title - Whether to update the title of the GUI on load, If this is set to false, the title will be the "pre-title" option until the page is changed.
+# add-pages-asynchronously - Whether to add pages asynchronously (This will improve performance, however, it may take a few seconds for the GUI to load)
+#
+# The general options for the customising itemstacks.
+#  
+# material - The material of the reward.
+# amount - The amount of the reward.
+# name - The name of the reward.
+# lore - The lore of the reward.
+# glow - Whether the reward item should glow.
+# texture - The base64 texture of the reward item (Only for skulls), You can also use hdbLoader to load a texture if you have HeadDatabase installed.
+# potion-color - The color of the potion reward. (Only for potions)
+# model-data - The model data of the reward item. (Requires texture packs)
+# owner - The uuid of the player for the reward item (Only for skulls)
+# flags - The item flags for the reward item.
+# enchants - The enchantments for the reward item.
+#  
+# Icon Actions
+#  
+# Actions is an optional configuration option that can replace an item's functionality with a new one.
+# Available Actions: [BROADCAST, CLOSE, CONSOLE, MESSAGE, PLAYER, SOUND]
+# These actions can be defined in the `commands` section of the item, They require a ClickType to be defined.
+# Available ClickTypes: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/event/inventory/ClickType.html
+# Here is an example of how to use actions:
+# commands:
+#  LEFT:
+#    - '[message] You clicked the left button!'
+#  RIGHT:
+#    - '[message] You clicked the right button!'
+#  MIDDLE:
+#    - '[console] ban %player_name%'
+#
+# GUI Settings
+gui-settings:
+  pre-title: 'EternalTags Loading...'
+  title: Favourite Tags | %page%/%total%
+  rows: 5
+  sort-type: CUSTOM
+  dynamic-gui: false
+  dynamic-speed: 3
+  description-format: ' &f| &7'
+  scrolling-gui: false
+  scrolling-type: HORIZONTAL
+  update-title: true
+  add-pages-asynchronously: true
+
+# Tag Item - The item that represents each tag in the GUI
+tag-item:
+  material: NAME_TAG
+  amount: 1
+  name: '%tag%'
+  lore:
+    - ''
+    - '&f| #00B4DBLeft-Click &7on this'
+    - '&f| &7icon to change your'
+    - '&f| &7active tag!'
+    - '&f| '
+    - '&f| #00B4DBShift-Click &7to add'
+    - '&f| &7this tag to your favorites'
+    - ''
+  glow: true
+
+# Next Page Item - Changes the current page to the next page
+next-page:
+  material: PAPER
+  name: '#00B4DB&lNext Page'
+  lore:
+    - ''
+    - '&f| #00B4DBLeft-Click &7to change '
+    - '&f| &7to the next page'
+    - ''
+  slot: 7
+
+# Previous Page Item - Changes the current page to the previous page
+previous-page:
+  material: PAPER
+  name: '#00B4DB&lPrevious Page'
+  lore:
+    - ''
+    - '&f| #00B4DBLeft-Click &7to change '
+    - '&f| &7to the previous page'
+    - ''
+  slot: 1
+
+# Clear Tag Item - Clears the player's active tag
+clear-tag:
+  enabled: true
+  material: PLAYER_HEAD
+  name: '#00B4DB&lClear Tag'
+  lore:
+    - ''
+    - ' &f| #00B4DBLeft-Click &7to clear your'
+    - ' &f| &7current active tag.'
+    - ' &f| &7'
+    - ' &f| &7Current Tag: #00B4DB%eternaltags_tag_formatted%'
+    - ''
+  texture: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZTljZGI5YWYzOGNmNDFkYWE1M2JjOGNkYTc2NjVjNTA5NjMyZDE0ZTY3OGYwZjE5ZjI2M2Y0NmU1NDFkOGEzMCJ9fX0=
+  slot: 3
+
+# Main Menu Item - Goes back to the main menu
+main-menu:
+  enabled: true
+  material: BARRIER
+  name: '#00B4DB&lMain Menu'
+  lore:
+    - ' '
+    - ' &f| &#00B4DBLeft-Click &7to go back'
+    - ' &f| &7to the #00B4DBmain-menu.'
+    - ' '
+  slot: 4
+
+# Reset Favourites - Allows the player to remove all of their favourite tags
+reset-favourites:
+  enabled: true
+  material: OAK_SIGN
+  name: '#00B4DB&lReset Favourites'
+  lore:
+    - ''
+    - ' &f| #00B4DBDouble-Click &7to reset'
+    - ' &f| &7all of your favourite tags.'
+    - ' &f| &7'
+    - ' &f| &7You #00B4DBCANNOT &7undo this action.'
+    - ''
+  slot: 5
+
+# Extra Items - Allows you to add extra items to the GUI [These are placed in the gui first]
+extra-items:
+  border-item:
+    enabled: true
+    material: GRAY_STAINED_GLASS_PANE
+    name: ' '
+    slots:
+      - 0-8
+      - 36-44

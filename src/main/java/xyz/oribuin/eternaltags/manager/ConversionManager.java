@@ -7,6 +7,7 @@ import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.inventory.ItemStack;
 import xyz.oribuin.eternaltags.obj.Tag;
 
 import java.io.File;
@@ -15,11 +16,11 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class ConversionManager extends Manager {
 
     private FileConfiguration oldConfig;
+    private File configFile;
     private Map<String, Tag> loadedTags;
     private Map<String, Object> configOptions;
 
@@ -34,20 +35,23 @@ public class ConversionManager extends Manager {
         }
 
         this.rosePlugin.getLogger().warning("Converting old EternalTags configs");
-        File file = new File(this.rosePlugin.getDataFolder(), "config.yml");
-        this.oldConfig = YamlConfiguration.loadConfiguration(file);
+        this.configFile = new File(this.rosePlugin.getDataFolder(), "config.yml");
+
+        this.oldConfig = YamlConfiguration.loadConfiguration(this.configFile);
         this.loadedTags = new HashMap<>();
         this.configOptions = new HashMap<>();
         this.loadConfiguration();
 
         // Delete the folder.
-        file.delete();
+        this.configFile.delete();
 
         final ConfigurationManager manager = this.rosePlugin.getManager(ConfigurationManager.class);
         manager.reload();
+        this.configFile = new File(this.rosePlugin.getDataFolder(), "tags.yml");
         final CommentedFileConfiguration newConfig = manager.getConfig();
+
         this.configOptions.forEach(newConfig::set);
-        newConfig.save();
+        newConfig.save(this.configFile);
 
     }
 
@@ -79,7 +83,7 @@ public class ConversionManager extends Manager {
         }
 
         this.getRemappedOptions().forEach((s, s2) -> newConfig.set(s2, this.configOptions.get(s)));
-        newConfig.save();
+        newConfig.save(this.configFile);
 
         // Convert tags.
         final ConfigurationSection section = this.oldConfig.getConfigurationSection("tags");
@@ -88,20 +92,30 @@ public class ConversionManager extends Manager {
 
         this.rosePlugin.getLogger().warning("Converting Tags into tags.yml");
         for (String key : section.getKeys(false)) {
-            final Tag tag = new Tag(key, section.getString(key + ".name"), section.getString(key + ".tag"));
+            String name = section.getString(key + ".name", key);
+            String tagText = section.getString(key + ".tag");
+
+            if (name == null || tagText == null)
+                continue;
+
+            Tag tag = new Tag(key, name, tagText);
             List<String> description = section.get(key + ".description") instanceof String
                     ? Collections.singletonList(section.getString(key + ".description"))
                     : section.getStringList(key + ".description");
 
             tag.setDescription(description);
-            if (section.getString(key + ".permission") != null)
-                tag.setPermission(section.getString(key + ".permission"));
 
-            if (section.getString(key + ".order") != null)
-                tag.setOrder(section.getInt(key + ".order"));
+            String permission = section.getString(key + ".permission");
+            if (permission != null)
+                tag.setPermission(permission);
 
-            if (section.getString(key + ".icon") != null)
-                tag.setIcon(Material.matchMaterial(Objects.requireNonNull(section.getString(key + ".icon"))));
+            int order = section.getInt(key + ".order");
+            if (order != 0 && order != -1)
+                tag.setOrder(order);
+
+            Material icon = Material.matchMaterial(section.getString(key + ".icon", ""));
+            if (icon != null)
+                tag.setIcon(new ItemStack(icon));
 
             this.loadedTags.put(key, tag);
         }

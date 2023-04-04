@@ -8,8 +8,6 @@ import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.manager.DataManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 
-import java.util.List;
-
 public class PlayerListeners implements Listener {
 
     private final TagsManager manager = EternalTags.getInstance().getManager(TagsManager.class);
@@ -17,8 +15,9 @@ public class PlayerListeners implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-       this.dataManager.loadUser(event.getPlayer().getUniqueId()); // Load the user from the database
+        this.dataManager.loadUser(event.getPlayer().getUniqueId()); // Load the user from the database
         this.manager.getUserTag(event.getPlayer()); // Get the user's tag (This will detect default tags or the user's tag)
+
     }
 
     @EventHandler
