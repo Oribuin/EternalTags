@@ -55,6 +55,7 @@ public class TagsManager extends Manager {
     private boolean categoriesEnabled = true;
     private Category defaultCategory, globalCategory;
     private Map<String, String> defaultTagGroups;
+    private boolean usingDefaultTags;
 
     public TagsManager(RosePlugin plugin) {
         super(plugin);
@@ -66,6 +67,9 @@ public class TagsManager extends Manager {
         this.defaultTagGroups = new HashMap<>();
         CommentedConfigurationSection groupSection = Setting.DEFAULT_TAG_GROUPS.getSection();
         groupSection.getKeys(false).forEach(s -> this.defaultTagGroups.put(s, groupSection.getString(s)));
+
+        // Check if we're using default tags
+        this.usingDefaultTags = !this.usingGroupDefaults() && Setting.DEFAULT_TAG.getString().equalsIgnoreCase("none");
 
         // Load categories if enabled, Categories are not saved in mysql so we're not gonna load categories first.
         this.categoriesFile = TagsUtils.createFile(this.rosePlugin, "categories.yml");
@@ -424,33 +428,32 @@ public class TagsManager extends Manager {
      */
     @Nullable
     public Tag getUserTag(@NotNull Player player) {
-        final DataManager dataManager = this.rosePlugin.getManager(DataManager.class);
-        final TagUser user = dataManager.getCachedUsers().getOrDefault(player.getUniqueId(), new TagUser(player));
+        DataManager dataManager = this.rosePlugin.getManager(DataManager.class);
+        TagUser user = dataManager.getCachedUsers().computeIfAbsent(player.getUniqueId(), k -> new TagUser(player));
         Tag tag = this.getTagFromId(user.getActiveTag());
 
-        // TODO: Add check for if the player is using a default tag.
-        if (VaultHook.isEnabled() && this.usingGroupDefaults() && user.isUsingDefaultTag()) { // Check if vault is enabled.
-            tag = this.getDefaultTag(player); // Get the default tag.
+        // Check if the player is using a default tag.
+        if (VaultHook.isEnabled() && this.usingGroupDefaults() && user.isUsingDefaultTag() && this.usingDefaultTags) {
+            tag = this.getDefaultTag(player);
         }
 
-        // Remove the tag if the player doesn't have the permission to use it.
+        // Remove the tag if the player doesn't have permission to use it.
         if (Setting.REMOVE_TAGS.getBoolean() && tag != null && !this.canUseTag(player, tag)) {
-            dataManager.removeUser(player.getUniqueId()); // Remove the user's tag.
+            dataManager.removeUser(player.getUniqueId());
             tag = null;
         }
 
-        if (tag == null) {
-            tag = this.getDefaultTag(player); // Get the default tag.
-            if (tag == null) {
-                System.out.println("No default tag found for " + player.getName());
+        // Use default tag if no active tag found.
+        if (tag == null && this.usingDefaultTags) {
+            tag = this.getDefaultTag(player);
+            if (tag == null)
                 return null;
-            }
 
             user.setActiveTag(tag.getId());
             user.setUsingDefaultTag(true);
-            dataManager.getCachedUsers().put(player.getUniqueId(), user); // Assign the default tag to the user.
         }
 
+        dataManager.getCachedUsers().put(player.getUniqueId(), user);
         return tag;
     }
 
@@ -578,6 +581,9 @@ public class TagsManager extends Manager {
 
     @Nullable
     public Tag getDefaultTag(@NotNull Player player) {
+        if (!this.usingDefaultTags) // Default tags are disabled.
+            return null;
+
         String defaultTagID = Setting.DEFAULT_TAG.getString();
 
         // Check if the default tag is a group.
