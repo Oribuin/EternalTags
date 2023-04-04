@@ -3,6 +3,7 @@ package xyz.oribuin.eternaltags.hook;
 import dev.rosewood.rosegarden.utils.HexUtils;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.oribuin.eternaltags.EternalTags;
@@ -52,7 +53,15 @@ public class Expansion extends PlaceholderExpansion {
             }
         }
 
-        final Tag activeTag = this.manager.getOfflineUserTag(offlineUser);
+        // This is the only tag that doesn't require a player
+        if (params.equalsIgnoreCase("total"))
+            return String.valueOf(this.manager.getCachedTags().size());
+
+        Player player = offlineUser.getPlayer();
+        if (player == null)
+            return "Error: Player is null";
+
+        final Tag activeTag = this.manager.getUserTag(player);
         return switch (params.toLowerCase()) {
             // Set bracket placeholders to allow \o/ Placeholder Inception \o/
             case "tag" -> this.manager.getDisplayTag(activeTag, offlineUser, "");

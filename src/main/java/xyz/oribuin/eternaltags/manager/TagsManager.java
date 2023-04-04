@@ -17,10 +17,12 @@ import org.jetbrains.annotations.Nullable;
 import xyz.oribuin.eternaltags.event.TagDeleteEvent;
 import xyz.oribuin.eternaltags.event.TagSaveEvent;
 import xyz.oribuin.eternaltags.hook.OraxenHook;
+import xyz.oribuin.eternaltags.hook.VaultHook;
 import xyz.oribuin.eternaltags.listener.BungeeListener;
 import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
 import xyz.oribuin.eternaltags.obj.Category;
 import xyz.oribuin.eternaltags.obj.Tag;
+import xyz.oribuin.eternaltags.obj.TagUser;
 import xyz.oribuin.eternaltags.util.TagsUtils;
 
 import java.io.File;
@@ -30,8 +32,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Random;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
@@ -39,6 +41,7 @@ import java.util.stream.Collectors;
 
 public class TagsManager extends Manager {
 
+    // this is starting to look like im an iridium dev
     // Cached Tags and Categories
     private final Map<String, Tag> cachedTags = new HashMap<>();
     private final Map<String, Category> cachedCategories = new HashMap<>();
@@ -50,8 +53,8 @@ public class TagsManager extends Manager {
 
     // Other Values.
     private boolean categoriesEnabled = true;
-    private Category defaultCategory;
-    private Category globalCategory;
+    private Category defaultCategory, globalCategory;
+    private Map<String, String> defaultTagGroups;
 
     public TagsManager(RosePlugin plugin) {
         super(plugin);
@@ -59,6 +62,10 @@ public class TagsManager extends Manager {
 
     @Override
     public void reload() {
+        // Load the default tag groups
+        this.defaultTagGroups = new HashMap<>();
+        CommentedConfigurationSection groupSection = Setting.DEFAULT_TAG_GROUPS.getSection();
+        groupSection.getKeys(false).forEach(s -> this.defaultTagGroups.put(s, groupSection.getString(s)));
 
         // Load categories if enabled, Categories are not saved in mysql so we're not gonna load categories first.
         this.categoriesFile = TagsUtils.createFile(this.rosePlugin, "categories.yml");
@@ -140,8 +147,6 @@ public class TagsManager extends Manager {
                     if (itemStack != null)
                         obj.setIcon(itemStack);
                 }
-
-
             }
 
             if (OraxenHook.enabled())
@@ -280,12 +285,13 @@ public class TagsManager extends Manager {
     public void updateActiveTag(Tag tag) {
         final DataManager data = this.rosePlugin.getManager(DataManager.class);
 
-        for (Map.Entry<UUID, Tag> entry : data.getCachedUsers().entrySet()) {
-            if (entry.getValue() == null)
+        for (TagUser user : data.getCachedUsers().values()) {
+            if (user == null)
                 continue;
 
-            if (entry.getValue().getId().equalsIgnoreCase(tag.getId()))
-                data.getCachedUsers().put(entry.getKey(), tag);
+            if (user.getActiveTag() != null && user.getActiveTag().equalsIgnoreCase(tag.getId())) {
+                user.setActiveTag(tag.getId());
+            }
         }
     }
 
@@ -402,7 +408,11 @@ public class TagsManager extends Manager {
      */
     @Nullable
     public Tag getUserTag(@NotNull UUID uuid) {
-        return this.rosePlugin.getManager(DataManager.class).getCachedUsers().get(uuid);
+        TagUser user = this.rosePlugin.getManager(DataManager.class).getCachedUsers().get(uuid);
+        if (user == null)
+            return null;
+
+        return this.getTagFromId(user.getActiveTag());
     }
 
     /**
@@ -415,17 +425,30 @@ public class TagsManager extends Manager {
     @Nullable
     public Tag getUserTag(@NotNull Player player) {
         final DataManager dataManager = this.rosePlugin.getManager(DataManager.class);
-        Tag tag = dataManager.getCachedUsers().get(player.getUniqueId());
+        final TagUser user = dataManager.getCachedUsers().getOrDefault(player.getUniqueId(), new TagUser(player));
+        Tag tag = this.getTagFromId(user.getActiveTag());
 
-        if (tag == null) {
-            tag = this.getDefaultTag(player);
-            dataManager.getCachedUsers().put(player.getUniqueId(), tag); // Assign the default tag to the user.
-            return tag; // We don't need to check for a permission here, as the default tag should always be available.
+        // TODO: Add check for if the player is using a default tag.
+        if (VaultHook.isEnabled() && this.usingGroupDefaults() && user.isUsingDefaultTag()) { // Check if vault is enabled.
+            tag = this.getDefaultTag(player); // Get the default tag.
         }
 
-        if (Setting.REMOVE_TAGS.getBoolean() && !canUseTag(player, tag)) {
-            this.rosePlugin.getManager(DataManager.class).removeUser(player.getUniqueId()); // Remove the user's tag.
-            return null;
+        // Remove the tag if the player doesn't have the permission to use it.
+        if (Setting.REMOVE_TAGS.getBoolean() && tag != null && !this.canUseTag(player, tag)) {
+            dataManager.removeUser(player.getUniqueId()); // Remove the user's tag.
+            tag = null;
+        }
+
+        if (tag == null) {
+            tag = this.getDefaultTag(player); // Get the default tag.
+            if (tag == null) {
+                System.out.println("No default tag found for " + player.getName());
+                return null;
+            }
+
+            user.setActiveTag(tag.getId());
+            user.setUsingDefaultTag(true);
+            dataManager.getCachedUsers().put(player.getUniqueId(), user); // Assign the default tag to the user.
         }
 
         return tag;
@@ -504,14 +527,12 @@ public class TagsManager extends Manager {
     @NotNull
     public Map<String, Tag> getUsersFavourites(UUID uuid) {
         final Map<String, Tag> favourites = new HashMap<>();
-        Set<Tag> tags = this.rosePlugin.getManager(DataManager.class).getCachedFavourites().get(uuid);
+        final TagUser user = this.rosePlugin.getManager(DataManager.class).getCachedUsers().getOrDefault(uuid, new TagUser(uuid));
 
-        if (tags == null || tags.isEmpty())
-            return favourites;
-
-        tags.stream()
+        user.getFavourites().stream()
                 .filter(Objects::nonNull)
-                .forEach(tag -> favourites.put(tag.getId().toLowerCase(), tag));
+                .forEach(tag -> favourites.put(tag, this.getTagFromId(tag)));
+
         return favourites;
     }
 
@@ -548,12 +569,39 @@ public class TagsManager extends Manager {
      * @return An optional tag.
      */
     @Nullable
-    public Tag getTagFromId(String id) {
+    public Tag getTagFromId(@Nullable String id) {
+        if (id == null)
+            return null;
+
         return this.cachedTags.get(id.toLowerCase());
     }
 
+    @Nullable
+    public Tag getDefaultTag(@NotNull Player player) {
+        String defaultTagID = Setting.DEFAULT_TAG.getString();
+
+        // Check if the default tag is a group.
+        if (VaultHook.isEnabled() && !this.defaultTagGroups.isEmpty()) {
+            String group = VaultHook.getPrimaryGroup(player); // Get the highest group of the player.
+            if (group != null && this.defaultTagGroups.containsKey(group)) {
+                String tagId = this.defaultTagGroups.get(group); // Get the tag id from the group.
+                return switch (tagId) {
+                    case "none" -> this.getTagFromId(defaultTagID);
+                    case "random" -> this.getRandomTag(player);
+                    default -> this.getTagFromId(tagId);
+                };
+            }
+        }
+
+        return switch (defaultTagID) {
+            case "none" -> null;
+            case "random" -> this.getRandomTag(player);
+            default -> this.getTagFromId(defaultTagID);
+        };
+    }
+
     /**
-     * Get the default tag for a player.
+     * Get the default tag for an offline player.
      *
      * @param player The player
      * @return The default tag.
@@ -562,14 +610,22 @@ public class TagsManager extends Manager {
     public Tag getDefaultTag(@Nullable OfflinePlayer player) {
         String defaultTagID = Setting.DEFAULT_TAG.getString();
 
-        if (defaultTagID == null || defaultTagID.equalsIgnoreCase("none"))
-            return null;
+        return switch (defaultTagID) {
+            case "none" -> null;
+            case "random" -> this.getRandomTag(player);
+            default -> this.getTagFromId(defaultTagID);
+        };
+    }
 
-        if (defaultTagID.equalsIgnoreCase("random")) {
-            return this.getRandomTag(player);
-        }
+    /**
+     * @return Check if the plugin is using group defaults.
+     */
+    public boolean usingGroupDefaults() {
+        if (this.defaultTagGroups.isEmpty()) // No groups are set.
+            return false;
 
-        return this.getTagFromId(defaultTagID);
+        // Check if all the groups are set to none.
+        return this.defaultTagGroups.values().stream().allMatch(tagId -> tagId.equalsIgnoreCase("none"));
     }
 
     /**
@@ -688,7 +744,7 @@ public class TagsManager extends Manager {
      * @param tag    The tag
      * @return If the player has access to the tag
      */
-    public boolean canUseTag(Player player, Tag tag) {
+    public boolean canUseTag(@NotNull Player player, @NotNull Tag tag) {
         boolean hasAccessToTag = tag.getPermission() == null || player.hasPermission(tag.getPermission());
 
         // If there's no categories, or all categories are default, then we can just return the tag unlocked status
@@ -774,6 +830,61 @@ public class TagsManager extends Manager {
         }
 
         return tagsWithCategories;
+    }
+
+    /**
+     * Does the player have the group tag active?
+     *
+     * @param player The player
+     * @return The tags with categories that the player has access to
+     */
+    public boolean hasPrimaryGroupTag(@NotNull Player player) {
+        if (!VaultHook.isEnabled() || !this.usingGroupDefaults())
+            return false;
+
+        String userTag = Optional.ofNullable(this.getUserTag(player.getUniqueId()))
+                .map(Tag::getId)
+                .orElse(null);
+
+        return userTag != null && userTag.equals(this.getGroupTag(player));
+    }
+
+    /**
+     * Get the tag for a group
+     *
+     * @param group The group
+     * @return The tag
+     */
+    @Nullable
+    public String getGroupTag(String group) {
+        if (!VaultHook.isEnabled() || !this.usingGroupDefaults())
+            return null;
+
+        return this.defaultTagGroups.get(group);
+    }
+
+    /**
+     * Get the tag for a group
+     *
+     * @param player The player
+     * @return The tag
+     */
+    @Nullable
+    public String getGroupTag(@NotNull Player player) {
+        if (!VaultHook.isEnabled() || !this.usingGroupDefaults())
+            return null;
+
+        String group = VaultHook.getPrimaryGroup(player);
+        String tag = this.defaultTagGroups.get(group);
+        if (tag == null)
+            return null;
+
+        return switch (tag) {
+            case "default" -> Setting.DEFAULT_TAG.getString();
+            case "random" -> this.getRandomTag(player).getId();
+            case "none" -> null;
+            default -> this.cachedTags.containsKey(tag) ? tag : null;
+        };
     }
 
     /**

@@ -35,14 +35,14 @@ public class EternalTags extends RosePlugin {
         // Make sure the server has PlaceholderAPI
         if (!pluginManager.isPluginEnabled("PlaceholderAPI")) {
             this.getLogger().severe("Please install PlaceholderAPI onto your server to use this plugin.");
-            this.getServer().getPluginManager().disablePlugin(this);
+            pluginManager.disablePlugin(this);
             return;
         }
 
         // Make sure the server is on MC 1.16
         if (NMSUtil.getVersionNumber() < 16) {
             this.getLogger().severe("This plugin only supports 1.16+ Minecraft.");
-            this.getServer().getPluginManager().disablePlugin(this);
+            pluginManager.disablePlugin(this);
             return;
         }
 
