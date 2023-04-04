@@ -1,11 +1,8 @@
 package xyz.oribuin.eternaltags.obj;
 
-import org.codehaus.plexus.util.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class Category {
 
@@ -19,7 +16,7 @@ public class Category {
 
     public Category(@NotNull String id) {
         this.id = id;
-        this.displayName = StringUtils.capitalise(id.toLowerCase());
+        this.displayName = StringUtils.capitalize(id.toLowerCase());
         this.order = -1;
         this.isDefault = false;
         this.isGlobal = false;
