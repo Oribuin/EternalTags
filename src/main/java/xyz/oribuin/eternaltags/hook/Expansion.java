@@ -80,7 +80,6 @@ public class Expansion extends PlaceholderExpansion {
             case "active" -> String.valueOf(activeTag != null);
 
             // These are the tags that return a number.
-            case "total" -> String.valueOf(this.manager.getCachedTags().size());
             case "joined" -> this.joinTags(this.manager.getPlayerTags(offlineUser.getPlayer()));
             case "unlocked" -> offlineUser.getPlayer() != null ? String.valueOf(this.manager.getPlayerTags(offlineUser.getPlayer()).size()) : "0";
             case "favorites" -> offlineUser.getPlayer() != null ? String.valueOf(this.manager.getUsersFavourites(offlineUser.getUniqueId()).size()) : "0";

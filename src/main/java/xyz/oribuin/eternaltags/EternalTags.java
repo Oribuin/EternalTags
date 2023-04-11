@@ -4,11 +4,18 @@ import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.manager.Manager;
 import dev.rosewood.rosegarden.utils.NMSUtil;
 import org.bukkit.plugin.PluginManager;
-import xyz.oribuin.eternaltags.listener.BungeeListener;
+import xyz.oribuin.eternaltags.gui.MenuProvider;
 import xyz.oribuin.eternaltags.hook.Expansion;
+import xyz.oribuin.eternaltags.listener.BungeeListener;
 import xyz.oribuin.eternaltags.listener.PlayerListeners;
-import xyz.oribuin.eternaltags.manager.*;
+import xyz.oribuin.eternaltags.manager.CommandManager;
+import xyz.oribuin.eternaltags.manager.ConfigurationManager;
 import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
+import xyz.oribuin.eternaltags.manager.ConversionManager;
+import xyz.oribuin.eternaltags.manager.DataManager;
+import xyz.oribuin.eternaltags.manager.LocaleManager;
+import xyz.oribuin.eternaltags.manager.PluginConversionManager;
+import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.util.EventWaiter;
 
 import java.util.Arrays;
@@ -60,6 +67,13 @@ public class EternalTags extends RosePlugin {
 
         // Register PlaceholderAPI Expansion
         new Expansion(this).register();
+    }
+
+    @Override
+    public void reload() {
+        super.reload(); // Reload the managers
+
+        MenuProvider.reload(); // Reload the menu provider
     }
 
     @Override

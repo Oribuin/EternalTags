@@ -79,24 +79,7 @@ public class TagsGUI extends PluginMenu {
             }
         }
 
-        MenuItem.create(this.config)
-                .path("next-page")
-                .player(player)
-                .action(event -> {
-                    gui.next();
-                    this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
-                })
-                .player(player)
-                .place(gui);
-
-        MenuItem.create(this.config)
-                .path("previous-page")
-                .player(player)
-                .action(event -> {
-                    gui.previous();
-                    this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
-                })
-                .place(gui);
+        this.addNavigationIcons(gui, player, finalMenuTitle); // Add the navigation icons to the GUI.
 
         MenuItem.create(this.config)
                 .path("clear-tag")
@@ -124,6 +107,7 @@ public class TagsGUI extends PluginMenu {
 
 
         gui.open(player);
+
         int dynamicSpeed = this.config.getInt("gui-settings.dynamic-speed", 3);
         if (this.config.getBoolean("gui-settings.dynamic-gui", false) && dynamicSpeed > 0) {
             this.rosePlugin.getServer().getScheduler().runTaskTimerAsynchronously(this.rosePlugin, task -> {
@@ -151,6 +135,43 @@ public class TagsGUI extends PluginMenu {
 
         if (this.addPagesAsynchronously()) this.async(task);
         else task.run();
+    }
+
+    /**
+     * Navigation icons have their own method since they need to be updated
+     * every time the GUI is opened or changed.
+     *
+     * @param gui    The GUI to add the navigation icons to.
+     * @param player The player to add the navigation icons to.
+     */
+    private void addNavigationIcons(PaginatedGui gui, Player player, String finalMenuTitle) {
+        MenuItem.create(this.config)
+                .path("next-page")
+                .player(player)
+                .condition(menuItem -> menuItem.getConfig().getBoolean("next-page.hide-if-last-page", false)
+                        && gui.getCurrentPageNum() < gui.getPagesNum()
+                )
+                .action(event -> {
+                    gui.next();
+                    this.addNavigationIcons(gui, player, finalMenuTitle);
+                    this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                })
+                .player(player)
+                .place(gui);
+
+        MenuItem.create(this.config)
+                .path("previous-page")
+                .player(player)
+                .condition(menuItem -> menuItem.getConfig().getBoolean("previous-page.hide-if-first-page", false)
+                        && gui.getCurrentPageNum() > 1
+                )
+                .action(event -> {
+                    gui.previous();
+                    this.addNavigationIcons(gui, player, finalMenuTitle);
+                    this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                })
+                .place(gui);
+
     }
 
     /**

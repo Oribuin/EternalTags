@@ -2,6 +2,7 @@ package xyz.oribuin.eternaltags.listener;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import xyz.oribuin.eternaltags.EternalTags;
@@ -22,7 +23,7 @@ public class PlayerListeners implements Listener {
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
-        this.dataManager.getCachedUsers().remove(event.getPlayer().getUniqueId());
+        this.dataManager.getCachedUsers().remove(event.getPlayer().getUniqueId()); // Remove the user from the cache
     }
 
 }

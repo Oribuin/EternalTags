@@ -130,7 +130,7 @@ public final class TagsUtils {
     @Nullable
     public static ItemStack getItemStack(@NotNull CommentedConfigurationSection config, @NotNull String path, @Nullable Player player, @Nullable StringPlaceholders placeholders) {
 
-        Material material = Material.getMaterial(config.getString(path + ".material", ""));
+        Material material = Material.getMaterial(PlaceholderAPI.setPlaceholders(player, config.getString(path + ".material", "")));
         if (material == null)
             return null;
 
@@ -249,6 +249,7 @@ public final class TagsUtils {
      * @param list The list to parse
      * @return The parsed list
      */
+    @SuppressWarnings("unchecked")
     public static List<Integer> parseList(List<String> list) {
         List<Integer> newList = new ArrayList<>();
         for (String s : list) {

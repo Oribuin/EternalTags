@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.database.DataMigration;
 import dev.rosewood.rosegarden.manager.AbstractDataManager;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.database.migration._1_CreateInitialTables;
@@ -18,12 +20,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class DataManager extends AbstractDataManager {
 
@@ -51,6 +52,7 @@ public class DataManager extends AbstractDataManager {
     public void saveUser(@NotNull UUID uuid, @NotNull Tag tag) {
         TagUser user = this.cachedUsers.getOrDefault(uuid, new TagUser(uuid));
         user.setActiveTag(tag.getId());
+        user.setUsingDefaultTag(false);
         this.cachedUsers.put(uuid, user);
 
         final String query = "REPLACE INTO " + this.getTablePrefix() + "tags (player, tagID) VALUES (?, ?)";
@@ -107,6 +109,7 @@ public class DataManager extends AbstractDataManager {
         players.forEach(player -> {
             TagUser user = this.cachedUsers.getOrDefault(player, new TagUser(player));
             user.setActiveTag(tag.getId());
+            user.setUsingDefaultTag(false);
             this.cachedUsers.put(player, user);
         });
 

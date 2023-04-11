@@ -20,6 +20,10 @@ public enum MenuProvider {
         menuCache.forEach((aClass, pluginMenu) -> pluginMenu.load());
     }
 
+    public static void reload() {
+        menuCache.forEach((aClass, pluginMenu) -> pluginMenu.load());
+    }
+
     /**
      * Get the instance of the menu.
      *

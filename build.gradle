@@ -7,7 +7,7 @@ plugins {
 }
 
 group "xyz.oribuin"
-version "1.2.0"
+version "1.2.1-SNAPSHOT"
 
 java {
     toolchain {
@@ -56,6 +56,7 @@ dependencies {
     api "dev.rosewood:rosegarden:1.2.1"
     api('dev.triumphteam:triumph-gui:3.1.4') {  // https://mf.mattstudios.me/triumph-gui/introduction
         exclude group: "com.google.code.gson", module: "gson" // Remove GSON, Already included in spigot api
+        exclude group: "net.kyori", module: "*" // Remove kyori, we're using plugin.yml libraries
     }
 }
 
@@ -65,7 +66,6 @@ shadowJar {
 
     relocate("dev.rosewood.rosegarden", "${project.group}.eternaltags.libs.rosegarden")
     relocate("dev.triumphteam.gui", "${project.group}.eternaltags.libs.gui")
-    relocate("net.kyori", "${project.group}.eternaltags.libs.kyori")
 }
 
 processResources {

@@ -66,10 +66,10 @@ public class TagsManager extends Manager {
         // Load the default tag groups
         this.defaultTagGroups = new HashMap<>();
         CommentedConfigurationSection groupSection = Setting.DEFAULT_TAG_GROUPS.getSection();
-        groupSection.getKeys(false).forEach(s -> this.defaultTagGroups.put(s, groupSection.getString(s)));
+        groupSection.getKeys(false).forEach(s -> this.defaultTagGroups.put(s.toLowerCase(), groupSection.getString(s)));
 
         // Check if we're using default tags
-        this.usingDefaultTags = !this.usingGroupDefaults() && Setting.DEFAULT_TAG.getString().equalsIgnoreCase("none");
+        this.usingDefaultTags = this.usingGroupDefaults() || !Setting.DEFAULT_TAG.getString().equalsIgnoreCase("none");
 
         // Load categories if enabled, Categories are not saved in mysql so we're not gonna load categories first.
         this.categoriesFile = TagsUtils.createFile(this.rosePlugin, "categories.yml");
@@ -433,14 +433,16 @@ public class TagsManager extends Manager {
         Tag tag = this.getTagFromId(user.getActiveTag());
 
         // Check if the player is using a default tag.
-        if (VaultHook.isEnabled() && this.usingGroupDefaults() && user.isUsingDefaultTag() && this.usingDefaultTags) {
+        if (user.isUsingDefaultTag() && this.usingDefaultTags) {
             tag = this.getDefaultTag(player);
         }
 
         // Remove the tag if the player doesn't have permission to use it.
         if (Setting.REMOVE_TAGS.getBoolean() && tag != null && !this.canUseTag(player, tag)) {
             dataManager.removeUser(player.getUniqueId());
-            tag = null;
+            user.setActiveTag(null); // Remove the tag from the user.
+            user.setUsingDefaultTag(false); // Remove the default tag flag.
+            tag = null; // Set the tag to null.
         }
 
         // Use default tag if no active tag found.
@@ -589,8 +591,9 @@ public class TagsManager extends Manager {
         // Check if the default tag is a group.
         if (VaultHook.isEnabled() && !this.defaultTagGroups.isEmpty()) {
             String group = VaultHook.getPrimaryGroup(player); // Get the highest group of the player.
-            if (group != null && this.defaultTagGroups.containsKey(group)) {
-                String tagId = this.defaultTagGroups.get(group); // Get the tag id from the group.
+
+            if (group != null && this.defaultTagGroups.containsKey(group.toLowerCase())) {
+                String tagId = this.defaultTagGroups.get(group.toLowerCase()); // Get the tag id from the group.
                 return switch (tagId) {
                     case "none" -> this.getTagFromId(defaultTagID);
                     case "random" -> this.getRandomTag(player);
@@ -631,7 +634,7 @@ public class TagsManager extends Manager {
             return false;
 
         // Check if all the groups are set to none.
-        return this.defaultTagGroups.values().stream().allMatch(tagId -> tagId.equalsIgnoreCase("none"));
+        return !this.defaultTagGroups.values().stream().allMatch(tagId -> tagId.equalsIgnoreCase("none"));
     }
 
     /**

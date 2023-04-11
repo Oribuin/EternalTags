@@ -3,8 +3,10 @@ package xyz.oribuin.eternaltags.gui;
 import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
+import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.BaseGui;
 import dev.triumphteam.gui.guis.GuiItem;
+import dev.triumphteam.gui.guis.PaginatedGui;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -20,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class MenuItem {
 
@@ -30,7 +33,7 @@ public class MenuItem {
     private Player player; //  The player who is viewing the menu, this is used for placeholders
     private Consumer<InventoryClickEvent> action; // The action to be performed when the item is clicked
     private List<Integer> slots; // The slots the item should be placed in
-    private boolean condition; // The condition for the item to be displayed
+    private Predicate<MenuItem> condition; // The condition for the item to be displayed
     private final Map<ClickType, List<Action>> customActions; // The actions to be performed when the item is clicked
 
     public MenuItem() {
@@ -45,7 +48,7 @@ public class MenuItem {
         this.player = null;
         this.action = inventoryClickEvent -> {}; // Do nothing
         this.slots = new ArrayList<>();
-        this.condition = true;
+        this.condition = menuItem -> true;
         this.customActions = new HashMap<>();
     }
 
@@ -217,7 +220,7 @@ public class MenuItem {
     public final MenuItem slots(List<Integer> slots) {
         this.slots = slots;
         return this;
-    }
+    } 
 
     public final MenuItem slot(int slot) {
         this.slots = List.of(slot);
@@ -234,10 +237,10 @@ public class MenuItem {
     }
 
     public boolean isConditional() {
-        return this.condition;
+        return condition.test(this);
     }
 
-    public MenuItem conditional(boolean condition) {
+    public final MenuItem condition(Predicate<MenuItem> condition) {
         this.condition = condition;
         return this;
     }
@@ -245,5 +248,7 @@ public class MenuItem {
     public Map<ClickType, List<Action>> getCustomActions() {
         return customActions;
     }
+
+
 
 }

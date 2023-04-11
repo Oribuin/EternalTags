@@ -86,23 +86,6 @@ public class ConfigurationManager extends AbstractConfigurationManager {
         public CommentedFileConfiguration getBaseConfig() {
             return EternalTags.getInstance().getManager(ConfigurationManager.class).getConfig();
         }
-
-        @SuppressWarnings("unchecked")
-        public Map<String, Object> getMap() {
-            if (this.value instanceof Map)
-                return (Map<String, Object>) this.value;
-
-            Map<String, Object> map = new HashMap<>();
-            CommentedConfigurationSection section = this.getBaseConfig().getConfigurationSection(this.key);
-            if (section == null) {
-                this.value = map;
-                return map;
-            }
-
-            section.getKeys(false).forEach(key -> map.put(key, section.get(key)));
-            this.value = map;
-            return map;
-        }
     }
 
     public ConfigurationManager(RosePlugin rosePlugin) {
