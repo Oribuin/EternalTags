@@ -7,12 +7,8 @@ import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.util.TagsUtils;
 
 import java.util.Arrays;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class SoundAction extends Action {
-
-    private final Pattern volumeRegex = Pattern.compile("volume:([0-9]+)");
 
     public SoundAction() {
         super("sound");
@@ -24,24 +20,28 @@ public class SoundAction extends Action {
             return;
 
         String[] args = this.getMessage().split(" ");
-        float volume = 100f;
-        if (args.length <= 2) {
-            Matcher volumeMatch = volumeRegex.matcher(args[1]);
-            if (volumeMatch.find()) {
-                volume = Float.parseFloat(volumeMatch.group(1));
-            }
+        Sound sound = null;
+        if (args.length >= 1) {
+            sound = TagsUtils.getEnum(Sound.class, args[0]);
         }
 
-        Sound sound = TagsUtils.getEnum(Sound.class, args[0]);
-        if (sound == null) {
+        if (sound == null)
             return;
+
+        float volume = 100f;
+        if (args.length >= 2) {
+            volume = Float.parseFloat(args[1]);
         }
 
-        player.playSound(player.getLocation(),sound, volume, 1f);
-    }
+        if (volume > 100f)
+            volume = 100f;
 
-    private Sound getSound(String sound) {
-        return Arrays.stream(Sound.values()).filter(x -> x.name().equalsIgnoreCase(sound)).findFirst().orElse(null);
+        float pitch = 1f;
+        if (args.length >= 3) {
+            pitch = Float.parseFloat(args[2]);
+        }
+
+        player.playSound(player.getLocation(), sound, volume, pitch);
     }
 
 }

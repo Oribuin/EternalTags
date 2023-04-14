@@ -145,33 +145,32 @@ public class TagsGUI extends PluginMenu {
      * @param player The player to add the navigation icons to.
      */
     private void addNavigationIcons(PaginatedGui gui, Player player, String finalMenuTitle) {
+
+        boolean hideIfFirstPage = this.config.getBoolean("previous-page.hide-if-first-page", false); // Hide the previous page icon
+        boolean hideIfLastPage = this.config.getBoolean("next-page.hide-if-last-page", false); // Hide the next page icon
+        int currentPage = gui.getCurrentPageNum();
+
         MenuItem.create(this.config)
                 .path("next-page")
                 .player(player)
-                .condition(menuItem -> menuItem.getConfig().getBoolean("next-page.hide-if-last-page", false)
-                        && gui.getCurrentPageNum() < gui.getPagesNum()
-                )
+                .condition(menuItem -> !hideIfLastPage || currentPage < gui.getPagesNum())
                 .action(event -> {
                     gui.next();
                     this.addNavigationIcons(gui, player, finalMenuTitle);
                     this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
                 })
-                .player(player)
                 .place(gui);
 
         MenuItem.create(this.config)
                 .path("previous-page")
                 .player(player)
-                .condition(menuItem -> menuItem.getConfig().getBoolean("previous-page.hide-if-first-page", false)
-                        && gui.getCurrentPageNum() > 1
-                )
+                .condition(menuItem -> !hideIfFirstPage || currentPage > 1)
                 .action(event -> {
                     gui.previous();
                     this.addNavigationIcons(gui, player, finalMenuTitle);
                     this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
                 })
                 .place(gui);
-
     }
 
     /**
