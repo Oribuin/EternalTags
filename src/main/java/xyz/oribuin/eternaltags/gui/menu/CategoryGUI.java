@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class CategoryGUI extends PluginMenu {
 
@@ -116,8 +117,6 @@ public class CategoryGUI extends PluginMenu {
                 .action(event -> MenuProvider.get(TagsGUI.class).open(player, null))
                 .place(gui);
 
-
-
         gui.open(player);
 
         int dynamicSpeed = this.config.getInt("gui-settings.dynamic-speed", 3);
@@ -159,9 +158,6 @@ public class CategoryGUI extends PluginMenu {
         if (gui instanceof PaginatedGui paginated)
             paginated.clearPageItems();
 
-        if (gui instanceof ScrollingGui scrolling)
-            scrolling.clearPageItems();
-
         TagsGUI tagsGUI = MenuProvider.get(TagsGUI.class);
         if (tagsGUI == null) // This should never happen, but just in case.
             return;
@@ -195,7 +191,7 @@ public class CategoryGUI extends PluginMenu {
 
             ItemStack item = TagsUtils.getItemStack(this.config, "categories." + category.getId() + ".display-item", player, placeholders.build());
             if (item == null) {
-                this.rosePlugin.logger.info("Failed to load category " + category.getId() + " for the gui, the display item is invalid, Using default value.");
+                this.rosePlugin.getLogger().info("Failed to load category " + category.getId() + " for the gui, the display item is invalid, Using default value.");
 
                 item = new ItemBuilder(Material.OAK_SIGN)
                         .setName(formatString(player, "#00B4DB" + category.getDisplayName()))
@@ -220,22 +216,32 @@ public class CategoryGUI extends PluginMenu {
     public List<Category> getCategories(@NotNull Player player) {
         List<Category> categories = new ArrayList<>(this.manager.getCachedCategories().values());
 
-        SortType sortType = SortType.match(this.config.getString("gui-settings.sort-type"));
+        SortType sortType = TagsUtils.getEnum(SortType.class, this.config.getString("gui-settings.sort-type"));
         if (sortType == null)
             sortType = SortType.ALPHABETICAL;
 
-        if (this.config.getBoolean("gui-settings.use-category-permissions"))
+        if (this.config.getBoolean("gui-settings.use-category-permissions", false)) {
             categories.removeIf(category -> {
                 if (category.isGlobal() || category.getPermission() == null)
                     return false;
 
                 return !player.hasPermission(category.getPermission());
             });
+        }
 
-        if (this.config.getBoolean("gui-settings.only-unlocked-categories"))
+        if (this.config.getBoolean("gui-settings.only-unlocked-categories", false)) {
             categories.removeIf(category -> !category.isGlobal() && this.manager.getAccessibleTagsInCategory(category, player).isEmpty());
+        }
 
-        categories.removeIf(category -> this.config.getBoolean("categories." + category.getId() + ".hidden", false));
+        // TODO: 2023-05-07 Fix this code
+//        categories.removeIf(category -> !category.isGlobal() || this.config.getBoolean("categories." + category.getId() + ".hidden"));
+//        categories.removeIf(category -> {
+//            if (category.isGlobal())
+//                return false;
+//
+//            return this.config.getBoolean("categories." + category.getId() + ".hidden");
+//        });
+
         sortType.sortCategories(categories);
 
         return categories;

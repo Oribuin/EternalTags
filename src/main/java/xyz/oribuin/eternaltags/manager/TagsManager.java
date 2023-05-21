@@ -63,6 +63,8 @@ public class TagsManager extends Manager {
 
     @Override
     public void reload() {
+        DataManager dataManager = this.rosePlugin.getManager(DataManager.class);
+
         // Load the default tag groups
         this.defaultTagGroups = new HashMap<>();
         CommentedConfigurationSection groupSection = Setting.DEFAULT_TAG_GROUPS.getSection();
@@ -78,7 +80,6 @@ public class TagsManager extends Manager {
 
         // Load all tags from mysql instead of tags.yml
         if (Setting.MYSQL_TAGDATA.getBoolean()) {
-            DataManager dataManager = this.rosePlugin.getManager(DataManager.class);
             dataManager.loadTagData(this.cachedTags);
             return;
         }
@@ -87,6 +88,20 @@ public class TagsManager extends Manager {
         this.tagsFile = TagsUtils.createFile(this.rosePlugin, "tags.yml");
         this.tagConfig = CommentedFileConfiguration.loadConfiguration(this.tagsFile);
         this.loadTags();
+
+        // Load all the users from the database
+        List<Player> users = Bukkit.getOnlinePlayers().stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        // Load all the users from the database
+        dataManager.loadUsers(users.stream()
+                .map(Player::getUniqueId)
+                .collect(Collectors.toList())
+        );
+
+        // Get each user and load their tags
+        users.forEach(this::getUserTag);
     }
 
     @Override

@@ -17,7 +17,7 @@
 # material - The material of the reward.
 # amount - The amount of the reward.
 # name - The name of the reward.
-# lore - The lore of the reward, You can use the %description% placeholder to add the description of the tag.
+# lore - The logre of the reward, You can use the %description% placeholder to add the description of the tag.
 # glow - Whether the reward item should glow.
 # texture - The base64 texture of the reward item (Only for skulls), You can also use hdbLoader to load a texture if you have HeadDatabase installed.
 # potion-color - The color of the potion reward. (Only for potions)

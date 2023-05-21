@@ -7,6 +7,7 @@ import xyz.oribuin.eternaltags.obj.Tag;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 public enum SortType {
     ALPHABETICAL,
@@ -15,6 +16,8 @@ public enum SortType {
     RANDOM;
 
     public void sort(List<Tag> tags) {
+        tags.removeIf(Objects::isNull); // Remove null tags.
+
         switch (this) {
             case ALPHABETICAL -> tags.sort(Comparator.comparing(Tag::getName));
             case CUSTOM -> tags.sort(Comparator.comparingInt(Tag::getOrder));
@@ -23,6 +26,8 @@ public enum SortType {
     }
 
     public void sortCategories(List<Category> categories) {
+        categories.removeIf(Objects::isNull); // Remove null categories.
+
         switch (this) {
             case ALPHABETICAL -> categories.sort(Comparator.comparing(Category::getDisplayName));
             case CUSTOM -> categories.sort(Comparator.comparingInt(Category::getOrder));
@@ -31,21 +36,4 @@ public enum SortType {
 
     }
 
-    /**
-     * Match a sort type by their name.
-     *
-     * @param name The name of the sort type
-     * @return A matching type if present.
-     */
-    public static @Nullable SortType match(@Nullable String name) {
-        if (name == null)
-            return null;
-
-        for (SortType type : values()) {
-            if (type.name().equalsIgnoreCase(name))
-                return type;
-        }
-
-        return null;
-    }
 }

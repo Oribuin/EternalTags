@@ -4,8 +4,6 @@ import com.google.gson.Gson;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.database.DataMigration;
 import dev.rosewood.rosegarden.manager.AbstractDataManager;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.database.migration._1_CreateInitialTables;
@@ -39,8 +37,6 @@ public class DataManager extends AbstractDataManager {
     @Override
     public void reload() {
         super.reload();
-
-        this.cachedUsers.clear();
     }
 
     /**
@@ -216,6 +212,43 @@ public class DataManager extends AbstractDataManager {
         }));
     }
 
+    /**
+     * Load a list of users from the database and cache them.
+     *
+     * @param users The list of users to load.
+     */
+    public void loadUsers(List<UUID> users) {
+        this.cachedUsers.clear();
+
+        if (users.isEmpty()) return;
+
+        this.async(task -> this.databaseConnector.connect(connection -> {
+            for (UUID user : users) {
+                final String selectTag = "SELECT tagID FROM " + this.getTablePrefix() + "tags WHERE player = ?";
+                final String favouriteTags = "SELECT tagID FROM " + this.getTablePrefix() + "favourites WHERE player = ?";
+
+                TagUser tagUser = new TagUser(user);
+
+                try (PreparedStatement statement = connection.prepareStatement(selectTag)) {
+                    statement.setString(1, user.toString());
+                    final ResultSet result = statement.executeQuery();
+                    if (result.next()) {
+                        tagUser.setActiveTag(result.getString(1));
+                    }
+                }
+
+                try (PreparedStatement statement = connection.prepareStatement(favouriteTags)) {
+                    statement.setString(1, user.toString());
+                    final ResultSet result = statement.executeQuery();
+                    while (result.next()) {
+                        tagUser.getFavourites().add(result.getString(1));
+                    }
+                }
+
+                this.cachedUsers.put(user, tagUser);
+            }
+        }));
+    }
 
     /**
      * Load all tag data from the database.

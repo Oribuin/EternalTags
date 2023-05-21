@@ -25,6 +25,7 @@ import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
+import xyz.oribuin.eternaltags.util.TagsUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -79,8 +80,6 @@ public class TagsGUI extends PluginMenu {
             }
         }
 
-        this.addNavigationIcons(gui, player, finalMenuTitle); // Add the navigation icons to the GUI.
-
         MenuItem.create(this.config)
                 .path("clear-tag")
                 .player(player)
@@ -104,7 +103,6 @@ public class TagsGUI extends PluginMenu {
                 .player(player)
                 .action(event -> this.searchTags(player, gui))
                 .place(gui);
-
 
         gui.open(player);
 
@@ -135,6 +133,8 @@ public class TagsGUI extends PluginMenu {
 
         if (this.addPagesAsynchronously()) this.async(task);
         else task.run();
+
+        this.addNavigationIcons(gui, player, finalMenuTitle); // Add the navigation icons to the GUI.
     }
 
     /**
@@ -146,14 +146,14 @@ public class TagsGUI extends PluginMenu {
      */
     private void addNavigationIcons(PaginatedGui gui, Player player, String finalMenuTitle) {
 
-        boolean hideIfFirstPage = this.config.getBoolean("previous-page.hide-if-first-page", false); // Hide the previous page icon
-        boolean hideIfLastPage = this.config.getBoolean("next-page.hide-if-last-page", false); // Hide the next page icon
-        int currentPage = gui.getCurrentPageNum();
+//        boolean hideIfFirstPage = this.config.getBoolean("previous-page.hide-if-first-page", false); // Hide the previous page icon
+//        boolean hideIfLastPage = this.config.getBoolean("next-page.hide-if-last-page", false); // Hide the next page icon
+//        int currentPage = gui.getCurrentPageNum();
 
         MenuItem.create(this.config)
                 .path("next-page")
                 .player(player)
-                .condition(menuItem -> !hideIfLastPage || currentPage < gui.getPagesNum())
+//                .condition(menuItem -> !hideIfLastPage || (currentPage == 1 && gui.getPagesNum() > 1) || currentPage < gui.getPagesNum())
                 .action(event -> {
                     gui.next();
                     this.addNavigationIcons(gui, player, finalMenuTitle);
@@ -164,13 +164,15 @@ public class TagsGUI extends PluginMenu {
         MenuItem.create(this.config)
                 .path("previous-page")
                 .player(player)
-                .condition(menuItem -> !hideIfFirstPage || currentPage > 1)
+//                .condition(menuItem -> !hideIfFirstPage || currentPage > 1)
                 .action(event -> {
                     gui.previous();
                     this.addNavigationIcons(gui, player, finalMenuTitle);
                     this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
                 })
                 .place(gui);
+
+        gui.update(); // Update the GUI to apply the changes.
     }
 
     /**
@@ -183,9 +185,6 @@ public class TagsGUI extends PluginMenu {
     private void addTags(@NotNull BaseGui gui, @NotNull Player player, @Nullable Predicate<Tag> filter) {
         if (gui instanceof PaginatedGui paginatedGui) // Remove all items from the GUI
             paginatedGui.clearPageItems();
-
-        if (gui instanceof ScrollingGui scrollingGui) // Remove all items from the GUI
-            scrollingGui.clearPageItems();
 
         Map<ClickType, List<Action>> tagActions = this.getTagActions();
         this.getTags(player, filter).forEach(tag -> {
@@ -238,7 +237,7 @@ public class TagsGUI extends PluginMenu {
      * @return A list of tags
      */
     private @NotNull List<Tag> getTags(@NotNull Player player, Predicate<Tag> filter) {
-        SortType sortType = SortType.match(this.config.getString("gui-settings.sort-type"));
+        SortType sortType = TagsUtils.getEnum(SortType.class, this.config.getString("gui-settings.sort-type"));
         if (sortType == null)
             sortType = SortType.ALPHABETICAL;
 
