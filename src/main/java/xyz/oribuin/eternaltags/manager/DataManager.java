@@ -239,6 +239,7 @@ public class DataManager extends AbstractDataManager {
                     tag.setDescription(description);
                     tag.setOrder(result.getInt("order"));
                     tag.setIcon(TagsUtils.deserializeItem(result.getBytes("icon")));
+                    tag.setCategory(result.getString("category"));
                     cachedTags.put(id, tag);
                 }
             }
@@ -252,7 +253,8 @@ public class DataManager extends AbstractDataManager {
      */
     public void saveTagData(@NotNull Tag tag) {
         this.async(task -> this.databaseConnector.connect(connection -> {
-            final String query = "REPLACE INTO " + this.getTablePrefix() + "tag_data (tagId, `name`, description, tag, permission, `order`, icon) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            final String query = "REPLACE INTO " + this.getTablePrefix() + "tag_data (`tagId`, `name`, " +
+                    "`description`, `tag`, `permission`, `order`, `icon`, `category`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, tag.getId());
                 statement.setString(2, tag.getName());
@@ -261,6 +263,7 @@ public class DataManager extends AbstractDataManager {
                 statement.setString(5, tag.getPermission());
                 statement.setInt(6, tag.getOrder());
                 statement.setBytes(7, tag.getIcon() != null ? TagsUtils.serializeItem(tag.getIcon()) : null);
+                statement.setString(8, tag.getCategory());
                 statement.executeUpdate();
             }
         }));
@@ -273,7 +276,8 @@ public class DataManager extends AbstractDataManager {
      */
     public void saveTagData(Map<String, Tag> tags) {
         this.async(task -> this.databaseConnector.connect(connection -> {
-            final String query = "REPLACE INTO " + this.getTablePrefix() + "tag_data (tagId, `name`, description, tag, permission, `order`, icon) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            final String query = "REPLACE INTO " + this.getTablePrefix() + "tag_data (`tagId`, `name`, " +
+                    "`description`, `tag`, `permission`, `order`, `icon`, `category`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 for (Tag tag : tags.values()) {
@@ -284,6 +288,7 @@ public class DataManager extends AbstractDataManager {
                     statement.setString(5, tag.getPermission());
                     statement.setInt(6, tag.getOrder());
                     statement.setBytes(7, tag.getIcon() != null ? TagsUtils.serializeItem(tag.getIcon()) : null);
+                    statement.setString(8, tag.getCategory());
                     statement.addBatch();
                 }
 
