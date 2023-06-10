@@ -139,7 +139,11 @@ public class TagsManager extends Manager {
             obj.setHandIcon(tagSection.getBoolean(key + ".hand-icon", false));
 
             String category = tagSection.getString(key + ".category", null);
-            obj.setCategory(category == null ? this.defaultCategory.getId() : category.toLowerCase());
+            if (category != null && this.cachedCategories.containsKey(category.toLowerCase()))
+                obj.setCategory(category.toLowerCase());
+
+            else if (this.defaultCategory != null)
+                obj.setCategory(this.defaultCategory.getId());
 
 
             // Icons can either be a material or a byte array
