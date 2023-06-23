@@ -1,0 +1,85 @@
++# zh_CN translation by Chencu5958
+# Plugin Message Prefix
+prefix: <g:#00B4DB:#0083B0>&lEternalTags &8| &f
+
+# Generic Command Messages
+no-permission: 你没有权限那么做！
+only-player: 该命令仅允许玩家执行。
+only-console: 该命令仅允许控制台执行。
+unknown-command: '未知命令, 请使用 #00B4DB/%cmd%&f 获得更多帮助'
+
+# Categories Command
+command-categories-description: 打开称号分类菜单。
+
+# Clear Command
+command-clear-description: 取下已激活的称号切换回默认称号。
+command-clear-cleared: 你已取下已激活的称号，已恢复为默认称号。
+command-clear-cleared-other: 你取下了玩家 %player% 已激活的称号，恢复为默认称号。
+
+# Convert Command
+command-convert-description: 将其它称号插件的数据转换至EternalTags。
+command-convert-converted: 你已成功将%total%个称号转换到EternalTags！
+command-convert-invalid-plugin: 请提供有效的插件名称用于称号数据转换！ [%options%]
+
+# Create Command
+command-create-description: 创建新的称号。
+command-create-created: 你成功创建了一个名为 %tag% &f的称号！
+command-create-tag-exists: 该称号已存在，请试试使用别的名称吧！
+command-create-tag-missing: 请输入用于显示的称号内容。
+
+# Delete Command
+command-delete-description: 删除已有的称号。
+command-delete-deleted: 你已成功删除称号 %tag% &f！
+
+# Favorite Command
+command-favorite-description: 切换称号的喜爱状态。
+command-favorite-no-permission: 您没有权限对该称号使用喜爱功能。
+command-favorite-toggled: 你已成功切换称号 %tag% &f的喜爱状态&7（状态：%toggled%&7）&f！
+command-favorite-cleared: 你已成功重置了您的称号喜爱列表。
+command-favorite-on: '&a开启'
+command-favorite-off: '&4关闭'
+
+# Random Command
+command-random-description: 随机使用一个你已有的称号。
+
+# Reload Command
+command-reload-description: 重载插件。
+command-reload-reloaded: 配置文件和本地化文件已重载成功!
+
+# Search Command
+command-search-description: 搜索你已有的称号。
+command-search-start: 请在聊天栏内输入您想要搜索的称号或内容。
+command-search-timeout: Oops，由于您长时间未操作，已取消本次搜索。
+
+# Set Command
+command-set-description: 更换当前使用的称号（需有对应称号）。
+command-set-changed: 你已成功将称号切换为 %tag% &f！
+command-set-changed-other: 你已成功将玩家 %player% ，使用的称号更改为 %tag% &f！
+command-set-no-permission: 你没有权限使用这个称号。
+
+# Set All Command
+command-setall-description: 修改所有玩家的称号（需有对应称号）。
+command-setall-changed: 你已成功将所有的玩家称号修改为 %tag% &f！
+
+# Help Command
+command-help-title: '&f可用命令:'
+command-help-description: 显示帮助菜单.
+command-help-list-description: '&8 - #00B4DB/%cmd% %subcmd% %args% &7- %desc%'
+command-help-list-description-no-args: '&8 - #00B4DB/%cmd% %subcmd% &7- %desc%'
+
+# Edit Command
+command-edit-description: 编辑称号的相关变量。
+command-edit-edited: 你已成功将称号的 %option% 修改为 %value% &f！
+command-edit-invalid-item: 请拿着有效的物品！
+
+# Plugin Error Messages
+no-tags: 你当前未拥有任何称号。
+tag-doesnt-exist: 你输入的称号不存在，请重新输入。
+
+# Argument Handler Error Messages
+argument-handler-player: 您输入的玩家名称不存在或未在线！
+argument-handler-plugins: 请输入有效的插件名称！
+argument-handler-tags: '%input% 不是有效的称号ID！'
+argument-handler-edit-option: 请输入有效的变量参数！
+argument-handler-category: 请输入有效的分类名称！
+argument-handler-material: 请输入有效的材质名称！
