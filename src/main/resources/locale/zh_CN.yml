@@ -32,10 +32,10 @@ command-delete-description: 删除已有的称号。
 command-delete-deleted: 你已成功删除称号 %tag% &f！
 
 # Favorite Command
-command-favorite-description: 切换称号的喜爱状态。
-command-favorite-no-permission: 您没有权限对该称号使用喜爱功能。
-command-favorite-toggled: 你已成功切换称号 %tag% &f的喜爱状态&7（状态：%toggled%&7）&f！
-command-favorite-cleared: 你已成功重置了您的称号喜爱列表。
+command-favorite-description: 切换称号的收藏状态。
+command-favorite-no-permission: 您没有权限对该称号使用收藏功能。
+command-favorite-toggled: 你已成功切换称号 %tag% &f的收藏状态&7（状态：%toggled%&7）&f！
+command-favorite-cleared: 你已成功重置了您的称号收藏列表。
 command-favorite-on: '&a开启'
 command-favorite-off: '&4关闭'
 
