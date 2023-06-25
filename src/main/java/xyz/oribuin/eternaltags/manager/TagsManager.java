@@ -10,7 +10,6 @@ import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -81,15 +80,14 @@ public class TagsManager extends Manager {
         this.loadCategories();
 
         // Load all tags from mysql instead of tags.yml
-        if (Setting.MYSQL_TAGDATA.getBoolean()) {
-            dataManager.loadTagData(this.cachedTags);
-            return;
+        if (!Setting.MYSQL_TAGDATA.getBoolean()) {
+            this.tagsFile = TagsUtils.createFile(this.rosePlugin, "tags.yml");
+            this.tagConfig = CommentedFileConfiguration.loadConfiguration(this.tagsFile);
         }
 
-        // Create the tags.yml
-        this.tagsFile = TagsUtils.createFile(this.rosePlugin, "tags.yml");
-        this.tagConfig = CommentedFileConfiguration.loadConfiguration(this.tagsFile);
-        this.loadTags();
+        // Load all tags from mysql
+        this.cachedTags.clear();
+        this.cachedTags.putAll(this.loadTags(Setting.MYSQL_TAGDATA.getBoolean() ? DataStorageType.SQL : DataStorageType.YML));
 
         // Load all the users from the database
         List<Player> users = Bukkit.getOnlinePlayers().stream()
@@ -185,7 +183,7 @@ public class TagsManager extends Manager {
 
         return result;
     }
-    
+
     /**
      * Load all the categories from the plugin config.
      */
@@ -402,16 +400,13 @@ public class TagsManager extends Manager {
     /**
      * Wipes all the tags from the tags.yml
      */
-    public void wipeTags() {
-        if (Setting.MYSQL_TAGDATA.getBoolean()) {
-            this.rosePlugin.getManager(DataManager.class).deleteAllTagData();
-            return;
-        }
-
-        CompletableFuture.runAsync(() -> this.cachedTags.forEach((id, tag) -> this.tagConfig.set("tags." + id, null)))
-                .thenRun(() -> this.tagConfig.save(this.tagsFile));
-
+    public void wipeTags(DataStorageType type) {
         this.cachedTags.clear();
+
+        switch (type) {
+            case SQL -> this.rosePlugin.getManager(DataManager.class).deleteAllTagData();
+            case YML -> CompletableFuture.runAsync(() -> this.tagConfig.set("tags", null)).thenRun(() -> this.tagConfig.save(this.tagsFile));
+        }
     }
 
     /**
@@ -918,6 +913,10 @@ public class TagsManager extends Manager {
             case "none" -> null;
             default -> this.cachedTags.containsKey(tag) ? tag : null;
         };
+    }
+
+    public DataStorageType getStorageType() {
+        return Setting.MYSQL_TAGDATA.getBoolean() ? DataStorageType.SQL : DataStorageType.YML;
     }
 
     /**

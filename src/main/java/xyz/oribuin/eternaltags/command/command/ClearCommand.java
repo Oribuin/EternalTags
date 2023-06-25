@@ -45,7 +45,7 @@ public class ClearCommand extends RoseCommand {
                 locale.sendMessage(player, "command-clear-cleared");
             }
 
-            locale.sendMessage(sender, "command-clear-cleared-other", StringPlaceholders.single("player", player.getName()));
+            locale.sendMessage(sender, "command-clear-cleared-other", StringPlaceholders.of("player", player.getName()));
             return;
         }
 

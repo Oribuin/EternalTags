@@ -23,7 +23,7 @@ public class PluginArgumentHandler extends RoseCommandArgumentHandler<Conversion
 
         Optional<ConversionPlugin> conversion = ValidPlugin.match(input);
         if (conversion.isEmpty())
-            throw new HandledArgumentException("argument-handler-plugins", StringPlaceholders.single("input", input));
+            throw new HandledArgumentException("argument-handler-plugins", StringPlaceholders.of("input", input));
 
         return conversion.get();
     }

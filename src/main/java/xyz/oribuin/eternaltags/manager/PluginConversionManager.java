@@ -44,8 +44,7 @@ public class PluginConversionManager extends Manager {
 
         // filter out tags that have name or tag null
         tags.entrySet().removeIf(entry -> entry.getKey() == null);
-        manager.saveTags(tags);
-
+        manager.saveTags(manager.getStorageType(), tags);
 
         return tags;
     }

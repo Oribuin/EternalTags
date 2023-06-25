@@ -23,7 +23,7 @@ public class TagsArgumentHandler extends RoseCommandArgumentHandler<Tag> {
         String input = argumentParser.next();
         Tag value = this.rosePlugin.getManager(TagsManager.class).getTagFromId(input.toLowerCase());
         if (value == null)
-            throw new HandledArgumentException("argument-handler-tags", StringPlaceholders.single("input", input));
+            throw new HandledArgumentException("argument-handler-tags", StringPlaceholders.of("input", input));
 
         return value;
     }

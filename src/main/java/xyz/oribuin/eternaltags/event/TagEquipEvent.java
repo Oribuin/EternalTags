@@ -4,6 +4,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.player.PlayerEvent;
+import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.obj.Tag;
 
 public class TagEquipEvent extends PlayerEvent implements Cancellable {
@@ -22,21 +23,22 @@ public class TagEquipEvent extends PlayerEvent implements Cancellable {
     }
 
     public Tag getTag() {
-        return tag;
+        return this.tag;
     }
 
     @Override
-    public HandlerList getHandlers() {
+    public @NotNull HandlerList getHandlers() {
         return list;
     }
 
     @Override
     public boolean isCancelled() {
-        return cancelled;
+        return this.cancelled;
     }
 
     @Override
     public void setCancelled(boolean cancelled) {
         this.cancelled = cancelled;
     }
+
 }

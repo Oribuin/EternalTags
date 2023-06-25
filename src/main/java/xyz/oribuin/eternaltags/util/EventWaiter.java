@@ -49,8 +49,6 @@ public class EventWaiter implements Listener {
      * @param <T>           The type of the event.
      */
     public <T extends Event> void waitForEvent(Class<T> eventClass, Predicate<T> predicate, Consumer<T> action, long timeout, TimeUnit unit, Runnable timeoutAction) {
-
-
         var we = new WaitingEvent<>(predicate, action);
         var set = this.waitingEvents.computeIfAbsent(eventClass, k -> new HashSet<>());
         set.add(we);

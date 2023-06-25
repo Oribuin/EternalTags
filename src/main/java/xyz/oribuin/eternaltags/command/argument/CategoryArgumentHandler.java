@@ -22,7 +22,7 @@ public class CategoryArgumentHandler extends RoseCommandArgumentHandler<Category
         String input = argumentParser.next();
         Category value = this.rosePlugin.getManager(TagsManager.class).getCategory(input.toLowerCase());
         if (value == null || value.isGlobal())
-            throw new HandledArgumentException("argument-handler-category", StringPlaceholders.single("input", input));
+            throw new HandledArgumentException("argument-handler-category", StringPlaceholders.of("input", input));
 
         return value;
     }

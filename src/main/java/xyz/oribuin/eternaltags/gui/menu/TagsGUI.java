@@ -308,7 +308,7 @@ public class TagsGUI extends PluginMenu {
             return;
 
         this.manager.setTag(player.getUniqueId(), tag);
-        this.locale.sendMessage(player, "command-set-changed", StringPlaceholders.single("tag", this.manager.getDisplayTag(tag, player)));
+        this.locale.sendMessage(player, "command-set-changed", StringPlaceholders.of("tag", this.manager.getDisplayTag(tag, player)));
     }
 
 
