@@ -47,6 +47,18 @@
 <tr>
   <td width="80" align="center" valign="top">
     <br>
+    <a href="https://discord.gg/B9uCCVF"><img src="../images/icon/support.svg"></a>
+  </td>
+  <td>
+    <h3>帮助支持</h3>
+    <p>
+      您可加入我们的<a href="https://discord.gg/B9uCCVF">Discord社区</a>获得更多帮助。
+    </p>
+  </td>
+</tr>
+<tr>
+  <td width="80" align="center" valign="top">
+    <br>
     <a href="https://github.com/Oribuin/EternalTags/issues"><img src="../images/icon/bug.svg"></a>
   </td>
   <td>

@@ -47,6 +47,18 @@
 <tr>
   <td width="80" align="center" valign="top">
     <br>
+    <a href="https://discord.gg/B9uCCVF"><img src="./blob/images/icon/support.svg"></a>
+  </td>
+  <td>
+    <h3>Support</h3>
+    <p>
+      Join our <a href="https://discord.gg/B9uCCVF">discord community</a> for more help.
+    </p>
+  </td>
+</tr>
+<tr>
+  <td width="80" align="center" valign="top">
+    <br>
     <a href="https://github.com/Oribuin/EternalTags/issues"><img src="./blob/images/icon/bug.svg"></a>
   </td>
   <td>
