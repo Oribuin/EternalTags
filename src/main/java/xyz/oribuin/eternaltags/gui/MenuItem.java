@@ -3,10 +3,9 @@ package xyz.oribuin.eternaltags.gui;
 import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
-import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.BaseGui;
 import dev.triumphteam.gui.guis.GuiItem;
-import dev.triumphteam.gui.guis.PaginatedGui;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -21,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -31,7 +31,8 @@ public class MenuItem {
     private String itemPath; // The path to the item in the config
     private StringPlaceholders placeholders; // The custom placeholders for the item
     private Player player; //  The player who is viewing the menu, this is used for placeholders
-    private Consumer<InventoryClickEvent> action; // The action to be performed when the item is clicked
+    private Sound clickSound; // The sound to be played when the item is clicked
+    private BiConsumer<MenuItem, InventoryClickEvent> action; // The action to be performed when the item is clicked
     private List<Integer> slots; // The slots the item should be placed in
     private Predicate<MenuItem> condition; // The condition for the item to be displayed
     private final Map<ClickType, List<Action>> customActions; // The actions to be performed when the item is clicked
@@ -46,7 +47,10 @@ public class MenuItem {
         this.itemPath = null;
         this.placeholders = StringPlaceholders.empty();
         this.player = null;
-        this.action = inventoryClickEvent -> {}; // Do nothing
+        this.clickSound = null;
+        this.action = (menuItem, inventoryClickEvent) -> {
+            // do nothing
+        };
         this.slots = new ArrayList<>();
         this.condition = menuItem -> true;
         this.customActions = new HashMap<>();
@@ -87,6 +91,10 @@ public class MenuItem {
         if (!this.isConditional())
             return;
 
+        if (this.clickSound == null && this.customItem == null) {
+            this.clickSound = TagsUtils.getEnum(Sound.class, this.config.getString(this.itemPath + ".sound", ""));
+        }
+
         // Add any slots that were not added
         if (this.slots.isEmpty()) {
             // We check for the singular slot first
@@ -112,11 +120,9 @@ public class MenuItem {
         }
 
         this.addActions();
-        this.slots.forEach(slot -> gui.setItem(slot, new GuiItem(item, this.action::accept)));
+        this.slots.forEach(slot -> gui.setItem(slot, new GuiItem(item, event -> this.action.accept(this, event))));
         gui.update();
-
     }
-
 
     /**
      * Add all the custom actions to the item
@@ -148,13 +154,19 @@ public class MenuItem {
         if (this.customActions.isEmpty())
             return;
 
-        this.action = event -> {
+        this.action = (menuItem, event) -> {
             List<Action> actions = this.customActions.get(event.getClick());
             if (actions == null)
                 return;
 
             actions.forEach(action -> action.execute((Player) event.getWhoClicked(), this.placeholders));
         };
+    }
+
+    public void sound(Player player) {
+        if (this.clickSound != null) {
+            player.playSound(player.getLocation(), this.clickSound, 75, 1);
+        }
     }
 
     /**
@@ -204,11 +216,16 @@ public class MenuItem {
         return this;
     }
 
-    public Consumer<InventoryClickEvent> getAction() {
+    public BiConsumer<MenuItem, InventoryClickEvent> getAction() {
         return action;
     }
 
     public final MenuItem action(Consumer<InventoryClickEvent> action) {
+        this.action = (item, event) -> action.accept(event);
+        return this;
+    }
+
+    public final MenuItem action(BiConsumer<MenuItem, InventoryClickEvent> action) {
         this.action = action;
         return this;
     }
@@ -220,7 +237,7 @@ public class MenuItem {
     public final MenuItem slots(List<Integer> slots) {
         this.slots = slots;
         return this;
-    } 
+    }
 
     public final MenuItem slot(int slot) {
         this.slots = List.of(slot);
@@ -248,7 +265,5 @@ public class MenuItem {
     public Map<ClickType, List<Action>> getCustomActions() {
         return customActions;
     }
-
-
 
 }

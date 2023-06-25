@@ -10,10 +10,12 @@ import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.oribuin.eternaltags.command.model.DataStorageType;
 import xyz.oribuin.eternaltags.event.TagDeleteEvent;
 import xyz.oribuin.eternaltags.event.TagSaveEvent;
 import xyz.oribuin.eternaltags.hook.OraxenHook;
@@ -109,76 +111,81 @@ public class TagsManager extends Manager {
         // Unused
     }
 
-    /**
-     * Load all the tags from the plugin config.
-     */
-    public void loadTags() {
-        this.cachedTags.clear();
+    public Map<String, Tag> loadTags(DataStorageType type) {
+        Map<String, Tag> result = new HashMap<>();
 
-        CommentedConfigurationSection tagSection = this.tagConfig.getConfigurationSection("tags");
-        if (tagSection == null) {
-            this.rosePlugin.getLogger().severe("WARNING: We could not find any tags in the tags.yml file. Please make sure you have at least one tag saved.");
-            return;
+        switch (type) {
+            case SQL -> this.rosePlugin.getManager(DataManager.class).loadTagData(result);
+            case YML -> {
+                CommentedConfigurationSection tagSection = this.tagConfig.getConfigurationSection("tags");
+                if (tagSection == null) {
+                    this.rosePlugin.getLogger().severe("WARNING: We could not find any tags in the tags.yml file. Please make sure you have at least one tag saved.");
+                    return result;
+                }
+
+                tagSection.getKeys(false).forEach(key -> {
+                    String name = tagSection.getString(key + ".name", key);
+                    String tag = tagSection.getString(key + ".tag");
+
+                    if (name == null || tag == null)
+                        return;
+
+                    final Tag obj = new Tag(key.toLowerCase(), name, tag);
+                    List<String> description = tagSection.get(key + ".description") instanceof String
+                            ? Collections.singletonList(tagSection.getString(key + ".description"))
+                            : tagSection.getStringList(key + ".description");
+
+                    obj.setDescription(description);
+                    obj.setPermission(tagSection.getString(key + ".permission"));
+                    obj.setOrder(tagSection.getInt(key + ".order", -1));
+                    obj.setHandIcon(tagSection.getBoolean(key + ".hand-icon", false));
+
+
+                    String category = tagSection.getString(key + ".category", null);
+                    if (category != null && this.cachedCategories.containsKey(category.toLowerCase()))
+                        obj.setCategory(category.toLowerCase());
+
+                    else if (this.defaultCategory != null)
+                        obj.setCategory(this.defaultCategory.getId());
+
+
+                    // Icons can either be a material or a byte array
+                    Object icon = tagSection.get(key + ".icon");
+                    if (icon != null) {
+                        // Read the material from the string
+                        if (icon instanceof String iconString) {
+                            Material material = Material.matchMaterial(iconString);
+                            if (material != null)
+                                obj.setIcon(new ItemStack(material));
+                        }
+
+                        // Read from a configuration section
+                        CommentedConfigurationSection iconSection = tagSection.getConfigurationSection(key + ".icon");
+                        if (iconSection != null && iconSection.getKeys(false).size() > 0) {
+                            ItemStack itemStack = TagsUtils.getItemStack(tagSection, key + ".icon");
+                            if (itemStack != null)
+                                obj.setIcon(itemStack);
+                        }
+
+                        // Read from a byte array
+                        if (icon instanceof byte[] iconBytes && obj.isHandIcon()) {
+                            ItemStack itemStack = TagsUtils.deserializeItem(iconBytes);
+                            if (itemStack != null)
+                                obj.setIcon(itemStack);
+                        }
+                    }
+
+                    if (OraxenHook.enabled())
+                        obj.setTag(OraxenHook.parseGlyph(tag));
+
+                    result.put(key.toLowerCase(), obj);
+                });
+            }
         }
 
-        tagSection.getKeys(false).forEach(key -> {
-            String name = tagSection.getString(key + ".name", key);
-            String tag = tagSection.getString(key + ".tag");
-
-            if (name == null || tag == null)
-                return;
-
-            final Tag obj = new Tag(key.toLowerCase(), name, tag);
-            List<String> description = tagSection.get(key + ".description") instanceof String
-                    ? Collections.singletonList(tagSection.getString(key + ".description"))
-                    : tagSection.getStringList(key + ".description");
-
-            obj.setDescription(description);
-            obj.setPermission(tagSection.getString(key + ".permission", null));
-            obj.setOrder(tagSection.getInt(key + ".order", -1));
-            obj.setHandIcon(tagSection.getBoolean(key + ".hand-icon", false));
-
-            String category = tagSection.getString(key + ".category", null);
-            if (category != null && this.cachedCategories.containsKey(category.toLowerCase()))
-                obj.setCategory(category.toLowerCase());
-
-            else if (this.defaultCategory != null)
-                obj.setCategory(this.defaultCategory.getId());
-
-
-            // Icons can either be a material or a byte array
-            Object icon = tagSection.get(key + ".icon");
-            if (icon != null) {
-                // Read the material from the string
-                if (icon instanceof String iconString) {
-                    Material material = Material.matchMaterial(iconString);
-                    if (material != null)
-                        obj.setIcon(new ItemStack(material));
-                }
-
-                // Read from a configuration section
-                CommentedConfigurationSection iconSection = tagSection.getConfigurationSection(key + ".icon");
-                if (iconSection != null && iconSection.getKeys(false).size() > 0) {
-                    ItemStack itemStack = TagsUtils.getItemStack(tagSection, key + ".icon");
-                    if (itemStack != null)
-                        obj.setIcon(itemStack);
-                }
-
-                // Read from a byte array
-                if (icon instanceof byte[] iconBytes && obj.isHandIcon()) {
-                    ItemStack itemStack = TagsUtils.deserializeItem(iconBytes);
-                    if (itemStack != null)
-                        obj.setIcon(itemStack);
-                }
-            }
-
-            if (OraxenHook.enabled())
-                obj.setTag(OraxenHook.parseGlyph(tag));
-
-            this.cachedTags.put(key.toLowerCase(), obj);
-        });
+        return result;
     }
-
+    
     /**
      * Load all the categories from the plugin config.
      */
@@ -332,29 +339,27 @@ public class TagsManager extends Manager {
      *
      * @param tags The tags being saved.
      */
-    public void saveTags(Map<String, Tag> tags) {
+    public void saveTags(DataStorageType type, Map<String, Tag> tags) {
         this.cachedTags.putAll(tags);
-
-        if (Setting.MYSQL_TAGDATA.getBoolean()) {
-            this.rosePlugin.getManager(DataManager.class).saveTagData(tags);
-            return;
-        }
 
         // Send the tags to bungee if enabled.
         if (Setting.PLUGIN_MESSAGING.getBoolean()) {
             tags.values().forEach(BungeeListener::modifyTag);
         }
 
-        CompletableFuture.runAsync(() -> tags.forEach((id, tag) -> {
-            this.tagConfig.set("tags." + id + ".name", tag.getName());
-            this.tagConfig.set("tags." + id + ".tag", tag.getTag());
-            this.tagConfig.set("tags." + id + ".description", tag.getDescription());
-            this.tagConfig.set("tags." + id + ".permission", tag.getPermission());
-            this.tagConfig.set("tags." + id + ".order", tag.getOrder());
-            this.tagConfig.set("tags." + id + ".hand-icon", tag.isHandIcon());
-            this.tagConfig.set("tags." + id + ".icon", TagsUtils.serializeItem(tag.getIcon()));
-            this.tagConfig.set("tags." + id + ".category", tag.getCategory());
-        })).thenRun(() -> this.tagConfig.save(this.tagsFile));
+        switch (type) {
+            case SQL -> this.rosePlugin.getManager(DataManager.class).saveTagData(tags);
+            case YML -> CompletableFuture.runAsync(() -> tags.forEach((id, tag) -> {
+                this.tagConfig.set("tags." + id + ".name", tag.getName());
+                this.tagConfig.set("tags." + id + ".tag", tag.getTag());
+                this.tagConfig.set("tags." + id + ".description", tag.getDescription());
+                this.tagConfig.set("tags." + id + ".permission", tag.getPermission());
+                this.tagConfig.set("tags." + id + ".order", tag.getOrder());
+                this.tagConfig.set("tags." + id + ".hand-icon", tag.isHandIcon());
+                this.tagConfig.set("tags." + id + ".icon", TagsUtils.serializeItem(tag.getIcon()));
+                this.tagConfig.set("tags." + id + ".category", tag.getCategory());
+            })).thenRun(() -> this.tagConfig.save(this.tagsFile));
+        }
     }
 
     /**
