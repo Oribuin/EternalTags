@@ -39,6 +39,11 @@ command-favorite-cleared: 你已成功重置了您的称号收藏列表。
 command-favorite-on: '&a开启'
 command-favorite-off: '&4关闭'
 
+# Migrate Command
+command-migrate-description: 将称号的数据保存类型进行迁移。
+command-migrate-success: 你已成功将称号数据保存类型从%from%迁移到%to%。
+command-migrate-matching: 请选择两种不同的数据存储类型用于迁移。
+
 # Random Command
 command-random-description: 随机使用一个你已有的称号。
 
@@ -83,3 +88,4 @@ argument-handler-tags: '%input% 不是有效的称号ID！'
 argument-handler-edit-option: 请输入有效的变量参数！
 argument-handler-category: 请输入有效的分类名称！
 argument-handler-material: 请输入有效的材质名称！
+argument-handler-data-storage-type: 请输入有效的数据存储类型！
