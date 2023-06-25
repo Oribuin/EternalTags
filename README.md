@@ -2,10 +2,10 @@
 
 # 👋 Welcome to EternalTags
 
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/Oribuin/EternalTags/gradle.yml?color=%2300B4DB&style=for-the-badge&logo=github)
-![Bstats server stats](https://img.shields.io/bstats/servers/11508?color=%2300B4DB&style=for-the-badge&logo=serverless&logoColor=white)
-![Bstats player stats](https://img.shields.io/bstats/players/11508?color=%2300B4DB&style=for-the-badge&logo=odnoklassniki&logoColor=white)
-![Plugin download stats](https://img.shields.io/spiget/downloads/91842?color=00B4DB&style=for-the-badge&logo=docusign&logoColor=white)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/Oribuin/EternalTags/gradle.yml?color=%2300B4DB&style=for-the-badge&logo=github)](https://github.com/Oribuin/EternalTags/actions)
+[![Bstats server stats](https://img.shields.io/bstats/servers/11508?color=%2300B4DB&style=for-the-badge&logo=serverless&logoColor=white)](https://bstats.org/plugin/bukkit/EternalTags/11508)
+[![Bstats player stats](https://img.shields.io/bstats/players/11508?color=%2300B4DB&style=for-the-badge&logo=odnoklassniki&logoColor=white)](https://bstats.org/plugin/bukkit/EternalTags/11508)
+[![Plugin download stats](https://img.shields.io/spiget/downloads/91842?color=00B4DB&style=for-the-badge&logo=docusign&logoColor=white)](https://www.spigotmc.org/resources/91842)
 
 ### [EternalTags] is a light tag handler created to allow custom tags to be applied to any aspect of the server with ease.
 
