@@ -33,10 +33,10 @@ public class SetAllCommand extends RoseCommand {
 
         manager.setEveryone(tag);
         if (silent == null || !silent) {
-            Bukkit.getOnlinePlayers().forEach(player -> locale.sendMessage(player, "command-set-changed", StringPlaceholders.single("tag", manager.getDisplayTag(tag, player))));
+            Bukkit.getOnlinePlayers().forEach(player -> locale.sendMessage(player, "command-set-changed", StringPlaceholders.of("tag", manager.getDisplayTag(tag, player))));
         }
 
-        locale.sendMessage(sender, "command-setall-changed", StringPlaceholders.single("tag", manager.getDisplayTag(tag, null)));
+        locale.sendMessage(sender, "command-setall-changed", StringPlaceholders.of("tag", manager.getDisplayTag(tag, null)));
     }
 
 

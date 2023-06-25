@@ -25,6 +25,7 @@ import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
+import xyz.oribuin.eternaltags.util.TagsUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -220,7 +221,7 @@ public class FavouritesGUI extends PluginMenu {
      */
     @NotNull
     private List<Tag> getTags(@NotNull Player player) {
-        SortType sortType = SortType.match(this.config.getString("gui-settings.sort-type"));
+        SortType sortType = TagsUtils.getEnum(SortType.class, this.config.getString("gui-settings.sort-type"));
         if (sortType == null)
             sortType = SortType.ALPHABETICAL;
 
@@ -249,7 +250,7 @@ public class FavouritesGUI extends PluginMenu {
             return;
 
         this.manager.setTag(player.getUniqueId(), tag);
-        this.locale.sendMessage(player, "command-set-changed", StringPlaceholders.single("tag", this.manager.getDisplayTag(tag, player)));
+        this.locale.sendMessage(player, "command-set-changed", StringPlaceholders.of("tag", this.manager.getDisplayTag(tag, player)));
     }
 
 

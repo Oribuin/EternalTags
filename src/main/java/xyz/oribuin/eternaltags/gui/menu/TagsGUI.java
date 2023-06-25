@@ -7,8 +7,8 @@ import dev.triumphteam.gui.components.ScrollType;
 import dev.triumphteam.gui.guis.BaseGui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
-import dev.triumphteam.gui.guis.ScrollingGui;
 import org.bukkit.Bukkit;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -25,6 +25,7 @@ import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
+import xyz.oribuin.eternaltags.util.TagsUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -75,36 +76,49 @@ public class TagsGUI extends PluginMenu {
                 MenuItem.create(this.config)
                         .path("extra-items." + key)
                         .player(player)
+                        .action((item, event) -> item.sound((Player) event.getWhoClicked()))
                         .place(gui);
             }
         }
 
-        this.addNavigationIcons(gui, player, finalMenuTitle); // Add the navigation icons to the GUI.
-
         MenuItem.create(this.config)
                 .path("clear-tag")
                 .player(player)
-                .action(event -> this.clearTag(player))
+                .action((item, event) -> {
+                    item.sound((Player) event.getWhoClicked());
+                    this.clearTag(player);
+                })
                 .place(gui);
 
         MenuItem.create(this.config)
                 .path("favorite-tags")
                 .player(player)
-                .action(event -> MenuProvider.get(FavouritesGUI.class).open(player))
+                .action((item, event) -> {
+                    item.sound((Player) event.getWhoClicked());
+
+                    MenuProvider.get(FavouritesGUI.class).open(player);
+                })
                 .place(gui);
 
         MenuItem.create(this.config)
                 .path("categories")
                 .player(player)
-                .action(event -> MenuProvider.get(CategoryGUI.class).open(player))
+                .action((item, event) -> {
+                    item.sound((Player) event.getWhoClicked());
+
+                    MenuProvider.get(CategoryGUI.class).open(player);
+                })
                 .place(gui);
 
         MenuItem.create(this.config)
                 .path("search")
                 .player(player)
-                .action(event -> this.searchTags(player, gui))
-                .place(gui);
+                .action((item, event) -> {
+                    item.sound((Player) event.getWhoClicked());
 
+                    this.searchTags(player, gui);
+                })
+                .place(gui);
 
         gui.open(player);
 
@@ -133,8 +147,12 @@ public class TagsGUI extends PluginMenu {
                 this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
         };
 
-        if (this.addPagesAsynchronously()) this.async(task);
-        else task.run();
+        if (this.addPagesAsynchronously())
+            this.async(task);
+        else
+            task.run();
+
+        this.addNavigationIcons(gui, player, finalMenuTitle); // Add the navigation icons to the GUI.
     }
 
     /**
@@ -146,31 +164,31 @@ public class TagsGUI extends PluginMenu {
      */
     private void addNavigationIcons(PaginatedGui gui, Player player, String finalMenuTitle) {
 
-        boolean hideIfFirstPage = this.config.getBoolean("previous-page.hide-if-first-page", false); // Hide the previous page icon
-        boolean hideIfLastPage = this.config.getBoolean("next-page.hide-if-last-page", false); // Hide the next page icon
-        int currentPage = gui.getCurrentPageNum();
-
         MenuItem.create(this.config)
                 .path("next-page")
                 .player(player)
-                .condition(menuItem -> !hideIfLastPage || currentPage < gui.getPagesNum())
-                .action(event -> {
-                    gui.next();
-                    this.addNavigationIcons(gui, player, finalMenuTitle);
-                    this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                .action((item, event) -> {
+                    if (gui.next()) {
+                        item.sound((Player) event.getWhoClicked());
+                        this.addNavigationIcons(gui, player, finalMenuTitle);
+                        this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                    }
                 })
                 .place(gui);
 
         MenuItem.create(this.config)
                 .path("previous-page")
                 .player(player)
-                .condition(menuItem -> !hideIfFirstPage || currentPage > 1)
-                .action(event -> {
-                    gui.previous();
-                    this.addNavigationIcons(gui, player, finalMenuTitle);
-                    this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                .action((item, event) -> {
+                    if (gui.previous()) {
+                        item.sound((Player) event.getWhoClicked());
+                        this.addNavigationIcons(gui, player, finalMenuTitle);
+                        this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                    }
                 })
                 .place(gui);
+
+        gui.update(); // Update the GUI to apply the changes.
     }
 
     /**
@@ -184,17 +202,21 @@ public class TagsGUI extends PluginMenu {
         if (gui instanceof PaginatedGui paginatedGui) // Remove all items from the GUI
             paginatedGui.clearPageItems();
 
-        if (gui instanceof ScrollingGui scrollingGui) // Remove all items from the GUI
-            scrollingGui.clearPageItems();
-
         Map<ClickType, List<Action>> tagActions = this.getTagActions();
+        Sound tagSound = TagsUtils.getEnum(Sound.class, this.config.getString("tag-item.sound", ""));
+
         this.getTags(player, filter).forEach(tag -> {
 
             GuiAction<InventoryClickEvent> action = event -> {
-                if (!manager.canUseTag(player, tag))
+                if (!this.manager.canUseTag(player, tag))
                     return;
 
                 if (tagActions.size() == 0) {
+
+                    if (tagSound != null) {
+                        player.playSound(player.getLocation(), tagSound, 75, 1);
+                    }
+
                     if (event.isShiftClick()) {
                         this.toggleFavourite(player, tag);
                         this.addTags(gui, player, filter);
@@ -238,7 +260,7 @@ public class TagsGUI extends PluginMenu {
      * @return A list of tags
      */
     private @NotNull List<Tag> getTags(@NotNull Player player, Predicate<Tag> filter) {
-        SortType sortType = SortType.match(this.config.getString("gui-settings.sort-type"));
+        SortType sortType = TagsUtils.getEnum(SortType.class, this.config.getString("gui-settings.sort-type"));
         if (sortType == null)
             sortType = SortType.ALPHABETICAL;
 
@@ -286,7 +308,7 @@ public class TagsGUI extends PluginMenu {
             return;
 
         this.manager.setTag(player.getUniqueId(), tag);
-        this.locale.sendMessage(player, "command-set-changed", StringPlaceholders.single("tag", this.manager.getDisplayTag(tag, player)));
+        this.locale.sendMessage(player, "command-set-changed", StringPlaceholders.of("tag", this.manager.getDisplayTag(tag, player)));
     }
 
 

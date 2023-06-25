@@ -14,6 +14,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.oribuin.eternaltags.command.model.DataStorageType;
 import xyz.oribuin.eternaltags.event.TagDeleteEvent;
 import xyz.oribuin.eternaltags.event.TagSaveEvent;
 import xyz.oribuin.eternaltags.hook.OraxenHook;
@@ -63,6 +64,8 @@ public class TagsManager extends Manager {
 
     @Override
     public void reload() {
+        DataManager dataManager = this.rosePlugin.getManager(DataManager.class);
+
         // Load the default tag groups
         this.defaultTagGroups = new HashMap<>();
         CommentedConfigurationSection groupSection = Setting.DEFAULT_TAG_GROUPS.getSection();
@@ -77,16 +80,28 @@ public class TagsManager extends Manager {
         this.loadCategories();
 
         // Load all tags from mysql instead of tags.yml
-        if (Setting.MYSQL_TAGDATA.getBoolean()) {
-            DataManager dataManager = this.rosePlugin.getManager(DataManager.class);
-            dataManager.loadTagData(this.cachedTags);
-            return;
+        if (!Setting.MYSQL_TAGDATA.getBoolean()) {
+            this.tagsFile = TagsUtils.createFile(this.rosePlugin, "tags.yml");
+            this.tagConfig = CommentedFileConfiguration.loadConfiguration(this.tagsFile);
         }
 
-        // Create the tags.yml
-        this.tagsFile = TagsUtils.createFile(this.rosePlugin, "tags.yml");
-        this.tagConfig = CommentedFileConfiguration.loadConfiguration(this.tagsFile);
-        this.loadTags();
+        // Load all tags from mysql
+        this.cachedTags.clear();
+        this.cachedTags.putAll(this.loadTags(Setting.MYSQL_TAGDATA.getBoolean() ? DataStorageType.SQL : DataStorageType.YML));
+
+        // Load all the users from the database
+        List<Player> users = Bukkit.getOnlinePlayers().stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        // Load all the users from the database
+        dataManager.loadUsers(users.stream()
+                .map(Player::getUniqueId)
+                .collect(Collectors.toList())
+        );
+
+        // Get each user and load their tags
+        users.forEach(this::getUserTag);
     }
 
     @Override
@@ -94,70 +109,79 @@ public class TagsManager extends Manager {
         // Unused
     }
 
-    /**
-     * Load all the tags from the plugin config.
-     */
-    public void loadTags() {
-        this.cachedTags.clear();
+    public Map<String, Tag> loadTags(DataStorageType type) {
+        Map<String, Tag> result = new HashMap<>();
 
-        CommentedConfigurationSection tagSection = this.tagConfig.getConfigurationSection("tags");
-        if (tagSection == null) {
-            this.rosePlugin.getLogger().severe("WARNING: We could not find any tags in the tags.yml file. Please make sure you have at least one tag saved.");
-            return;
+        switch (type) {
+            case SQL -> this.rosePlugin.getManager(DataManager.class).loadTagData(result);
+            case YML -> {
+                CommentedConfigurationSection tagSection = this.tagConfig.getConfigurationSection("tags");
+                if (tagSection == null) {
+                    this.rosePlugin.getLogger().severe("WARNING: We could not find any tags in the tags.yml file. Please make sure you have at least one tag saved.");
+                    return result;
+                }
+
+                tagSection.getKeys(false).forEach(key -> {
+                    String name = tagSection.getString(key + ".name", key);
+                    String tag = tagSection.getString(key + ".tag");
+
+                    if (name == null || tag == null)
+                        return;
+
+                    final Tag obj = new Tag(key.toLowerCase(), name, tag);
+                    List<String> description = tagSection.get(key + ".description") instanceof String
+                            ? Collections.singletonList(tagSection.getString(key + ".description"))
+                            : tagSection.getStringList(key + ".description");
+
+                    obj.setDescription(description);
+                    obj.setPermission(tagSection.getString(key + ".permission"));
+                    obj.setOrder(tagSection.getInt(key + ".order", -1));
+                    obj.setHandIcon(tagSection.getBoolean(key + ".hand-icon", false));
+
+
+                    String category = tagSection.getString(key + ".category", null);
+                    if (category != null && this.cachedCategories.containsKey(category.toLowerCase()))
+                        obj.setCategory(category.toLowerCase());
+
+                    else if (this.defaultCategory != null)
+                        obj.setCategory(this.defaultCategory.getId());
+
+
+                    // Icons can either be a material or a byte array
+                    Object icon = tagSection.get(key + ".icon");
+                    if (icon != null) {
+                        // Read the material from the string
+                        if (icon instanceof String iconString) {
+                            Material material = Material.matchMaterial(iconString);
+                            if (material != null)
+                                obj.setIcon(new ItemStack(material));
+                        }
+
+                        // Read from a configuration section
+                        CommentedConfigurationSection iconSection = tagSection.getConfigurationSection(key + ".icon");
+                        if (iconSection != null && iconSection.getKeys(false).size() > 0) {
+                            ItemStack itemStack = TagsUtils.getItemStack(tagSection, key + ".icon");
+                            if (itemStack != null)
+                                obj.setIcon(itemStack);
+                        }
+
+                        // Read from a byte array
+                        if (icon instanceof byte[] iconBytes && obj.isHandIcon()) {
+                            ItemStack itemStack = TagsUtils.deserializeItem(iconBytes);
+                            if (itemStack != null)
+                                obj.setIcon(itemStack);
+                        }
+                    }
+
+                    if (OraxenHook.enabled())
+                        obj.setTag(OraxenHook.parseGlyph(tag));
+
+                    result.put(key.toLowerCase(), obj);
+                });
+            }
         }
 
-        tagSection.getKeys(false).forEach(key -> {
-            String name = tagSection.getString(key + ".name", key);
-            String tag = tagSection.getString(key + ".tag");
-
-            if (name == null || tag == null)
-                return;
-
-            final Tag obj = new Tag(key.toLowerCase(), name, tag);
-            List<String> description = tagSection.get(key + ".description") instanceof String
-                    ? Collections.singletonList(tagSection.getString(key + ".description"))
-                    : tagSection.getStringList(key + ".description");
-
-            obj.setDescription(description);
-            obj.setPermission(tagSection.getString(key + ".permission", null));
-            obj.setOrder(tagSection.getInt(key + ".order", -1));
-            obj.setHandIcon(tagSection.getBoolean(key + ".hand-icon", false));
-
-            String category = tagSection.getString(key + ".category", null);
-            obj.setCategory(category == null ? this.defaultCategory.getId() : category.toLowerCase());
-
-
-            // Icons can either be a material or a byte array
-            Object icon = tagSection.get(key + ".icon");
-            if (icon != null) {
-                // Read the material from the string
-                if (icon instanceof String iconString) {
-                    Material material = Material.matchMaterial(iconString);
-                    if (material != null)
-                        obj.setIcon(new ItemStack(material));
-                }
-
-                // Read from a configuration section
-                CommentedConfigurationSection iconSection = tagSection.getConfigurationSection(key + ".icon");
-                if (iconSection != null && iconSection.getKeys(false).size() > 0) {
-                    ItemStack itemStack = TagsUtils.getItemStack(tagSection, key + ".icon");
-                    if (itemStack != null)
-                        obj.setIcon(itemStack);
-                }
-
-                // Read from a byte array
-                if (icon instanceof byte[] iconBytes && obj.isHandIcon()) {
-                    ItemStack itemStack = TagsUtils.deserializeItem(iconBytes);
-                    if (itemStack != null)
-                        obj.setIcon(itemStack);
-                }
-            }
-
-            if (OraxenHook.enabled())
-                obj.setTag(OraxenHook.parseGlyph(tag));
-
-            this.cachedTags.put(key.toLowerCase(), obj);
-        });
+        return result;
     }
 
     /**
@@ -313,29 +337,27 @@ public class TagsManager extends Manager {
      *
      * @param tags The tags being saved.
      */
-    public void saveTags(Map<String, Tag> tags) {
+    public void saveTags(DataStorageType type, Map<String, Tag> tags) {
         this.cachedTags.putAll(tags);
-
-        if (Setting.MYSQL_TAGDATA.getBoolean()) {
-            this.rosePlugin.getManager(DataManager.class).saveTagData(tags);
-            return;
-        }
 
         // Send the tags to bungee if enabled.
         if (Setting.PLUGIN_MESSAGING.getBoolean()) {
             tags.values().forEach(BungeeListener::modifyTag);
         }
 
-        CompletableFuture.runAsync(() -> tags.forEach((id, tag) -> {
-            this.tagConfig.set("tags." + id + ".name", tag.getName());
-            this.tagConfig.set("tags." + id + ".tag", tag.getTag());
-            this.tagConfig.set("tags." + id + ".description", tag.getDescription());
-            this.tagConfig.set("tags." + id + ".permission", tag.getPermission());
-            this.tagConfig.set("tags." + id + ".order", tag.getOrder());
-            this.tagConfig.set("tags." + id + ".hand-icon", tag.isHandIcon());
-            this.tagConfig.set("tags." + id + ".icon", TagsUtils.serializeItem(tag.getIcon()));
-            this.tagConfig.set("tags." + id + ".category", tag.getCategory());
-        })).thenRun(() -> this.tagConfig.save(this.tagsFile));
+        switch (type) {
+            case SQL -> this.rosePlugin.getManager(DataManager.class).saveTagData(tags);
+            case YML -> CompletableFuture.runAsync(() -> tags.forEach((id, tag) -> {
+                this.tagConfig.set("tags." + id + ".name", tag.getName());
+                this.tagConfig.set("tags." + id + ".tag", tag.getTag());
+                this.tagConfig.set("tags." + id + ".description", tag.getDescription());
+                this.tagConfig.set("tags." + id + ".permission", tag.getPermission());
+                this.tagConfig.set("tags." + id + ".order", tag.getOrder());
+                this.tagConfig.set("tags." + id + ".hand-icon", tag.isHandIcon());
+                this.tagConfig.set("tags." + id + ".icon", TagsUtils.serializeItem(tag.getIcon()));
+                this.tagConfig.set("tags." + id + ".category", tag.getCategory());
+            })).thenRun(() -> this.tagConfig.save(this.tagsFile));
+        }
     }
 
     /**
@@ -378,16 +400,13 @@ public class TagsManager extends Manager {
     /**
      * Wipes all the tags from the tags.yml
      */
-    public void wipeTags() {
-        if (Setting.MYSQL_TAGDATA.getBoolean()) {
-            this.rosePlugin.getManager(DataManager.class).deleteAllTagData();
-            return;
-        }
-
-        CompletableFuture.runAsync(() -> this.cachedTags.forEach((id, tag) -> this.tagConfig.set("tags." + id, null)))
-                .thenRun(() -> this.tagConfig.save(this.tagsFile));
-
+    public void wipeTags(DataStorageType type) {
         this.cachedTags.clear();
+
+        switch (type) {
+            case SQL -> this.rosePlugin.getManager(DataManager.class).deleteAllTagData();
+            case YML -> CompletableFuture.runAsync(() -> this.tagConfig.set("tags", null)).thenRun(() -> this.tagConfig.save(this.tagsFile));
+        }
     }
 
     /**
@@ -894,6 +913,10 @@ public class TagsManager extends Manager {
             case "none" -> null;
             default -> this.cachedTags.containsKey(tag) ? tag : null;
         };
+    }
+
+    public DataStorageType getStorageType() {
+        return Setting.MYSQL_TAGDATA.getBoolean() ? DataStorageType.SQL : DataStorageType.YML;
     }
 
     /**

@@ -21,7 +21,7 @@ public class MaterialArgumentHandler extends RoseCommandArgumentHandler<Material
         String input = argumentParser.next();
         Material value = Material.matchMaterial(input);
         if (value == null)
-            throw new HandledArgumentException("argument-handler-material", StringPlaceholders.single("input", input));
+            throw new HandledArgumentException("argument-handler-material", StringPlaceholders.of("input", input));
 
         return value;
     }

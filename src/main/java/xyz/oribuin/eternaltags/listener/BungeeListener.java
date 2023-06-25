@@ -1,11 +1,11 @@
 package xyz.oribuin.eternaltags.listener;
 
-import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.EternalTags;
+import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 import xyz.oribuin.eternaltags.util.TagsUtils;
@@ -25,7 +25,6 @@ public class BungeeListener implements PluginMessageListener {
     public BungeeListener(EternalTags plugin) {
         this.manager = plugin.getManager(TagsManager.class);
     }
-
 
     @Override
     public void onPluginMessageReceived(@NotNull String channel, @NotNull Player player, byte[] message) {
@@ -53,15 +52,21 @@ public class BungeeListener implements PluginMessageListener {
             if (command == null)
                 return;
 
+            if (command.equalsIgnoreCase("reload") && Setting.PLUGIN_MESSAGING_OPTIONS_RELOAD.getBoolean()) {
+                this.manager.getCachedTags().clear();
+                EternalTags.getInstance().reload(); // Reload the plugin
+                return;
+            }
+
             // Delete the tag
-            if (command.equalsIgnoreCase("delete")) {
+            if (command.equalsIgnoreCase("delete")  && Setting.PLUGIN_MESSAGING_OPTIONS_DELETE.getBoolean()) {
                 String tagId = receivedSplit[0];
                 this.manager.clearTagFromUsers(tagId);
                 this.manager.getCachedTags().remove(tagId);
                 return;
             }
 
-            if (command.equalsIgnoreCase("modify")) {
+            if (command.equalsIgnoreCase("modify")  && Setting.PLUGIN_MESSAGING_OPTIONS_EDIT.getBoolean()) {
                 // id, name, tag, permission, order, icon, lore
                 Tag newTag = new Tag(receivedSplit[0].toLowerCase(), receivedSplit[1], receivedSplit[2]);
 
@@ -93,11 +98,35 @@ public class BungeeListener implements PluginMessageListener {
     }
 
     /**
+     * Force all eternaltags servers to reload the plugin
+     */
+    public static void sendReload() {
+        // Don't send the reload message if the plugin messaging is disabled or the reload option is disabled
+        if (!Setting.PLUGIN_MESSAGING.getBoolean() || !Setting.PLUGIN_MESSAGING_OPTIONS_RELOAD.getBoolean())
+            return;
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        DataOutputStream out = new DataOutputStream(stream);
+
+        try {
+            out.writeUTF("Forward");
+            out.writeUTF("ALL");
+            out.writeUTF("eternaltags:reload");
+            sendPluginMessage(stream, out, null);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    /**
      * Send a plugin message to the bungee server to modify a tag
      *
      * @param tag The tag to modify
      */
     public static void modifyTag(@NotNull Tag tag) {
+        if (!Setting.PLUGIN_MESSAGING.getBoolean() || !Setting.PLUGIN_MESSAGING_OPTIONS_EDIT.getBoolean())
+            return;
+
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         DataOutputStream out = new DataOutputStream(outputStream);
 
@@ -132,6 +161,9 @@ public class BungeeListener implements PluginMessageListener {
      * @param name The name of the tag to delete
      */
     public static void deleteTag(@NotNull String name) {
+        if (!Setting.PLUGIN_MESSAGING.getBoolean() || !Setting.PLUGIN_MESSAGING_OPTIONS_RELOAD.getBoolean())
+            return;
+
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         DataOutputStream out = new DataOutputStream(outputStream);
 

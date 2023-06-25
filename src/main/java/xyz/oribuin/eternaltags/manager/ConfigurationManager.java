@@ -42,7 +42,11 @@ public class ConfigurationManager extends AbstractConfigurationManager {
 
         // Data Systems
         MYSQL_TAGDATA("save-tagdata-sql", false, "Should the tag data be stored in a MySQL/SQLite database? (Tags that would be saved in tags.yml)"),
-        PLUGIN_MESSAGING("plugin-messaging", false, "Should the plugin use plugin messaging to sync tag data across servers? (Recommended to keep save-tagdata-sql as false if this is enabled)"),
+        PLUGIN_MESSAGING("plugin-messaging.enabled", false, "Should the plugin use plugin messaging to sync tag data across servers? (Recommended to keep save-tagdata-sql as false if this is enabled)"),
+        PLUGIN_MESSAGING_OPTIONS("plugin-messaging.options", null, "Toggle which parts of plugin messaging you want to enable."),
+        PLUGIN_MESSAGING_OPTIONS_RELOAD("plugin-messaging.options.reload", true, "Should /tags reload be synced across servers?"),
+        PLUGIN_MESSAGING_OPTIONS_DELETE("plugin-messaging.options.delete", true, "Should /tags delete be synced across servers?"),
+        PLUGIN_MESSAGING_OPTIONS_EDIT("plugin-messaging.options.edit", true, "Should /tags edit be synced across servers?"),
 
         ; // End of settings
 

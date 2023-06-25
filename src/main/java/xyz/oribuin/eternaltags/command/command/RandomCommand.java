@@ -37,7 +37,7 @@ public class RandomCommand extends RoseCommand {
             return;
 
         manager.setTag(sender.getUniqueId(), randomTag);
-        locale.sendMessage(sender, "command-set-changed", StringPlaceholders.single("tag", manager.getDisplayTag(randomTag, sender)));
+        locale.sendMessage(sender, "command-set-changed", StringPlaceholders.of("tag", manager.getDisplayTag(randomTag, sender)));
     }
 
 

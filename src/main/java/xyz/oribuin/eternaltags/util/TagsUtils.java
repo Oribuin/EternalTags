@@ -304,10 +304,12 @@ public final class TagsUtils {
      * @return The enum
      */
     public static <T extends Enum<T>> T getEnum(Class<T> enumClass, String name) {
-        for (T t : enumClass.getEnumConstants()) {
-            if (t.name().equalsIgnoreCase(name)) {
-                return t;
-            }
+        if (name == null)
+            return null;
+
+        try {
+            return Enum.valueOf(enumClass, name.toUpperCase());
+        } catch (IllegalArgumentException ignored) {
         }
 
         return null;

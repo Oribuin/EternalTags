@@ -29,7 +29,7 @@ public class ConvertCommand extends RoseCommand {
 
         // Check if the player arg was provided.
         if (plugin == null) {
-            locale.sendMessage(sender, "command-convert-invalid-plugin", StringPlaceholders.single("options", TagsUtils.formatList(ValidPlugin.PLUGINS.values()
+            locale.sendMessage(sender, "command-convert-invalid-plugin", StringPlaceholders.of("options", TagsUtils.formatList(ValidPlugin.PLUGINS.values()
                     .stream()
                     .map(ConversionPlugin::getPluginName)
                     .collect(Collectors.toList()), ", ")));
@@ -37,7 +37,7 @@ public class ConvertCommand extends RoseCommand {
         }
 
         int total = manager.convertPlugin(plugin).size();
-        locale.sendMessage(sender, "command-convert-converted", StringPlaceholders.single("total", total));
+        locale.sendMessage(sender, "command-convert-converted", StringPlaceholders.of("total", total));
     }
 
 

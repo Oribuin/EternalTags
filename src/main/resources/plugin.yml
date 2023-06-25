@@ -9,8 +9,89 @@ libraries:
   - "net.kyori:adventure-api:4.11.0"
   - "net.kyori:adventure-text-serializer-legacy:4.11.0"
   - "net.kyori:adventure-text-serializer-gson:4.11.0"
+depend:
+  - PlaceholderAPI
 softdepend:
   - Vault
-  - PlaceholderAPI
   - Oraxen
   - HeadDatabase
+permissions:
+  eternaltags.*:
+    description: Allow the player to use all commands
+    default: op
+    children:
+      - eternaltags.use
+      - eternaltags.reload
+      - eternaltags.categories
+      - eternaltags.clear
+      - eternaltags.clear.other
+      - eternaltags.convert
+      - eternaltags.create
+      - eternaltags.delete
+      - eternaltags.edit
+      - eternaltags.favorite
+      - eternaltags.random
+      - eternaltags.search
+      - eternaltags.set
+      - eternaltags.set.other
+      - eternaltags.setall
+      - eternaltags.tags.*
+  eternaltags.user:
+    description: Allow the player to use all non-admin commands
+    default: false
+    children:
+      - eternaltags.use
+      - eternaltags.categories
+      - eternaltags.clear
+      - eternaltags.favorite
+      - eternaltags.random
+      - eternaltags.search
+      - eternaltags.set
+  eternaltags.tag.*:
+    description: Allow the player to use all tags
+    default: op
+  eternaltags.use:
+    description: Allow the player to open the tag menu
+    default: true
+  eternaltags.reload:
+    description: Allow the player to reload the plugin
+    default: op
+  eternaltags.categories:
+    description: Allow the player to view the categories
+    default: false
+  eternaltags.clear:
+    description: Allow the player to clear their tag
+    default: false
+  eternaltags.clear.other:
+    description: Allow the player to clear another player's tag
+    default: op
+  eternaltags.convert:
+    description: Allow the player to convert their tags from another plugin
+    default: op
+  eternaltags.create:
+    description: Allow the player to create a tag
+    default: op
+  eternaltags.delete:
+    description: Allow the player to delete a tag
+    default: op
+  eternaltags.edit:
+    description: Allow the player to edit a tag
+    default: op
+  eternaltags.favorite:
+    description: Allow the player to favorite a tag
+    default: false
+  eternaltags.random:
+    description: Allow the player to get a random tag
+    default: false
+  eternaltags.search:
+    description: Allow the player to search for a tag
+    default: false
+  eternaltags.set:
+    description: Allow the player to set their tag
+    default: false
+  eternaltags.set.other:
+    description: Allow the player to set another player's tag
+    default: op
+  eternaltags.setall:
+    description: Allow the player to set all tags
+    default: op
