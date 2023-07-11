@@ -1,6 +1,5 @@
 package xyz.oribuin.eternaltags.gui.menu;
 
-import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.triumphteam.gui.components.GuiAction;
@@ -101,7 +100,13 @@ public class FavouritesGUI extends PluginMenu {
         MenuItem.create(this.config)
                 .path("main-menu")
                 .player(player)
-                .action(event -> MenuProvider.get(TagsGUI.class).open(player, null))
+                .action(event -> {
+                    if (Setting.OPEN_CATEGORY_GUI_FIRST.getBoolean()) {
+                        MenuProvider.get(CategoryGUI.class).open(player);
+                    } else {
+                        MenuProvider.get(TagsGUI.class).open(player, null);
+                    }
+                })
                 .place(gui);
 
         MenuItem.create(this.config)
