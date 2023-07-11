@@ -8,7 +8,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
-import xyz.oribuin.eternaltags.command.model.DataStorageType;
 import xyz.oribuin.eternaltags.obj.Tag;
 
 import java.io.File;
@@ -122,8 +121,8 @@ public class ConversionManager extends Manager {
         }
 
         final TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
-        manager.wipeTags(manager.getStorageType());
-        manager.saveTags(manager.getStorageType(), this.loadedTags);
+        manager.wipeTags();
+        manager.saveTags(this.loadedTags);
     }
 
     public Map<String, String> getRemappedOptions() {
