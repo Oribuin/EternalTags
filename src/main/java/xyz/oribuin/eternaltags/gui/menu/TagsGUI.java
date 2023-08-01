@@ -12,6 +12,7 @@ import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.oribuin.eternaltags.EternalTags;
@@ -39,7 +40,7 @@ public class TagsGUI extends PluginMenu {
     private final TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
     private final LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
 
-    private final Map<Tag, GuiItem> tagItems = new LinkedHashMap<>(); // Cache the tag items so we don't have to create them every time.
+    private final Map<String, ItemStack> tagItems = new LinkedHashMap<>(); // Cache the tag items so we don't have to create them every time.
 
     public TagsGUI() {
         super(EternalTags.getInstance());
@@ -50,7 +51,7 @@ public class TagsGUI extends PluginMenu {
     public void load() {
         super.load();
 
-        this.tagItems.clear(); // Clear the cache so we don't have any old items.
+        this.tagItems.clear(); // Clear the cache, so we don't have any old items.
     }
 
     public void open(@NotNull Player player) {
@@ -232,8 +233,8 @@ public class TagsGUI extends PluginMenu {
             };
 
             // If the tag is already in the cache, use that instead of creating a new one.
-            if (Setting.CACHE_GUI_TAGS.getBoolean() && this.tagItems.containsKey(tag)) {
-                GuiItem item = this.tagItems.get(tag);
+            if (Setting.CACHE_GUI_TAGS.getBoolean() && this.tagItems.containsKey(tag.getId())) {
+                GuiItem item = new GuiItem(this.tagItems.get(tag.getId()));
                 item.setAction(action);
 
                 gui.addItem(item);
@@ -244,7 +245,7 @@ public class TagsGUI extends PluginMenu {
             GuiItem item = new GuiItem(this.getTagItem(player, tag), action);
 
             if (Setting.CACHE_GUI_TAGS.getBoolean())
-                this.tagItems.put(tag, item);
+                this.tagItems.put(tag.getId(), item.getItemStack());
 
             gui.addItem(item);
         });
