@@ -1,6 +1,5 @@
 package xyz.oribuin.eternaltags.gui.menu;
 
-import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.triumphteam.gui.components.GuiAction;
@@ -13,6 +12,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.action.Action;
@@ -37,7 +37,7 @@ public class FavouritesGUI extends PluginMenu {
     private final TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
     private final LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
 
-    private final Map<Tag, GuiItem> tagItems = new LinkedHashMap<>(); // Cache the tag items so we don't have to create them every time.
+    private final Map<String, ItemStack> tagItems = new LinkedHashMap<>(); // Cache the tag items so we don't have to create them every time.
 
     public FavouritesGUI() {
         super(EternalTags.getInstance());
@@ -101,7 +101,13 @@ public class FavouritesGUI extends PluginMenu {
         MenuItem.create(this.config)
                 .path("main-menu")
                 .player(player)
-                .action(event -> MenuProvider.get(TagsGUI.class).open(player, null))
+                .action(event -> {
+                    if (Setting.OPEN_CATEGORY_GUI_FIRST.getBoolean()) {
+                        MenuProvider.get(CategoryGUI.class).open(player);
+                    } else {
+                        MenuProvider.get(TagsGUI.class).open(player, null);
+                    }
+                })
                 .place(gui);
 
         MenuItem.create(this.config)
@@ -193,8 +199,8 @@ public class FavouritesGUI extends PluginMenu {
             };
 
             // If the tag is already in the cache, use that instead of creating a new one.
-            if (Setting.CACHE_GUI_TAGS.getBoolean() && this.tagItems.containsKey(tag)) {
-                GuiItem item = this.tagItems.get(tag);
+            if (Setting.CACHE_GUI_TAGS.getBoolean() && this.tagItems.containsKey(tag.getId())) {
+                GuiItem item = new GuiItem(this.tagItems.get(tag.getId()));
                 item.setAction(action);
                 gui.addItem(item);
                 return;
@@ -204,7 +210,7 @@ public class FavouritesGUI extends PluginMenu {
 
             // Add the tag to the cache
             if (Setting.CACHE_GUI_TAGS.getBoolean())
-                this.tagItems.put(tag, item);
+                this.tagItems.put(tag.getId(), item.getItemStack());
 
             gui.addItem(item);
 
