@@ -36,28 +36,20 @@ public final class SkullUtils {
                 return;
         }
 
-        GameProfile profile = new GameProfile(UUID.nameUUIDFromBytes(texture.getBytes()), null);
+        GameProfile profile = new GameProfile(UUID.randomUUID(), "texture");
         profile.getProperties().put("textures", new Property("textures", texture));
 
         try {
-            if (NMSUtil.getVersionNumber() > 15) {
-                if (method_SkullMeta_setProfile == null) {
-                    method_SkullMeta_setProfile = skullMeta.getClass().getDeclaredMethod("setProfile", GameProfile.class);
-                    method_SkullMeta_setProfile.setAccessible(true);
-                }
-
-                method_SkullMeta_setProfile.invoke(skullMeta, profile);
-            } else {
-                if (field_SkullMeta_profile == null) {
-                    field_SkullMeta_profile = skullMeta.getClass().getDeclaredField("profile");
-                    field_SkullMeta_profile.setAccessible(true);
-                }
-
-                field_SkullMeta_profile.set(skullMeta, profile);
+            if (field_SkullMeta_profile == null) {
+                field_SkullMeta_profile = skullMeta.getClass().getDeclaredField("profile");
+                field_SkullMeta_profile.setAccessible(true);
             }
+
+            field_SkullMeta_profile.set(skullMeta, profile);
         } catch (ReflectiveOperationException e) {
             e.printStackTrace();
         }
+
     }
 
 }
