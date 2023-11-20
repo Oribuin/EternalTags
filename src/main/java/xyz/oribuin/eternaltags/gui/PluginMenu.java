@@ -141,19 +141,21 @@ public abstract class PluginMenu {
      * @return The created item
      */
     public ItemStack getTagItem(Player player, Tag tag) {
-        ItemStack baseItem = TagsUtils.getItemStack(this.config, "tag-item", player, this.getTagPlaceholders(tag, player));
+        final StringPlaceholders tagPlaceholders = this.getTagPlaceholders(tag, player);
+
+        ItemStack baseItem = TagsUtils.deserialize(this.config, player, "tag-item", tagPlaceholders);
         if (baseItem == null)
             return tag.getIcon();
 
         baseItem = baseItem.clone();
 
-        List<String> configLore = this.config.getStringList("tag-item.lore");
+        final List<String> configLore = this.config.getStringList("tag-item.lore");
         List<String> lore = new ArrayList<>();
 
         // im not happy about this but it works
         for (final String line : configLore) {
             if (!line.contains("%description%")) {
-                lore.add(TagsUtils.format(player, line, this.getTagPlaceholders(tag, player)));
+                lore.add(TagsUtils.format(player, line, tagPlaceholders));
                 continue;
             }
 
@@ -171,16 +173,18 @@ public abstract class PluginMenu {
             }
         }
 
-        lore = lore.stream().map(line -> TagsUtils.format(player, line, this.getTagPlaceholders(tag, player))).collect(Collectors.toList());
+        lore = lore.stream()
+                .map(line -> TagsUtils.format(player, line, tagPlaceholders))
+                .collect(Collectors.toList());
 
 
         if (tag.getIcon() != null)
             baseItem = tag.getIcon().clone();
 
         return new ItemBuilder(baseItem)
-                .setName(TagsUtils.format(player, this.config.getString("tag-item.name"), this.getTagPlaceholders(tag, player))) // Override the name
-                .setLore(lore) // Override the lore
-                .create();
+                .name(TagsUtils.format(player, this.config.getString("tag-item.name"), tagPlaceholders))
+                .lore(lore)
+                .build();
     }
 
     /**
@@ -190,11 +194,11 @@ public abstract class PluginMenu {
      * @since 1.1.7
      */
     protected final @NotNull Map<ClickType, List<Action>> getTagActions() {
-        CommentedConfigurationSection customActions = this.config.getConfigurationSection("tag-item.commands");
+        final CommentedConfigurationSection customActions = this.config.getConfigurationSection("tag-item.commands");
         if (customActions == null)
             return new HashMap<>();
 
-        Map<ClickType, List<Action>> actions = new HashMap<>();
+        final Map<ClickType, List<Action>> actions = new HashMap<>();
 
         for (String key : customActions.getKeys(false)) {
             ClickType clickType = TagsUtils.getEnum(ClickType.class, key.toUpperCase());

@@ -17,15 +17,15 @@ public class _1_CreateInitialTables extends DataMigration {
     public void migrate(DatabaseConnector connector, Connection connection, String tablePrefix) throws SQLException {
         try (Statement statement = connection.createStatement()) {
             statement.executeUpdate("CREATE TABLE IF NOT EXISTS " + tablePrefix + "tags (" +
-                    "player VARCHAR(36), " +
-                    "tagID TEXT, " +
-                    "PRIMARY KEY(player))");
+                                    "player VARCHAR(36), " +
+                                    "tagID TEXT, " +
+                                    "PRIMARY KEY(player))");
         }
 
         try (Statement statement = connection.createStatement()) {
             statement.executeUpdate("CREATE TABLE IF NOT EXISTS " + tablePrefix + "favourites (" +
-                    "player VARCHAR(36), " +
-                    "tagID TEXT)");
+                                    "player VARCHAR(36), " +
+                                    "tagID TEXT)");
         }
     }
 

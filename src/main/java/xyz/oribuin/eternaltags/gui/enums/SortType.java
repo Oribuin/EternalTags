@@ -1,6 +1,5 @@
 package xyz.oribuin.eternaltags.gui.enums;
 
-import org.jetbrains.annotations.Nullable;
 import xyz.oribuin.eternaltags.obj.Category;
 import xyz.oribuin.eternaltags.obj.Tag;
 

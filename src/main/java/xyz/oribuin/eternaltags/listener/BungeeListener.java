@@ -59,14 +59,14 @@ public class BungeeListener implements PluginMessageListener {
             }
 
             // Delete the tag
-            if (command.equalsIgnoreCase("delete")  && Setting.PLUGIN_MESSAGING_OPTIONS_DELETE.getBoolean()) {
+            if (command.equalsIgnoreCase("delete") && Setting.PLUGIN_MESSAGING_OPTIONS_DELETE.getBoolean()) {
                 String tagId = receivedSplit[0];
                 this.manager.clearTagFromUsers(tagId);
                 this.manager.getCachedTags().remove(tagId);
                 return;
             }
 
-            if (command.equalsIgnoreCase("modify")  && Setting.PLUGIN_MESSAGING_OPTIONS_EDIT.getBoolean()) {
+            if (command.equalsIgnoreCase("modify") && Setting.PLUGIN_MESSAGING_OPTIONS_EDIT.getBoolean()) {
                 // id, name, tag, permission, order, icon, lore
                 Tag newTag = new Tag(receivedSplit[0].toLowerCase(), receivedSplit[1], receivedSplit[2]);
 
@@ -139,13 +139,13 @@ public class BungeeListener implements PluginMessageListener {
             String lore = String.join("\n", tag.getDescription());
 
             String message = tag.getId() + ":" +
-                    tag.getName() + ":" +
-                    tag.getTag() + ":" +
-                    (tag.getPermission() == null ? "null" : tag.getPermission()) + ":" +
-                    tag.getOrder() + ":" +
-                    (tag.getCategory() == null ? "null" : tag.getCategory()) + ":" +
-                    Arrays.toString(TagsUtils.serializeItem(tag.getIcon())) + ":" +
-                    lore;
+                             tag.getName() + ":" +
+                             tag.getTag() + ":" +
+                             (tag.getPermission() == null ? "null" : tag.getPermission()) + ":" +
+                             tag.getOrder() + ":" +
+                             (tag.getCategory() == null ? "null" : tag.getCategory()) + ":" +
+                             Arrays.toString(TagsUtils.serializeItem(tag.getIcon())) + ":" +
+                             lore;
 
             sendPluginMessage(outputStream, out, message);
 

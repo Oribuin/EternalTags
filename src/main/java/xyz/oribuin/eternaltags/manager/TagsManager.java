@@ -152,8 +152,8 @@ public class TagsManager extends Manager {
 
                 // Read from a configuration section
                 CommentedConfigurationSection iconSection = tagSection.getConfigurationSection(key + ".icon");
-                if (iconSection != null && iconSection.getKeys(false).size() > 0) {
-                    ItemStack itemStack = TagsUtils.getItemStack(tagSection, key + ".icon");
+                if (iconSection != null && !iconSection.getKeys(false).isEmpty()) {
+                    ItemStack itemStack = TagsUtils.deserialize(tagSection, key + ".icon");
                     if (itemStack != null)
                         obj.setIcon(itemStack);
                 }

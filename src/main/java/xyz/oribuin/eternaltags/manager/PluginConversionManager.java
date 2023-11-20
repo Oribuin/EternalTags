@@ -2,7 +2,6 @@ package xyz.oribuin.eternaltags.manager;
 
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.manager.Manager;
-import org.checkerframework.checker.units.qual.C;
 import xyz.oribuin.eternaltags.conversion.ConversionPlugin;
 import xyz.oribuin.eternaltags.obj.Category;
 import xyz.oribuin.eternaltags.obj.Tag;

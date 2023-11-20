@@ -11,7 +11,6 @@ import xyz.oribuin.eternaltags.obj.Tag;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 // God this plugin sucks to configure in terms of config readability
 public class AlonsoConversion extends ConversionPlugin {

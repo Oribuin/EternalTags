@@ -7,13 +7,12 @@ import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
 import dev.rosewood.rosegarden.command.framework.RoseSubCommand;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import xyz.oribuin.eternaltags.command.command.edit.EditCategoryCommand;
-import xyz.oribuin.eternaltags.command.command.edit.EditIconCommand;
 import xyz.oribuin.eternaltags.command.command.edit.EditDescriptionCommand;
+import xyz.oribuin.eternaltags.command.command.edit.EditIconCommand;
 import xyz.oribuin.eternaltags.command.command.edit.EditNameCommand;
 import xyz.oribuin.eternaltags.command.command.edit.EditOrderCommand;
 import xyz.oribuin.eternaltags.command.command.edit.EditPermissionCommand;
 import xyz.oribuin.eternaltags.command.command.edit.EditTagCommand;
-import xyz.oribuin.eternaltags.obj.Tag;
 
 public class EditCommand extends RoseCommand {
 

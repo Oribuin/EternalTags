@@ -10,7 +10,6 @@ import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import org.bukkit.entity.Player;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
-import xyz.oribuin.eternaltags.obj.Category;
 import xyz.oribuin.eternaltags.obj.Tag;
 
 public class EditOrderCommand extends RoseSubCommand {

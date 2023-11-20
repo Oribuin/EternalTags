@@ -6,7 +6,6 @@ import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
 import dev.rosewood.rosegarden.command.framework.RoseSubCommand;
 import dev.rosewood.rosegarden.command.framework.annotation.Inject;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
-import dev.rosewood.rosegarden.command.framework.types.GreedyString;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import org.bukkit.entity.Player;
 import xyz.oribuin.eternaltags.manager.LocaleManager;

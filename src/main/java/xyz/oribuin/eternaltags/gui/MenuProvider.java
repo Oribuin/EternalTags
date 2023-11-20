@@ -31,7 +31,7 @@ public enum MenuProvider {
      * @return the instance of the menu.
      */
     @SuppressWarnings("unchecked")
-    public static<T extends PluginMenu> T get(Class<T> menuClass) {
+    public static <T extends PluginMenu> T get(Class<T> menuClass) {
         if (menuCache.containsKey(menuClass)) {
             return (T) menuCache.get(menuClass);
         }

@@ -1,14 +1,10 @@
 package xyz.oribuin.eternaltags.manager;
 
 import dev.rosewood.rosegarden.RosePlugin;
-import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import dev.rosewood.rosegarden.config.RoseSetting;
 import dev.rosewood.rosegarden.manager.AbstractConfigurationManager;
 import xyz.oribuin.eternaltags.EternalTags;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class ConfigurationManager extends AbstractConfigurationManager {
 

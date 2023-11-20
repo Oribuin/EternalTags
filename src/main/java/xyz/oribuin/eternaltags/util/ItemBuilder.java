@@ -1,18 +1,16 @@
 package xyz.oribuin.eternaltags.util;
 
+
 import org.bukkit.Color;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.Nullable;
@@ -20,7 +18,9 @@ import xyz.oribuin.eternaltags.util.nms.SkullUtils;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
+@SuppressWarnings({"unused", "deprecation"})
 public class ItemBuilder {
 
     private final ItemStack item;
@@ -44,14 +44,13 @@ public class ItemBuilder {
      * @param text The text.
      * @return Item.Builder.
      */
-    @SuppressWarnings("deprecation")
-    public ItemBuilder setName(@Nullable String text) {
+    public ItemBuilder name(@Nullable String text) {
         final ItemMeta meta = this.item.getItemMeta();
         if (meta == null || text == null)
             return this;
 
         meta.setDisplayName(text);
-        item.setItemMeta(meta);
+        this.item.setItemMeta(meta);
 
         return this;
     }
@@ -62,15 +61,13 @@ public class ItemBuilder {
      * @param lore The lore
      * @return Item.Builder.
      */
-    @SuppressWarnings("deprecation")
-    public ItemBuilder setLore(@Nullable List<String> lore) {
+    public ItemBuilder lore(@Nullable List<String> lore) {
         final ItemMeta meta = this.item.getItemMeta();
         if (meta == null || lore == null)
             return this;
 
         meta.setLore(lore);
-        item.setItemMeta(meta);
-
+        this.item.setItemMeta(meta);
         return this;
     }
 
@@ -80,16 +77,8 @@ public class ItemBuilder {
      * @param lore The lore
      * @return Item.Builder.
      */
-    @SuppressWarnings("deprecation")
-    public ItemBuilder setLore(@Nullable String... lore) {
-        final ItemMeta meta = this.item.getItemMeta();
-        if (meta == null || lore == null)
-            return this;
-
-        meta.setLore(Arrays.asList(lore));
-        item.setItemMeta(meta);
-
-        return this;
+    public ItemBuilder lore(@Nullable String... lore) {
+        return this.lore(Arrays.asList(lore));
     }
 
     /**
@@ -98,8 +87,8 @@ public class ItemBuilder {
      * @param amount The amount of items.
      * @return Item.Builder
      */
-    public ItemBuilder setAmount(int amount) {
-        item.setAmount(amount);
+    public ItemBuilder amount(int amount) {
+        this.item.setAmount(amount);
         return this;
     }
 
@@ -110,14 +99,32 @@ public class ItemBuilder {
      * @param level The level of the enchantment
      * @return Item.Builder
      */
-    public ItemBuilder addEnchant(Enchantment ench, int level) {
+    public ItemBuilder enchant(Enchantment ench, int level) {
         final ItemMeta meta = this.item.getItemMeta();
-        if (meta == null)
-            return this;
+        if (meta == null) return this;
 
         meta.addEnchant(ench, level, true);
-        item.setItemMeta(meta);
+        this.item.setItemMeta(meta);
 
+        return this;
+    }
+
+    /**
+     * Add multiple enchantments to an item.
+     *
+     * @param enchantments The enchantments.
+     * @return Item.Builder
+     */
+
+    public ItemBuilder enchant(Map<Enchantment, Integer> enchantments) {
+        final ItemMeta meta = this.item.getItemMeta();
+        if (meta == null) return this;
+
+        for (Map.Entry<Enchantment, Integer> entry : enchantments.entrySet()) {
+            meta.addEnchant(entry.getKey(), entry.getValue(), true);
+        }
+
+        this.item.setItemMeta(meta);
         return this;
     }
 
@@ -127,8 +134,8 @@ public class ItemBuilder {
      * @param ench The enchantment.
      * @return Item.Builder
      */
-    public ItemBuilder removeEnchant(Enchantment ench) {
-        item.removeEnchantment(ench);
+    public ItemBuilder remove(Enchantment ench) {
+        this.item.removeEnchantment(ench);
         return this;
     }
 
@@ -138,14 +145,13 @@ public class ItemBuilder {
      * @param flags The ItemFlags.
      * @return Item.Builder
      */
-    public ItemBuilder setFlags(ItemFlag[] flags) {
+    public ItemBuilder flags(ItemFlag[] flags) {
         final ItemMeta meta = this.item.getItemMeta();
-        if (meta == null)
-            return this;
+        if (meta == null) return this;
 
         meta.removeItemFlags(ItemFlag.values());
         meta.addItemFlags(flags);
-        item.setItemMeta(meta);
+        this.item.setItemMeta(meta);
 
         return this;
     }
@@ -157,12 +163,12 @@ public class ItemBuilder {
      * @param unbreakable true if unbreakable
      * @return Item.Builder
      */
-    public ItemBuilder setUnbreakable(boolean unbreakable) {
+    public ItemBuilder unbreakable(boolean unbreakable) {
         final ItemMeta meta = this.item.getItemMeta();
-        if (meta == null)
-            return this;
+        if (meta == null) return this;
 
         meta.setUnbreakable(unbreakable);
+        item.setItemMeta(meta);
         return this;
     }
 
@@ -172,75 +178,25 @@ public class ItemBuilder {
      * @return Item.Builder
      */
     public ItemBuilder glow(boolean b) {
-        if (!b)
-            return this;
+        if (!b) return this;
 
         final ItemMeta meta = this.item.getItemMeta();
-        if (meta == null)
-            return this;
+        if (meta == null) return this;
 
-        meta.addEnchant(Enchantment.PROTECTION_EXPLOSIONS, 1, true);
+        meta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL, 1, true);
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-        item.setItemMeta(meta);
+        this.item.setItemMeta(meta);
 
         return this;
     }
 
     /**
-     * Set an item's NBT Values
+     * Apply a texture to a skull.
      *
-     * @param key   The key to the nbt
-     * @param value The value of the nbt
+     * @param texture The texture.
      * @return Item.Builder
      */
-    public ItemBuilder setNBT(Plugin plugin, String key, String value) {
-        final ItemMeta meta = item.getItemMeta();
-        if (meta == null)
-            return this;
-
-        final PersistentDataContainer container = meta.getPersistentDataContainer();
-        container.set(new NamespacedKey(plugin, key), PersistentDataType.STRING, value);
-        item.setItemMeta(meta);
-        return this;
-    }
-
-    /**
-     * Set an item's NBT Values
-     *
-     * @param key   The key to the nbt
-     * @param value The value of the nbt
-     * @return Item.Builder
-     */
-    public ItemBuilder setNBT(Plugin plugin, String key, int value) {
-        final ItemMeta meta = item.getItemMeta();
-        if (meta == null)
-            return this;
-
-        final PersistentDataContainer container = meta.getPersistentDataContainer();
-        container.set(new NamespacedKey(plugin, key), PersistentDataType.INTEGER, value);
-        item.setItemMeta(meta);
-        return this;
-    }
-
-    /**
-     * Set an item's NBT Values
-     *
-     * @param key   The key to the nbt
-     * @param value The value of the nbt
-     * @return Item.Builder
-     */
-    public ItemBuilder setNBT(Plugin plugin, String key, double value) {
-        final ItemMeta meta = item.getItemMeta();
-        if (meta == null)
-            return this;
-
-        final PersistentDataContainer container = meta.getPersistentDataContainer();
-        container.set(new NamespacedKey(plugin, key), PersistentDataType.DOUBLE, value);
-        item.setItemMeta(meta);
-        return this;
-    }
-
-    public ItemBuilder setTexture(@Nullable String texture) {
+    public ItemBuilder texture(@Nullable String texture) {
         if (item.getType() != Material.PLAYER_HEAD || texture == null)
             return this;
 
@@ -249,52 +205,61 @@ public class ItemBuilder {
             return this;
 
         SkullUtils.setSkullTexture(skullMeta, texture);
-        item.setItemMeta(skullMeta);
-
+        this.item.setItemMeta(skullMeta);
         return this;
     }
 
-    public ItemBuilder setOwner(OfflinePlayer owner) {
+    /**
+     * Set the owner of a skull.
+     *
+     * @param owner The owner.
+     * @return Item.Builder
+     */
+    public ItemBuilder owner(OfflinePlayer owner) {
         if (item.getType() != Material.PLAYER_HEAD)
             return this;
 
-        if (owner == null)
+        final SkullMeta skullMeta = (SkullMeta) item.getItemMeta();
+        if (skullMeta == null || owner == null || skullMeta.getOwningPlayer() != null)
             return this;
 
-        final SkullMeta skullMeta = (SkullMeta) item.getItemMeta();
-        if (skullMeta == null)
-            return this;
+        System.out.println("Setting owner to " + owner.getName());
 
         skullMeta.setOwningPlayer(owner);
-        item.setItemMeta(skullMeta);
+        this.item.setItemMeta(skullMeta);
         return this;
     }
 
-    public ItemBuilder setModel(int model) {
-        ItemMeta meta = this.item.getItemMeta();
-        if (meta == null || model == -1)
+    public ItemBuilder model(int model) {
+        final ItemMeta meta = this.item.getItemMeta();
+        if (meta == null || model <= 0)
             return this;
 
         meta.setCustomModelData(model);
-        item.setItemMeta(meta);
+        this.item.setItemMeta(meta);
         return this;
     }
 
-    public ItemBuilder addPotionEffect(PotionEffectType effectType, int duration, int amp) {
+    public ItemBuilder potion(PotionEffectType effectType, int duration, int amp) {
         if (!(this.item.getItemMeta() instanceof PotionMeta meta))
             return this;
 
         meta.addCustomEffect(new PotionEffect(effectType, duration, amp), true);
-        item.setItemMeta(meta);
+        this.item.setItemMeta(meta);
         return this;
     }
 
-    public ItemBuilder setPotionColor(Color color) {
-        if (!(this.item.getItemMeta() instanceof PotionMeta meta))
-            return this;
+    public ItemBuilder color(Color color) {
+        if (this.item.getItemMeta() instanceof PotionMeta meta) {
+            meta.setColor(color);
+            this.item.setItemMeta(meta);
+        }
 
-        meta.setColor(color);
-        item.setItemMeta(meta);
+        if (this.item.getItemMeta() instanceof LeatherArmorMeta meta) {
+            meta.setColor(color);
+            this.item.setItemMeta(meta);
+        }
+
         return this;
     }
 
@@ -303,8 +268,8 @@ public class ItemBuilder {
      *
      * @return The ItemStack
      */
-    public ItemStack create() {
-        return item;
+    public ItemStack build() {
+        return this.item;
     }
 
 }

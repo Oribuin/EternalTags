@@ -34,7 +34,7 @@ public class TagUser {
     /**
      * The player's favourite tags.
      */
-    private@NotNull  Set<String> favourites;
+    private @NotNull Set<String> favourites;
 
     /**
      * Create a new TagUser object.

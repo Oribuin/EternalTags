@@ -21,9 +21,9 @@ public class SearchCommand extends RoseCommand {
     @RoseExecutable
     public void execute(CommandContext context, GreedyString keyword) {
         MenuProvider.get(TagsGUI.class).open((Player) context.getSender(), tag -> tag.getId().contains(keyword.get())
-                || tag.getName().contains(keyword.get())
-                || tag.getDescription().contains(keyword.get())
-                || ChatColor.stripColor(tag.getTag()).contains(keyword.get()));
+                                                                                  || tag.getName().contains(keyword.get())
+                                                                                  || tag.getDescription().contains(keyword.get())
+                                                                                  || ChatColor.stripColor(tag.getTag()).contains(keyword.get()));
     }
 
     @Override

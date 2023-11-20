@@ -1,6 +1,5 @@
 package xyz.oribuin.eternaltags.action;
 
-import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;

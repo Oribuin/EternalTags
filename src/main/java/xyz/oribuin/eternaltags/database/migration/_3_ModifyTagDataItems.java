@@ -27,20 +27,20 @@ public class _3_ModifyTagDataItems extends DataMigration {
 
                 // Create new table with modified columns
                 statement.addBatch("CREATE TABLE " + tablePrefix + "tag_data ("
-                        + "`tagId` VARCHAR(256) NOT NULL,"
-                        + "`name` TEXT NOT NULL,"
-                        + "`tag` TEXT NOT NULL,"
-                        + "`permission` TEXT,"
-                        + "`description` TEXT NOT NULL,"
-                        + "`order` INTEGER NOT NULL,"
-                        + "`icon` VARBINARY(2456),"
-                        + "`category` TEXT, "
-                        + "PRIMARY KEY (tagId))");
+                                   + "`tagId` VARCHAR(256) NOT NULL,"
+                                   + "`name` TEXT NOT NULL,"
+                                   + "`tag` TEXT NOT NULL,"
+                                   + "`permission` TEXT,"
+                                   + "`description` TEXT NOT NULL,"
+                                   + "`order` INTEGER NOT NULL,"
+                                   + "`icon` VARBINARY(2456),"
+                                   + "`category` TEXT, "
+                                   + "PRIMARY KEY (tagId))");
 
                 // Copy data from old table to new table
                 statement.addBatch("INSERT INTO " + tablePrefix + "tag_data (tagId, `name`, `tag`, `permission`, `description`, `order`) "
-                        + "SELECT `tagId`, `name`, `tag`, `permission`, `description`, `order` FROM " + tablePrefix + "tag_data_old "
-                        + "WHERE EXISTS (SELECT 1 FROM " + tablePrefix + "tag_data_old)");
+                                   + "SELECT `tagId`, `name`, `tag`, `permission`, `description`, `order` FROM " + tablePrefix + "tag_data_old "
+                                   + "WHERE EXISTS (SELECT 1 FROM " + tablePrefix + "tag_data_old)");
 
             } else {
                 // Modify columns to the desired types and nullability

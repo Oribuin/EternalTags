@@ -12,6 +12,9 @@ import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
@@ -20,6 +23,8 @@ import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.oribuin.eternaltags.EternalTags;
+import xyz.oribuin.eternaltags.manager.LocaleManager;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -29,7 +34,9 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("unchecked")
 public final class TagsUtils {
@@ -127,66 +134,94 @@ public final class TagsUtils {
         return WordUtils.capitalizeFully(material.name().toLowerCase().replace("_", " "));
     }
 
+    /**
+     * Deserialize an ItemStack from a CommentedConfigurationSection with placeholders
+     *
+     * @param section      The section to deserialize from
+     * @param sender       The CommandSender to apply placeholders from
+     * @param key          The key to deserialize from
+     * @param placeholders The placeholders to apply
+     * @return The deserialized ItemStack
+     */
     @Nullable
-    public static ItemStack getItemStack(@NotNull CommentedConfigurationSection config, @NotNull String path, @Nullable Player player, @Nullable StringPlaceholders placeholders) {
+    public static ItemStack deserialize(
+            @NotNull CommentedConfigurationSection section,
+            @Nullable CommandSender sender,
+            @NotNull String key,
+            @NotNull StringPlaceholders placeholders
+    ) {
+        final LocaleManager locale = EternalTags.getInstance().getManager(LocaleManager.class);
+        final Material material = Material.getMaterial(locale.format(sender, section.getString(key + ".material"), placeholders), false);
+        if (material == null) return null;
 
-        Material material = Material.getMaterial(PlaceholderAPI.setPlaceholders(player, config.getString(path + ".material", "")));
-        if (material == null)
-            return null;
+        // Load enchantments
+        final Map<Enchantment, Integer> enchantments = new HashMap<>();
+        final ConfigurationSection enchantmentSection = section.getConfigurationSection(key + ".enchantments");
+        if (enchantmentSection != null) {
+            for (String enchantmentKey : enchantmentSection.getKeys(false)) {
+                final Enchantment enchantment = Enchantment.getByKey(NamespacedKey.minecraft(enchantmentKey.toLowerCase()));
+                if (enchantment == null) continue;
 
-        if (placeholders == null)
-            placeholders = StringPlaceholders.empty();
-
-        // Format the item lore
-        StringPlaceholders finalPlaceholders = placeholders;
-        List<String> lore = new ArrayList<>(config.getStringList(path + ".lore"))
-                .stream()
-                .map(s -> format(player, s, finalPlaceholders))
-                .toList();
-
-        // Get item flags
-        ItemFlag[] flags = config.getStringList(path + ".flags")
-                .stream()
-                .map(String::toUpperCase)
-                .map(ItemFlag::valueOf)
-                .toArray(ItemFlag[]::new);
-
-        // Build the item stack
-        ItemBuilder builder = new ItemBuilder(material)
-                .setName(format(player, config.getString(path + ".name"), placeholders))
-                .setLore(lore)
-                .setAmount(config.getInt(path + ".amount", 1))
-                .setFlags(flags)
-                .setTexture(config.getString(path + ".texture"))
-                .glow(Boolean.parseBoolean(format(player, config.getString(path + ".glow", "false"), placeholders)))
-                .setPotionColor(fromHex(config.getString(path + ".potion-color", null)))
-                .setModel(parseInteger(format(player, config.getString(path + ".model-data", "-1"), placeholders)));
-
-        // Get item owner
-        String owner = config.getString(path + ".owner", null);
-        if (owner != null) {
-            if (owner.equalsIgnoreCase("self")) {
-                builder.setOwner(player);
-            } else {
-                if (NMSUtil.isPaper() && Bukkit.getOfflinePlayerIfCached(owner) != null)
-                    builder.setOwner(Bukkit.getOfflinePlayerIfCached(owner));
-                else
-                    builder.setOwner(Bukkit.getOfflinePlayer(owner));
+                enchantments.put(enchantment, enchantmentSection.getInt(enchantmentKey, 1));
             }
         }
 
-        CommentedConfigurationSection enchants = config.getConfigurationSection(path + ".enchants");
-        if (enchants != null) {
-            enchants.getKeys(false).forEach(key -> {
-                Enchantment enchantment = Enchantment.getByKey(NamespacedKey.minecraft(key.toLowerCase()));
-                if (enchantment == null)
-                    return;
+        // Load potion item flags
+        final ItemFlag[] flags = section.getStringList(key + ".flags").stream()
+                .map(ItemFlag::valueOf)
+                .toArray(ItemFlag[]::new);
 
-                builder.addEnchant(enchantment, enchants.getInt(key));
-            });
+        // Load offline player texture
+        final String owner = section.getString(key + ".owner");
+        OfflinePlayer offlinePlayer = null;
+        if (owner != null) {
+            if (owner.equalsIgnoreCase("self") && sender instanceof Player player) {
+                offlinePlayer = player;
+            } else {
+                offlinePlayer = NMSUtil.isPaper()
+                        ? Bukkit.getOfflinePlayerIfCached(owner)
+                        : Bukkit.getOfflinePlayer(owner);
+            }
         }
 
-        return builder.create();
+        return new ItemBuilder(material)
+                .name(locale.format(sender, section.getString(key + ".name"), placeholders))
+                .amount(Math.min(1, section.getInt(key + ".amount", 1)))
+                .lore(locale.format(sender, section.getStringList(key + ".lore"), placeholders))
+                .glow(section.getBoolean(key + ".glowing", false))
+                .unbreakable(section.getBoolean(key + ".unbreakable", false))
+                .model(toInt(locale.format(sender, section.getString(key + ".model-data", "0"), placeholders)))
+                .enchant(enchantments)
+                .flags(flags)
+                .texture(locale.format(sender, section.getString(key + ".texture"), placeholders))
+                .color(fromHex(locale.format(sender, section.getString(key + ".potion-color"), placeholders)))
+                .owner(offlinePlayer)
+                .build();
+    }
+
+    /**
+     * Deserialize an ItemStack from a CommentedConfigurationSection
+     *
+     * @param section The section to deserialize from
+     * @param key     The key to deserialize from
+     * @return The deserialized ItemStack
+     */
+    @Nullable
+    public static ItemStack deserialize(@NotNull CommentedConfigurationSection section, @NotNull String key) {
+        return deserialize(section, null, key, StringPlaceholders.empty());
+    }
+
+    /**
+     * Deserialize an ItemStack from a CommentedConfigurationSection with placeholders
+     *
+     * @param section The section to deserialize from
+     * @param sender  The CommandSender to apply placeholders from
+     * @param key     The key to deserialize from
+     * @return The deserialized ItemStack
+     */
+    @Nullable
+    public static ItemStack deserialize(@NotNull CommentedConfigurationSection section, @Nullable CommandSender sender, @NotNull String key) {
+        return deserialize(section, sender, key, StringPlaceholders.empty());
     }
 
     /**
@@ -195,26 +230,12 @@ public final class TagsUtils {
      * @param object The object
      * @return The integer
      */
-    private static int parseInteger(Object object) {
+    private static int toInt(String object) {
         try {
-            if (object instanceof Integer)
-                return (int) object;
-
-            return Integer.parseInt(object.toString());
+            return Integer.parseInt(object);
         } catch (NumberFormatException e) {
             return 0;
         }
-    }
-
-    /**
-     * Get ItemStack from CommentedFileSection path
-     *
-     * @param config The CommentedFileSection
-     * @param path   The path to the item
-     * @return The itemstack
-     */
-    public static ItemStack getItemStack(CommentedConfigurationSection config, String path) {
-        return getItemStack(config, path, null, StringPlaceholders.empty());
     }
 
     /**
@@ -313,6 +334,27 @@ public final class TagsUtils {
         }
 
         return null;
+    }
+
+    /**
+     * Get an enum from a string value
+     *
+     * @param enumClass The enum class
+     * @param name      The name of the enum
+     * @param def       The default enum
+     * @param <T>       The enum type
+     * @return The enum
+     */
+    public static <T extends Enum<T>> T getEnum(Class<T> enumClass, String name, T def) {
+        if (name == null)
+            return def;
+
+        try {
+            return Enum.valueOf(enumClass, name.toUpperCase());
+        } catch (IllegalArgumentException ignored) {
+        }
+
+        return def;
     }
 
     public static byte[] serializeItem(@Nullable ItemStack itemStack) {

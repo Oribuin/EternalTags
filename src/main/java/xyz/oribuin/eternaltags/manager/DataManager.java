@@ -287,7 +287,7 @@ public class DataManager extends AbstractDataManager {
     public void saveTagData(@NotNull Tag tag) {
         this.async(task -> this.databaseConnector.connect(connection -> {
             final String query = "REPLACE INTO " + this.getTablePrefix() + "tag_data (`tagId`, `name`, " +
-                    "`description`, `tag`, `permission`, `order`, `icon`, `category`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                                 "`description`, `tag`, `permission`, `order`, `icon`, `category`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, tag.getId());
                 statement.setString(2, tag.getName());
@@ -310,7 +310,7 @@ public class DataManager extends AbstractDataManager {
     public void saveTagData(Map<String, Tag> tags) {
         this.async(task -> this.databaseConnector.connect(connection -> {
             final String query = "REPLACE INTO " + this.getTablePrefix() + "tag_data (`tagId`, `name`, " +
-                    "`description`, `tag`, `permission`, `order`, `icon`, `category`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                                 "`description`, `tag`, `permission`, `order`, `icon`, `category`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 for (Tag tag : tags.values()) {

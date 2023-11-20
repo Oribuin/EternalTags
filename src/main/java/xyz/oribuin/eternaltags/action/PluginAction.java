@@ -77,7 +77,7 @@ public final class PluginAction {
     }
 
     @Nullable
-    public static  String getName(Action action) {
+    public static String getName(Action action) {
         for (Map.Entry<String, Function<String, Action>> entry : ACTIONS.entrySet()) {
             if (entry.getKey().equalsIgnoreCase(action.getName())) {
                 return entry.getKey();

@@ -2,7 +2,7 @@ package xyz.oribuin.eternaltags;
 
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.manager.Manager;
-import dev.rosewood.rosegarden.utils.NMSUtil;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
 import xyz.oribuin.eternaltags.gui.MenuProvider;
 import xyz.oribuin.eternaltags.hook.Expansion;
@@ -53,6 +53,9 @@ public class EternalTags extends RosePlugin {
 
         // Register PlaceholderAPI Expansion
         new Expansion(this).register();
+    }
+
+    public void on(ItemStack player) {
     }
 
     @Override

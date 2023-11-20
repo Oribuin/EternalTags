@@ -6,8 +6,6 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.util.TagsUtils;
 
-import java.util.Arrays;
-
 public class SoundAction extends Action {
 
     public SoundAction() {

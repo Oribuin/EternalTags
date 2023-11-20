@@ -80,7 +80,8 @@ public class MenuItem {
 
         // Check if the item path is null
         if (this.config.get(this.itemPath) == null && this.customItem == null) {
-            return; // The item path is null and the custom item is null, so we don't need to do anything
+//            throw new IllegalArgumentException(this.itemPath + ": Item path in config is null and custom item is null");
+            return;
         }
 
         // Check if the item is enabled
@@ -112,7 +113,7 @@ public class MenuItem {
 
         ItemStack item = this.customItem != null
                 ? this.customItem
-                : TagsUtils.getItemStack(this.config, this.itemPath, this.player, this.placeholders);
+                : TagsUtils.deserialize(this.config, this.player, this.itemPath, this.placeholders);
 
         if (item == null) {
             EternalTags.getInstance().getLogger().warning("Item [" + this.itemPath + "] in the [" + this.config.getName() + "] menu is invalid.");
