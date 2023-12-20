@@ -188,7 +188,7 @@ public final class TagsUtils {
                 .name(locale.format(sender, section.getString(key + ".name"), placeholders))
                 .amount(Math.min(1, section.getInt(key + ".amount", 1)))
                 .lore(locale.format(sender, section.getStringList(key + ".lore"), placeholders))
-                .glow(section.getBoolean(key + ".glowing", false))
+                .glow(section.getBoolean(key + ".glow", false))
                 .unbreakable(section.getBoolean(key + ".unbreakable", false))
                 .model(toInt(locale.format(sender, section.getString(key + ".model-data", "0"), placeholders)))
                 .enchant(enchantments)

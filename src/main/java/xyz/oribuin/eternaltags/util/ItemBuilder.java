@@ -223,8 +223,6 @@ public class ItemBuilder {
         if (skullMeta == null || owner == null || skullMeta.getOwningPlayer() != null)
             return this;
 
-        System.out.println("Setting owner to " + owner.getName());
-
         skullMeta.setOwningPlayer(owner);
         this.item.setItemMeta(skullMeta);
         return this;
