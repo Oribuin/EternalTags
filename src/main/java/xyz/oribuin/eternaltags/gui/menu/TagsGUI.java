@@ -330,7 +330,7 @@ public class TagsGUI extends PluginMenu {
 
         String message = locale.getLocaleMessage(isFavourite ? "command-favorite-off" : "command-favorite-on");
         this.locale.sendMessage(player, "command-favorite-toggled", StringPlaceholders.builder("tag", this.manager.getDisplayTag(tag, player))
-                .addPlaceholder("toggled", message)
+                .add("toggled", message)
                 .build());
     }
 

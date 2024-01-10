@@ -297,10 +297,10 @@ public abstract class PluginMenu {
      */
     protected StringPlaceholders getPagePlaceholders(PaginatedGui gui) {
         return StringPlaceholders.builder()
-                .addPlaceholder("page", gui.getCurrentPageNum())
-                .addPlaceholder("total", Math.max(gui.getPagesNum(), 1))
-                .addPlaceholder("next", gui.getNextPageNum())
-                .addPlaceholder("previous", gui.getPrevPageNum())
+                .add("page", gui.getCurrentPageNum())
+                .add("total", Math.max(gui.getPagesNum(), 1))
+                .add("next", gui.getNextPageNum())
+                .add("previous", gui.getPrevPageNum())
                 .build();
 
     }
@@ -314,13 +314,13 @@ public abstract class PluginMenu {
      */
     protected StringPlaceholders getTagPlaceholders(Tag tag, OfflinePlayer player) {
         return StringPlaceholders.builder()
-                .addPlaceholder("tag", this.rosePlugin.getManager(TagsManager.class).getDisplayTag(tag, player))
-                .addPlaceholder("tag_stripped", tag.getTag())
-                .addPlaceholder("id", tag.getId())
-                .addPlaceholder("name", tag.getName())
-                .addPlaceholder("description", String.join(Setting.DESCRIPTION_DELIMITER.getString(), tag.getDescription()))
-                .addPlaceholder("permission", tag.getPermission())
-                .addPlaceholder("order", tag.getOrder())
+                .add("tag", this.rosePlugin.getManager(TagsManager.class).getDisplayTag(tag, player))
+                .add("tag_stripped", tag.getTag())
+                .add("id", tag.getId())
+                .add("name", tag.getName())
+                .add("description", String.join(Setting.DESCRIPTION_DELIMITER.getString(), tag.getDescription()))
+                .add("permission", tag.getPermission())
+                .add("order", tag.getOrder())
                 .build();
 
     }

@@ -29,11 +29,11 @@ public class EditPermissionCommand extends RoseSubCommand {
         manager.updateActiveTag(tag);
 
         final StringPlaceholders placeholders = StringPlaceholders.builder()
-                .addPlaceholder("tag", manager.getDisplayTag(tag, context.getSender() instanceof Player ? (Player) context.getSender() : null))
-                .addPlaceholder("option", "permission")
-                .addPlaceholder("id", tag.getId())
-                .addPlaceholder("name", tag.getName())
-                .addPlaceholder("value", permission.get())
+                .add("tag", manager.getDisplayTag(tag, context.getSender() instanceof Player ? (Player) context.getSender() : null))
+                .add("option", "permission")
+                .add("id", tag.getId())
+                .add("name", tag.getName())
+                .add("value", permission.get())
                 .build();
 
         locale.sendMessage(context.getSender(), "command-edit-edited", placeholders);

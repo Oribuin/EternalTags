@@ -29,11 +29,11 @@ public class EditCategoryCommand extends RoseSubCommand {
         manager.updateActiveTag(tag);
 
         final StringPlaceholders placeholders = StringPlaceholders.builder()
-                .addPlaceholder("tag", manager.getDisplayTag(tag, context.getSender() instanceof Player ? (Player) context.getSender() : null))
-                .addPlaceholder("option", "category")
-                .addPlaceholder("id", tag.getId())
-                .addPlaceholder("name", tag.getName())
-                .addPlaceholder("value", newCategory.getId())
+                .add("tag", manager.getDisplayTag(tag, context.getSender() instanceof Player ? (Player) context.getSender() : null))
+                .add("option", "category")
+                .add("id", tag.getId())
+                .add("name", tag.getName())
+                .add("value", newCategory.getId())
                 .build();
 
         locale.sendMessage(context.getSender(), "command-edit-edited", placeholders);

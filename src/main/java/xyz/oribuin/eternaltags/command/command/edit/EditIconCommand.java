@@ -27,13 +27,15 @@ public class EditIconCommand extends RoseSubCommand {
 
         Player player = (Player) context.getSender();
         ItemStack item = player.getInventory().getItemInMainHand();
+        
+        boolean shouldRemove = remove != null && remove;
 
-        if (item.getType().isAir() || !item.getType().isItem() && !remove) {
+        if (item.getType().isAir() || !item.getType().isItem() && !shouldRemove) {
             locale.sendMessage(context.getSender(), "command-edit-invalid-item");
             return;
         }
 
-        if (remove) {
+        if (shouldRemove) {
             item = null;
         }
 
@@ -44,11 +46,11 @@ public class EditIconCommand extends RoseSubCommand {
         manager.updateActiveTag(tag);
 
         final StringPlaceholders placeholders = StringPlaceholders.builder()
-                .addPlaceholder("tag", manager.getDisplayTag(tag, player))
-                .addPlaceholder("option", "icon")
-                .addPlaceholder("id", tag.getId())
-                .addPlaceholder("name", tag.getName())
-                .addPlaceholder("value", (item == null ? "None" : item.getType().name().toLowerCase()))
+                .add("tag", manager.getDisplayTag(tag, player))
+                .add("option", "icon")
+                .add("id", tag.getId())
+                .add("name", tag.getName())
+                .add("value", (item == null ? "None" : item.getType().name().toLowerCase()))
                 .build();
 
         locale.sendMessage(context.getSender(), "command-edit-edited", placeholders);

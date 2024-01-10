@@ -33,9 +33,9 @@ public class EditDescriptionCommand extends RoseSubCommand {
 
         if (line.get().equalsIgnoreCase("remove") && description.remove(order) != null) {
             StringPlaceholders placeholders = StringPlaceholders.builder("tag", manager.getDisplayTag(tag, null))
-                    .addPlaceholder("id", tag.getId())
-                    .addPlaceholder("name", tag.getName())
-                    .addPlaceholder("value", order)
+                    .add("id", tag.getId())
+                    .add("name", tag.getName())
+                    .add("value", order)
                     .build();
 
             locale.sendMessage(context.getSender(), "command-edit-description-removed", placeholders);
@@ -52,11 +52,11 @@ public class EditDescriptionCommand extends RoseSubCommand {
         manager.updateActiveTag(tag);
 
         final StringPlaceholders placeholders = StringPlaceholders.builder()
-                .addPlaceholder("tag", manager.getDisplayTag(tag, context.getSender() instanceof Player ? (Player) context.getSender() : null))
-                .addPlaceholder("option", "description")
-                .addPlaceholder("id", tag.getId())
-                .addPlaceholder("name", tag.getName())
-                .addPlaceholder("value", "line " + order + " set to " + line.get())
+                .add("tag", manager.getDisplayTag(tag, context.getSender() instanceof Player ? (Player) context.getSender() : null))
+                .add("option", "description")
+                .add("id", tag.getId())
+                .add("name", tag.getName())
+                .add("value", "line " + order + " set to " + line.get())
                 .build();
 
         locale.sendMessage(context.getSender(), "command-edit-edited", placeholders);

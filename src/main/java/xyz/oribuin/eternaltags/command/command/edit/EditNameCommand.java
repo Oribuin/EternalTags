@@ -29,11 +29,11 @@ public class EditNameCommand extends RoseSubCommand {
         manager.updateActiveTag(tag);
 
         final StringPlaceholders placeholders = StringPlaceholders.builder()
-                .addPlaceholder("tag", manager.getDisplayTag(tag, context.getSender() instanceof Player ? (Player) context.getSender() : null))
-                .addPlaceholder("option", "name")
-                .addPlaceholder("id", tag.getId())
-                .addPlaceholder("name", tag.getName())
-                .addPlaceholder("value", name.get())
+                .add("tag", manager.getDisplayTag(tag, context.getSender() instanceof Player ? (Player) context.getSender() : null))
+                .add("option", "name")
+                .add("id", tag.getId())
+                .add("name", tag.getName())
+                .add("value", name.get())
                 .build();
 
         locale.sendMessage(context.getSender(), "command-edit-edited", placeholders);

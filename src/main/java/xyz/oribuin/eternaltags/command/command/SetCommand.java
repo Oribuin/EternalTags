@@ -51,7 +51,7 @@ public class SetCommand extends RoseCommand {
             }
 
             locale.sendMessage(sender, "command-set-changed-other", StringPlaceholders.builder("tag", manager.getDisplayTag(tag, player))
-                    .addPlaceholder("player", player.getName())
+                    .add("player", player.getName())
                     .build());
 
             return;
