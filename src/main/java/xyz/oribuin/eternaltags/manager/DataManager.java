@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.database.DataMigration;
 import dev.rosewood.rosegarden.manager.AbstractDataManager;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.database.migration._1_CreateInitialTables;
@@ -17,11 +19,7 @@ import xyz.oribuin.eternaltags.util.TagsUtils;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class DataManager extends AbstractDataManager {
@@ -37,6 +35,12 @@ public class DataManager extends AbstractDataManager {
     @Override
     public void reload() {
         super.reload();
+
+        // Load users if plugin was enabled on runtime (For instance, with PlugMan)
+        // Check if cachedUsers is empty allows us to determine if reload was called on plugin start-up
+        if (this.cachedUsers.isEmpty() && !Bukkit.getOnlinePlayers().isEmpty()) {
+            Bukkit.getOnlinePlayers().stream().map(Player::getUniqueId).forEach(this::loadUser);
+        }
     }
 
     /**
