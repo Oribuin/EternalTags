@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.database.DataMigration;
 import dev.rosewood.rosegarden.manager.AbstractDataManager;
-import org.bukkit.scheduler.BukkitTask;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.database.migration._1_CreateInitialTables;
 import xyz.oribuin.eternaltags.database.migration._2_CreateNewTagTables;
@@ -367,8 +367,8 @@ public class DataManager extends AbstractDataManager {
         );
     }
 
-    private void async(Consumer<BukkitTask> callback) {
-        this.rosePlugin.getServer().getScheduler().runTaskAsynchronously(rosePlugin, callback);
+    private void async(Consumer<ScheduledTask> callback) {
+        this.rosePlugin.getServer().getAsyncScheduler().runNow(this.rosePlugin, callback);
     }
 
     public Map<UUID, TagUser> getCachedUsers() {

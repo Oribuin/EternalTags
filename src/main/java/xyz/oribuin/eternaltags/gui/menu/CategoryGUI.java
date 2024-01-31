@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class CategoryGUI extends PluginMenu {
 
@@ -77,7 +78,7 @@ public class CategoryGUI extends PluginMenu {
                 .player(player)
                 .action(event -> {
                     gui.next();
-                    this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                    this.sync(player, () -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
                 })
                 .player(player)
                 .place(gui);
@@ -87,7 +88,7 @@ public class CategoryGUI extends PluginMenu {
                 .player(player)
                 .action(event -> {
                     gui.previous();
-                    this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                    this.sync(player, () -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
                 })
                 .place(gui);
 
@@ -119,7 +120,7 @@ public class CategoryGUI extends PluginMenu {
 
         int dynamicSpeed = this.config.getInt("gui-settings.dynamic-speed", 3);
         if (this.config.getBoolean("gui-settings.dynamic-gui", false) && dynamicSpeed > 0) {
-            this.rosePlugin.getServer().getScheduler().runTaskTimerAsynchronously(this.rosePlugin, task -> {
+            this.rosePlugin.getServer().getAsyncScheduler().runAtFixedRate(this.rosePlugin, task -> {
                 if (gui.getInventory().getViewers().isEmpty()) {
                     task.cancel();
                     return;
@@ -128,8 +129,8 @@ public class CategoryGUI extends PluginMenu {
                 this.addCategories(gui, player);
 
                 if (this.reloadTitle())
-                    this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
-            }, 0, dynamicSpeed);
+                    this.sync(player, () -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+            }, 0, dynamicSpeed / 20L, TimeUnit.SECONDS);
 
             return;
         }
@@ -138,7 +139,7 @@ public class CategoryGUI extends PluginMenu {
             this.addCategories(gui, player);
 
             if (this.reloadTitle())
-                this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                this.sync(player, () -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
         };
 
         if (this.addPagesAsynchronously()) this.async(task);

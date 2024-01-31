@@ -33,6 +33,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 public class TagsGUI extends PluginMenu {
@@ -125,7 +126,7 @@ public class TagsGUI extends PluginMenu {
 
         int dynamicSpeed = this.config.getInt("gui-settings.dynamic-speed", 3);
         if (this.config.getBoolean("gui-settings.dynamic-gui", false) && dynamicSpeed > 0) {
-            this.rosePlugin.getServer().getScheduler().runTaskTimerAsynchronously(this.rosePlugin, task -> {
+            this.rosePlugin.getServer().getAsyncScheduler().runAtFixedRate(this.rosePlugin, task -> {
                 if (gui.getInventory().getViewers().isEmpty()) {
                     task.cancel();
                     return;
@@ -134,9 +135,9 @@ public class TagsGUI extends PluginMenu {
                 this.addTags(gui, player, filter);
 
                 if (this.reloadTitle())
-                    this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                    this.sync(player, () -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
 
-            }, 0, dynamicSpeed);
+            }, 0, dynamicSpeed / 20L, TimeUnit.SECONDS);
 
             return;
         }
@@ -145,7 +146,7 @@ public class TagsGUI extends PluginMenu {
             this.addTags(gui, player, filter);
 
             if (this.reloadTitle())
-                this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                this.sync(player, () -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
         };
 
         if (this.addPagesAsynchronously())
@@ -172,7 +173,7 @@ public class TagsGUI extends PluginMenu {
                     if (gui.next()) {
                         item.sound((Player) event.getWhoClicked());
                         this.addNavigationIcons(gui, player, finalMenuTitle);
-                        this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                        this.sync(player, () -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
                     }
                 })
                 .place(gui);
@@ -184,7 +185,7 @@ public class TagsGUI extends PluginMenu {
                     if (gui.previous()) {
                         item.sound((Player) event.getWhoClicked());
                         this.addNavigationIcons(gui, player, finalMenuTitle);
-                        this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                        this.sync(player, () -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
                     }
                 })
                 .place(gui);

@@ -12,6 +12,7 @@ import dev.triumphteam.gui.guis.ScrollingGui;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -342,7 +343,7 @@ public abstract class PluginMenu {
                 event -> {
                     event.setCancelled(true);
                     String message = event.getMessage().toLowerCase();
-                    this.sync(() -> MenuProvider.get(TagsGUI.class).open(player, tag -> tag.getId().contains(message) || tag.getName().contains(message)
+                    this.sync(player, () -> MenuProvider.get(TagsGUI.class).open(player, tag -> tag.getId().contains(message) || tag.getName().contains(message)
                     ));
                 },
                 60,
@@ -371,11 +372,11 @@ public abstract class PluginMenu {
     }
 
     public final void async(Runnable runnable) {
-        Bukkit.getScheduler().runTaskAsynchronously(this.rosePlugin, runnable);
+        Bukkit.getAsyncScheduler().runNow(this.rosePlugin, task -> runnable.run());
     }
 
-    public final void sync(Runnable runnable) {
-        Bukkit.getScheduler().runTask(this.rosePlugin, runnable);
+    public final void sync(Entity entity, Runnable runnable) {
+        entity.getScheduler().run(this.rosePlugin, task -> runnable.run(), () -> {});
     }
 
     public ScrollType match(String name) {

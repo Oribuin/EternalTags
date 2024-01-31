@@ -65,7 +65,7 @@ public class EventWaiter implements Listener {
 
 
         if (timeout > 0 && unit != null) {
-            EternalTags.getInstance().getServer().getScheduler().runTaskLater(EternalTags.getInstance(), () -> {
+            EternalTags.getInstance().getServer().getGlobalRegionScheduler().runDelayed(EternalTags.getInstance(), task -> {
                 if (set.remove(we) && timeoutAction != null) {
                     timeoutAction.run();
                     HandlerList.unregisterAll(this);
