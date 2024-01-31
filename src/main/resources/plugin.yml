@@ -3,6 +3,7 @@ main: xyz.oribuin.eternaltags.EternalTags
 version: '@version@'
 author: Oribuin
 api-version: "1.16"
+folia-supported: true
 description: A simple tag plugin alternative to other Tag plugins (With Hex Support)
 website: https://www.spigotmc.org/resources/eternaltags.91842/
 libraries:
