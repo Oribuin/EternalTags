@@ -4,7 +4,6 @@ import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import dev.rosewood.rosegarden.manager.Manager;
-import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
@@ -505,7 +504,14 @@ public class TagsManager extends Manager {
      * @return The display tag.
      */
     public String getDisplayTag(@Nullable Tag tag, OfflinePlayer player, @NotNull String placeholder) {
-        return HexUtils.colorify(PlaceholderAPI.setPlaceholders(player, tag == null ? placeholder : this.getTagPlaceholders(tag).apply(Setting.TAG_PREFIX.getString() + tag.getTag() + Setting.TAG_SUFFIX.getString())));
+        StringPlaceholders placeholders = StringPlaceholders.empty();
+        if (tag != null) placeholders = this.getTagPlaceholders(tag);
+
+        return TagsUtils.colorAsString(PlaceholderAPI.setPlaceholders(player, tag == null
+                ? placeholder
+                : placeholders.apply(
+                Setting.TAG_PREFIX.getString() + tag.getTag() + Setting.TAG_SUFFIX.getString())
+        ));
     }
 
     /**

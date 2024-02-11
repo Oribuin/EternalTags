@@ -6,6 +6,8 @@ import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.rosegarden.utils.NMSUtil;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import me.clip.placeholderapi.PlaceholderAPI;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.apache.commons.lang3.text.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
@@ -24,6 +26,7 @@ import org.bukkit.util.io.BukkitObjectOutputStream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.oribuin.eternaltags.EternalTags;
+import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 
 import java.io.ByteArrayInputStream;
@@ -41,24 +44,32 @@ import java.util.Map;
 @SuppressWarnings("unchecked")
 public final class TagsUtils {
 
+    private static MiniMessage MINIMESSAGE;
+    private static LegacyComponentSerializer LEGACY;
+
     private TagsUtils() {
         throw new IllegalStateException("Utility class");
     }
 
-//    /**
-//     * Get the display name of a tag
-//     *
-//     * @return The formatted text
-//     */
-//    public static Component colorAsComponent(String text) {
-//        if (text == null) return Component.empty();
-//
-//        if (Setting.TAG_FORMATTING.getString().equalsIgnoreCase("mini_message")) {
-//            if (MINIMESSAGE == null) MINIMESSAGE = MiniMessage.miniMessage();
-//
-//        return Component.text(HexUtils.colorify(text));
-//    }
-//
+    /**
+     * Get the display name of a tag
+     *
+     * @param text The text to format
+     * @return The formatted text
+     */
+    public static String colorAsString(String text) {
+        if (text == null) return "";
+
+        if (Setting.TAG_FORMATTING.getString().equalsIgnoreCase("mini_message")) {
+            if (MINIMESSAGE == null) MINIMESSAGE = MiniMessage.miniMessage();
+            if (LEGACY == null) LEGACY = LegacyComponentSerializer.legacySection();
+
+            return LEGACY.serialize(MINIMESSAGE.deserialize(text));
+        }
+
+        return HexUtils.colorify(text);
+    }
+
     /**
      * Convert a location to the center of the block
      *
@@ -401,6 +412,17 @@ public final class TagsUtils {
         return itemStack;
     }
 
+    /**
+     * Load the icon type from the configuration file to determine how it is serialized
+     *
+     * @param section The configuration section
+     * @param key     The key to the item
+     * @return The item stack
+     */
+    public static ItemStack getMultiDeserializedItem(CommentedConfigurationSection section, String key) {
+        Object icon = section.get(key + ".icon");
+        if (icon != null) {
+            // Read the material from the string
             if (icon instanceof String iconString) {
                 Material material = Material.matchMaterial(iconString);
                 return material != null ? new ItemStack(material) : new ItemStack(Material.STONE);

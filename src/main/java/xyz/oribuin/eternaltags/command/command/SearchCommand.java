@@ -6,6 +6,7 @@ import dev.rosewood.rosegarden.command.framework.RoseCommand;
 import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import dev.rosewood.rosegarden.command.framework.types.GreedyString;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.entity.Player;
 import xyz.oribuin.eternaltags.gui.MenuProvider;
@@ -16,6 +17,8 @@ import xyz.oribuin.eternaltags.obj.Tag;
 import java.util.function.Predicate;
 
 public class SearchCommand extends RoseCommand {
+
+    private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();
 
     public SearchCommand(RosePlugin rosePlugin, RoseCommandWrapper parent) {
         super(rosePlugin, parent);
@@ -48,6 +51,10 @@ public class SearchCommand extends RoseCommand {
     @SuppressWarnings("deprecation")
     private String strip(String text) {
         if (text == null) return null;
+
+        if (Setting.TAG_FORMATTING.getString().equalsIgnoreCase("mini_message"))
+            return PLAIN.deserialize(text).content();
+
         return ChatColor.stripColor(text);
     }
 
