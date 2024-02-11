@@ -28,7 +28,7 @@ public class BungeeListener implements PluginMessageListener {
      * Force all eternaltags servers to reload the plugin
      */
     public static void sendReload() {
-        if (!Setting.PLUGIN_MESSAGING.getBoolean()) return;
+        if (!Setting.PLUGIN_MESSAGING_RELOAD.getBoolean()) return;
 
         try (
                 ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -47,7 +47,7 @@ public class BungeeListener implements PluginMessageListener {
     @Override
     public void onPluginMessageReceived(@NotNull String channel, @NotNull Player player, byte[] message) {
         if (!channel.equalsIgnoreCase("BungeeCord")) return;
-        if (!Setting.PLUGIN_MESSAGING.getBoolean()) return;
+        if (!Setting.PLUGIN_MESSAGING_RELOAD.getBoolean()) return;
 
         try (
                 ByteArrayInputStream bytes = new ByteArrayInputStream(message);

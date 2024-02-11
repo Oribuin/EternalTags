@@ -58,7 +58,7 @@ public class EternalTags extends RosePlugin {
         MenuProvider.reload(); // Reload the menu provider
 
         // Register Plugin Messaging Channels
-        if (Setting.PLUGIN_MESSAGING.getBoolean()) {
+        if (Setting.PLUGIN_MESSAGING_RELOAD.getBoolean()) {
             this.getServer().getMessenger().unregisterIncomingPluginChannel(this);
             this.getServer().getMessenger().unregisterOutgoingPluginChannel(this);
 

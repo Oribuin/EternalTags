@@ -55,7 +55,8 @@ public class ConfigurationManager extends AbstractConfigurationManager {
 
         // Data Systems
         MYSQL_TAGDATA("save-tagdata-sql", false, "Should the tag data be stored in a MySQL/SQLite database? (Tags that would be saved in tags.yml)"),
-        PLUGIN_MESSAGING("plugin-messaging", false, "Should /tags reload run on all servers? (Requires BungeeCord)"),
+        PLUGIN_MESSAGES("plugin-messaging", null, "Should the plugin use plugin messaging to communicate between servers? (Requires BungeeCord)"),
+        PLUGIN_MESSAGING_RELOAD("plugin-messaging.reload", false, "Should /tags reload run on all servers? (Requires BungeeCord)"),
 
         ; // End of settings
 

@@ -18,7 +18,7 @@ public class ReloadCommand extends RoseCommand {
 
     @RoseExecutable
     public void execute(CommandContext context) {
-        if (Setting.PLUGIN_MESSAGING.getBoolean()) {
+        if (Setting.PLUGIN_MESSAGING_RELOAD.getBoolean()) {
             BungeeListener.sendReload(); // Send reload message to BungeeCord
         }
 
