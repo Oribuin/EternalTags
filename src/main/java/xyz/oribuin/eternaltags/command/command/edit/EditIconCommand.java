@@ -27,7 +27,7 @@ public class EditIconCommand extends RoseSubCommand {
 
         Player player = (Player) context.getSender();
         ItemStack item = player.getInventory().getItemInMainHand();
-        
+
         boolean shouldRemove = remove != null && remove;
 
         if (item.getType().isAir() || !item.getType().isItem() && !shouldRemove) {

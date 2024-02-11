@@ -45,9 +45,9 @@ public class DataManager extends AbstractDataManager {
      * @param uuid The player's uuid
      * @param tag  The tag
      */
-    public void saveUser(@NotNull UUID uuid, @NotNull Tag tag) {
+    public void saveUser(@NotNull UUID uuid, @NotNull String tag) {
         TagUser user = this.cachedUsers.getOrDefault(uuid, new TagUser(uuid));
-        user.setActiveTag(tag.getId());
+        user.setActiveTag(tag);
         user.setUsingDefaultTag(false);
         this.cachedUsers.put(uuid, user);
 
@@ -55,7 +55,7 @@ public class DataManager extends AbstractDataManager {
         this.async(task -> this.databaseConnector.connect(connection -> {
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, uuid.toString());
-                statement.setString(2, tag.getId());
+                statement.setString(2, tag);
                 statement.executeUpdate();
             }
         }));
@@ -84,7 +84,7 @@ public class DataManager extends AbstractDataManager {
      *
      * @param id The tag id being removed.
      */
-    public void deleteUserTag(String id) {
+    public void clearTagForAll(String id) {
         this.cachedUsers.values().removeIf(tag -> tag.getActiveTag() != null && tag.getActiveTag().equalsIgnoreCase(id));
 
         final String query = "DELETE FROM " + this.getTablePrefix() + "tags WHERE tagID = ?";
@@ -133,7 +133,6 @@ public class DataManager extends AbstractDataManager {
         TagUser user = this.cachedUsers.getOrDefault(uuid, new TagUser(uuid));
         user.getFavourites().add(tag.getId());
         this.cachedUsers.put(uuid, user);
-
 
         this.async(task -> this.databaseConnector.connect(connection -> {
             final String query = "INSERT INTO " + this.getTablePrefix() + "favourites (player, tagID) VALUES (?, ?)";
@@ -265,7 +264,7 @@ public class DataManager extends AbstractDataManager {
                 final ResultSet result = statement.executeQuery();
                 while (result.next()) {
                     final String id = result.getString("tagId");
-                    final List<String> description = gson.fromJson(result.getString("description"), TagDescription.class).getDescription();
+                    final List<String> description = gson.fromJson(result.getString("description"), TagDescription.class).description();
 
                     Tag tag = new Tag(id, result.getString("name"), result.getString("tag"));
                     tag.setPermission(result.getString("permission"));
@@ -355,6 +354,28 @@ public class DataManager extends AbstractDataManager {
                 statement.executeUpdate();
             }
         }));
+    }
+
+    /**
+     * Get the user's cached data. If the user is not cached, it will create a new user.
+     *
+     * @param uuid The player's uuid
+     * @return The user's data
+     */
+    @NotNull
+    public TagUser getCachedUser(UUID uuid) {
+        return this.cachedUsers.getOrDefault(uuid, new TagUser(uuid));
+    }
+
+    /**
+     * Save a user's data to the cache.
+     *
+     * @param user The user's data
+     */
+    public void updateCachedUser(TagUser user) {
+        if (user == null) return;
+
+        this.cachedUsers.put(user.getPlayer(), user);
     }
 
     @Override

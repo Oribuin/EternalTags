@@ -7,13 +7,10 @@ import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
 import dev.rosewood.rosegarden.command.framework.annotation.Optional;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import xyz.oribuin.eternaltags.event.TagUnequipEvent;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
-import xyz.oribuin.eternaltags.obj.Tag;
 
 public class ClearCommand extends RoseCommand {
 
@@ -34,13 +31,8 @@ public class ClearCommand extends RoseCommand {
                 return;
             }
 
-            Tag activeTag = manager.getUserTag(player);
-            final TagUnequipEvent event = new TagUnequipEvent(player, activeTag);
-            Bukkit.getPluginManager().callEvent(event);
-            if (event.isCancelled())
-                return;
-
             manager.clearTag(player.getUniqueId());
+
             if (silent != null && !silent) {
                 locale.sendMessage(player, "command-clear-cleared");
             }
@@ -53,12 +45,6 @@ public class ClearCommand extends RoseCommand {
             locale.sendMessage(sender, "only-player");
             return;
         }
-
-        Tag activeTag = manager.getUserTag(playerSender);
-        final TagUnequipEvent event = new TagUnequipEvent(playerSender, activeTag);
-        Bukkit.getPluginManager().callEvent(event);
-        if (event.isCancelled())
-            return;
 
         manager.clearTag(playerSender.getUniqueId());
         locale.sendMessage(sender, "command-clear-cleared");

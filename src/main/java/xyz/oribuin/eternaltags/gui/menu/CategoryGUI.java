@@ -17,9 +17,11 @@ import xyz.oribuin.eternaltags.gui.MenuItem;
 import xyz.oribuin.eternaltags.gui.MenuProvider;
 import xyz.oribuin.eternaltags.gui.PluginMenu;
 import xyz.oribuin.eternaltags.gui.enums.SortType;
+import xyz.oribuin.eternaltags.manager.CategoryManager;
 import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Category;
+import xyz.oribuin.eternaltags.obj.CategoryType;
 import xyz.oribuin.eternaltags.util.ItemBuilder;
 import xyz.oribuin.eternaltags.util.TagsUtils;
 
@@ -31,6 +33,7 @@ import java.util.Map;
 public class CategoryGUI extends PluginMenu {
 
     private final TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
+    private final CategoryManager categoryManager = this.rosePlugin.getManager(CategoryManager.class);
     private final Map<Category, GuiItem> categoryIcons = new LinkedHashMap<>(); // Cache the tag items, so we don't have to create them every time.
 
     public CategoryGUI() {
@@ -46,7 +49,7 @@ public class CategoryGUI extends PluginMenu {
 
     public void open(@NotNull Player player) {
         // Check if categories are enabled.
-        if (!manager.isCategoriesEnabled()) {
+        if (!categoryManager.isEnabled()) {
             MenuProvider.get(TagsGUI.class).open(player);
             return;
         }
@@ -164,7 +167,7 @@ public class CategoryGUI extends PluginMenu {
 
             final GuiAction<InventoryClickEvent> action = event -> {
                 // Filter out tags that are not in the category.
-                if (category.isGlobal()) {
+                if (category.getType() == CategoryType.GLOBAL) {
                     tagsGUI.open(player);
                     return;
                 }
@@ -185,7 +188,7 @@ public class CategoryGUI extends PluginMenu {
                     .add("total", this.manager.getTagsInCategory(category).size());
 
             if (this.config.getBoolean("gui-settings.only-unlocked-categories"))
-                placeholders.add("unlocked", this.manager.getAccessibleTagsInCategory(category, player).size());
+                placeholders.add("unlocked", this.manager.getCategoryTags(category, player).size());
 
             ItemStack item = TagsUtils.deserialize(this.config, player, "categories." + category.getId() + ".display-item", placeholders.build());
             if (item == null) {
@@ -212,7 +215,7 @@ public class CategoryGUI extends PluginMenu {
      * @return A list of categories
      */
     public List<Category> getCategories(@NotNull Player player) {
-        final List<Category> categories = new ArrayList<>(this.manager.getCachedCategories().values());
+        final List<Category> categories = new ArrayList<>(this.categoryManager.getCategories());
         final SortType sortType = TagsUtils.getEnum(
                 SortType.class,
                 this.config.getString("gui-settings.sort-type"),
@@ -220,16 +223,15 @@ public class CategoryGUI extends PluginMenu {
         );
 
         if (this.config.getBoolean("gui-settings.use-category-permissions", false)) {
-            categories.removeIf(category -> {
-                if (category.isGlobal() || category.getPermission() == null)
-                    return false;
-
-                return !player.hasPermission(category.getPermission());
-            });
+            categories.removeIf(category -> !category.canUse(player));
         }
 
         if (this.config.getBoolean("gui-settings.only-unlocked-categories", false)) {
-            categories.removeIf(category -> !category.isGlobal() && this.manager.getAccessibleTagsInCategory(category, player).isEmpty());
+            categories.removeIf(category -> {
+                if (category.getType() == CategoryType.GLOBAL) return false;
+
+                return this.manager.getCategoryTags(category, player).isEmpty();
+            });
         }
 
         // TODO: 2023-05-07 Fix this code

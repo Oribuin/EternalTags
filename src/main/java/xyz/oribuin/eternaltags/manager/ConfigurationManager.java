@@ -8,6 +8,22 @@ import xyz.oribuin.eternaltags.EternalTags;
 
 public class ConfigurationManager extends AbstractConfigurationManager {
 
+    public ConfigurationManager(RosePlugin rosePlugin) {
+        super(rosePlugin, Setting.class);
+    }
+
+    @Override
+    protected String[] getHeader() {
+        return new String[]{
+                "___________ __                             ._____________",
+                "\\_   _____//  |_  ___________  ____ _____  |  \\__    ___/____     ____  ______",
+                " |    __)_\\   __\\/ __ \\_  __ \\/    \\\\__  \\ |  | |    |  \\__  \\   / ___\\/  ___/",
+                " |        \\|  | \\  ___/|  | \\/   |  \\/ __ \\|  |_|    |   / __ \\_/ /_/  >___ \\ ",
+                "/_______  /|__|  \\___  >__|  |___|  (____  /____/____|  (____  /\\___  /____  >",
+                "        \\/           \\/           \\/     \\/                  \\//_____/     \\/ "
+        };
+    }
+
     public enum Setting implements RoseSetting {
         // Default Tag Options
         DEFAULT_TAG("default-tag", "none", "The tag that will show when player does not have an active tag.", "Set to 'none' to disable.", "Set to 'random' to apply a random tag"),
@@ -21,6 +37,7 @@ public class ConfigurationManager extends AbstractConfigurationManager {
         TAG_LOCKED_FORMAT("tag-locked-format", "&c&lLocked", "The format that will show when the player has the tag locked."),
         TAG_PREFIX("tag-prefix", "", "The prefix that will be added in front of the tag in the placeholder"),
         TAG_SUFFIX("tag-suffix", "", "The suffix that will be added after the tag in the placeholder"),
+        TAG_FORMATTING("tag-formatting", "LEGACY", "The formatting that will be used when displaying tags by the plugin.", "Available options: LEGACY, MINI_MESSAGE"),
         DESCRIPTION_DELIMITER("description-delimiter", "\n", "The delimiter that will be used for %eternaltags_tag_description%"),
 
         // Other Options
@@ -38,11 +55,7 @@ public class ConfigurationManager extends AbstractConfigurationManager {
 
         // Data Systems
         MYSQL_TAGDATA("save-tagdata-sql", false, "Should the tag data be stored in a MySQL/SQLite database? (Tags that would be saved in tags.yml)"),
-        PLUGIN_MESSAGING("plugin-messaging.enabled", false, "Should the plugin use plugin messaging to sync tag data across servers? (Recommended to keep save-tagdata-sql as false if this is enabled)"),
-        PLUGIN_MESSAGING_OPTIONS("plugin-messaging.options", null, "Toggle which parts of plugin messaging you want to enable."),
-        PLUGIN_MESSAGING_OPTIONS_RELOAD("plugin-messaging.options.reload", true, "Should /tags reload be synced across servers?"),
-        PLUGIN_MESSAGING_OPTIONS_DELETE("plugin-messaging.options.delete", true, "Should /tags delete be synced across servers?"),
-        PLUGIN_MESSAGING_OPTIONS_EDIT("plugin-messaging.options.edit", true, "Should /tags edit be synced across servers?"),
+        PLUGIN_MESSAGING("plugin-messaging", false, "Should /tags reload run on all servers? (Requires BungeeCord)"),
 
         ; // End of settings
 
@@ -86,22 +99,6 @@ public class ConfigurationManager extends AbstractConfigurationManager {
         public CommentedFileConfiguration getBaseConfig() {
             return EternalTags.getInstance().getManager(ConfigurationManager.class).getConfig();
         }
-    }
-
-    public ConfigurationManager(RosePlugin rosePlugin) {
-        super(rosePlugin, Setting.class);
-    }
-
-    @Override
-    protected String[] getHeader() {
-        return new String[]{
-                "___________ __                             ._____________",
-                "\\_   _____//  |_  ___________  ____ _____  |  \\__    ___/____     ____  ______",
-                " |    __)_\\   __\\/ __ \\_  __ \\/    \\\\__  \\ |  | |    |  \\__  \\   / ___\\/  ___/",
-                " |        \\|  | \\  ___/|  | \\/   |  \\/ __ \\|  |_|    |   / __ \\_/ /_/  >___ \\ ",
-                "/_______  /|__|  \\___  >__|  |___|  (____  /____/____|  (____  /\\___  /____  >",
-                "        \\/           \\/           \\/     \\/                  \\//_____/     \\/ "
-        };
     }
 
 }

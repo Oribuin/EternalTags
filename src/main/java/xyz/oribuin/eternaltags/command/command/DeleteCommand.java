@@ -6,9 +6,7 @@ import dev.rosewood.rosegarden.command.framework.RoseCommand;
 import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import xyz.oribuin.eternaltags.event.TagDeleteEvent;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
@@ -29,11 +27,6 @@ public class DeleteCommand extends RoseCommand {
             locale.sendMessage(sender, "tag-doesnt-exist");
             return;
         }
-
-        final TagDeleteEvent event = new TagDeleteEvent(tag);
-        Bukkit.getPluginManager().callEvent(event);
-        if (event.isCancelled())
-            return;
 
         manager.deleteTag(tag);
         locale.sendMessage(sender, "command-delete-deleted", StringPlaceholders.of("tag", manager.getDisplayTag(tag, null)));

@@ -19,30 +19,6 @@
 #      flags: # The item flags of the icon
 #       - HIDE_ENCHANTS # The item flags
 tags:
-  animated-rainbow:
-    name: 'Animated Rainbow'
-    tag: '&f&l<<r#15:0.7>&lRainbow&f&l>'
-    description:
-      - ' &f| &7This tag is animated!'
-      - ' &f| &7It will cycle through all'
-      - ' &f| &7the colors of the rainbow'
-      - ' &f| &7on each message sent.'
-    permission: 'eternaltags.tag.animated-rainbow'
-    order: 1
-    category: animated
-
-  animated-gradient:
-    name: 'Animated Gradient'
-    tag: '&f&l<<g#15:#5433FF:#20BDFF:#A5FECB>&lGradient&f&l>'
-    description:
-      - ' &f| &7This tag is animated!'
-      - ' &f| &7It will cycle three different'
-      - ' &f| &7colors, &#5433FFBlue&7, #20BDFFLight Blue&7, and #A5FECBGreen'
-      - ' &f| &7on each message sent.'
-    permission: 'eternaltags.tag.animated-gradient'
-    order: 2
-    category: animated
-
   static-rainbow:
     name: 'Static Rainbow'
     tag: '&f&l<<r:0.7>&lRainbow&f&l>'

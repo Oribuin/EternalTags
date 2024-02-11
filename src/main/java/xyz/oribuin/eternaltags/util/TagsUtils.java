@@ -45,6 +45,20 @@ public final class TagsUtils {
         throw new IllegalStateException("Utility class");
     }
 
+//    /**
+//     * Get the display name of a tag
+//     *
+//     * @return The formatted text
+//     */
+//    public static Component colorAsComponent(String text) {
+//        if (text == null) return Component.empty();
+//
+//        if (Setting.TAG_FORMATTING.getString().equalsIgnoreCase("mini_message")) {
+//            if (MINIMESSAGE == null) MINIMESSAGE = MiniMessage.miniMessage();
+//
+//        return Component.text(HexUtils.colorify(text));
+//    }
+//
     /**
      * Convert a location to the center of the block
      *
@@ -385,6 +399,26 @@ public final class TagsUtils {
         }
 
         return itemStack;
+    }
+
+            if (icon instanceof String iconString) {
+                Material material = Material.matchMaterial(iconString);
+                return material != null ? new ItemStack(material) : new ItemStack(Material.STONE);
+            }
+
+            // Read from a configuration section
+            CommentedConfigurationSection iconSection = section.getConfigurationSection(key + ".icon");
+            if (iconSection != null && !iconSection.getKeys(false).isEmpty()) {
+                return TagsUtils.deserialize(section, key + ".icon");
+            }
+
+            // Read from a byte array
+            if (icon instanceof byte[] iconBytes) {
+                return TagsUtils.deserializeItem(iconBytes);
+            }
+        }
+
+        return new ItemStack(Material.STONE);
     }
 
     /**

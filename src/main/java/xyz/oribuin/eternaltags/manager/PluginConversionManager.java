@@ -30,13 +30,14 @@ public class PluginConversionManager extends Manager {
             return new HashMap<>();
 
         final TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
+        final CategoryManager categoryManager = this.rosePlugin.getManager(CategoryManager.class);
         final Map<String, Tag> tags = conversionPlugin.getPluginTags(this.rosePlugin);
 
         // Create a category for the plugin
         Category category = new Category(conversionPlugin.getPluginName().toLowerCase());
         category.setDisplayName(conversionPlugin.getPluginName());
         category.setPermission("eternaltags.category." + category.getId());
-        manager.saveCategory(category);
+        categoryManager.save(category);
 
         // Set the category for each tag
         tags.values().forEach(tag -> tag.setCategory(category.getId()));

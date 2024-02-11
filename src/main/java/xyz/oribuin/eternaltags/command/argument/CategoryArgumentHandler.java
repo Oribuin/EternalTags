@@ -5,11 +5,12 @@ import dev.rosewood.rosegarden.command.framework.ArgumentParser;
 import dev.rosewood.rosegarden.command.framework.RoseCommandArgumentHandler;
 import dev.rosewood.rosegarden.command.framework.RoseCommandArgumentInfo;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
-import xyz.oribuin.eternaltags.manager.TagsManager;
+import xyz.oribuin.eternaltags.manager.CategoryManager;
 import xyz.oribuin.eternaltags.obj.Category;
+import xyz.oribuin.eternaltags.obj.CategoryType;
 
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 public class CategoryArgumentHandler extends RoseCommandArgumentHandler<Category> {
 
@@ -20,8 +21,8 @@ public class CategoryArgumentHandler extends RoseCommandArgumentHandler<Category
     @Override
     protected Category handleInternal(RoseCommandArgumentInfo argumentInfo, ArgumentParser argumentParser) throws HandledArgumentException {
         String input = argumentParser.next();
-        Category value = this.rosePlugin.getManager(TagsManager.class).getCategory(input.toLowerCase());
-        if (value == null || value.isGlobal())
+        Category value = this.rosePlugin.getManager(CategoryManager.class).getCategory(input.toLowerCase());
+        if (value == null || value.getType() == CategoryType.GLOBAL)
             throw new HandledArgumentException("argument-handler-category", StringPlaceholders.of("input", input));
 
         return value;
@@ -31,11 +32,12 @@ public class CategoryArgumentHandler extends RoseCommandArgumentHandler<Category
     protected List<String> suggestInternal(RoseCommandArgumentInfo argumentInfo, ArgumentParser argumentParser) {
         argumentParser.next();
 
-        return this.rosePlugin.getManager(TagsManager.class).getCachedCategories()
-                .entrySet()
-                .stream().filter(entry -> !entry.getValue().isGlobal())
-                .map(Map.Entry::getKey)
-                .toList();
+        return this.rosePlugin.getManager(CategoryManager.class)
+                .getCategories()
+                .stream()
+                .filter(category -> category.getType() != CategoryType.GLOBAL)
+                .map(Category::getId)
+                .collect(Collectors.toList());
     }
 
 }

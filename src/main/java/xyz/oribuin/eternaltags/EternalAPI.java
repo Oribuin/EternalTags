@@ -2,7 +2,10 @@ package xyz.oribuin.eternaltags;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.oribuin.eternaltags.manager.CategoryManager;
+import xyz.oribuin.eternaltags.manager.DataManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Category;
 import xyz.oribuin.eternaltags.obj.Tag;
@@ -17,9 +20,18 @@ public class EternalAPI {
 
     private static EternalAPI instance;
     private final TagsManager tagManager;
+    private final CategoryManager categoryManager;
 
     private EternalAPI() {
         this.tagManager = EternalTags.getInstance().getManager(TagsManager.class);
+        this.categoryManager = EternalTags.getInstance().getManager(CategoryManager.class);
+    }
+
+    public static EternalAPI getInstance() {
+        if (instance == null)
+            instance = new EternalAPI();
+
+        return instance;
     }
 
     /**
@@ -52,8 +64,14 @@ public class EternalAPI {
      * @param player The player
      * @param tag    The tag, Set this to null to remove the tag.
      */
-    public void setTag(OfflinePlayer player, Tag tag) {
-        this.tagManager.setTag(player.getUniqueId(), tag);
+    public void setTag(@NotNull OfflinePlayer player, @NotNull Tag tag) {
+        if (player.isOnline()) {
+            tag.equip((Player) player);
+            return;
+        }
+
+        DataManager dataManager = EternalTags.getInstance().getManager(DataManager.class);
+        dataManager.saveUser(player.getUniqueId(), tag.getId());
     }
 
     /**
@@ -64,7 +82,7 @@ public class EternalAPI {
      */
     @Nullable
     public Category getCategory(String id) {
-        return this.tagManager.getCategory(id);
+        return this.categoryManager.getCategory(id);
     }
 
     /**
@@ -75,13 +93,7 @@ public class EternalAPI {
      */
     @Nullable
     public Category getCategory(Tag tag) {
-        return this.tagManager.getCategory(tag);
-    }
-
-    public static EternalAPI getInstance() {
-        if (instance == null)
-            instance = new EternalAPI();
-        return instance;
+        return this.categoryManager.getCategory(tag.getCategory());
     }
 
     public TagsManager getTagManager() {

@@ -26,6 +26,7 @@ import java.util.function.Predicate;
 
 public class MenuItem {
 
+    private final Map<ClickType, List<Action>> customActions; // The actions to be performed when the item is clicked
     private CommentedFileConfiguration config; // The config file for the menu
     private ItemStack customItem; // The item to be displayed
     private String itemPath; // The path to the item in the config
@@ -35,7 +36,6 @@ public class MenuItem {
     private BiConsumer<MenuItem, InventoryClickEvent> action; // The action to be performed when the item is clicked
     private List<Integer> slots; // The slots the item should be placed in
     private Predicate<MenuItem> condition; // The condition for the item to be displayed
-    private final Map<ClickType, List<Action>> customActions; // The actions to be performed when the item is clicked
 
     public MenuItem() {
         throw new UnsupportedOperationException("This class cannot be instantiated, Use MenuItem.create() instead.");

@@ -36,9 +36,8 @@ public class CreateCommand extends RoseCommand {
         Tag newTag = new Tag(id, name, tag.get());
         newTag.setDescription(Collections.singletonList("None"));
 
-        if (manager.saveTag(newTag)) {
-            locale.sendMessage(sender, "command-create-created", StringPlaceholders.of("tag", manager.getDisplayTag(newTag, null)));
-        }
+        manager.saveTag(newTag);
+        locale.sendMessage(sender, "command-create-created", StringPlaceholders.of("tag", manager.getDisplayTag(newTag, null)));
     }
 
 

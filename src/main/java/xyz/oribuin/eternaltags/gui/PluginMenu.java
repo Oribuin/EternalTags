@@ -21,7 +21,6 @@ import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.action.Action;
 import xyz.oribuin.eternaltags.action.PluginAction;
-import xyz.oribuin.eternaltags.event.TagUnequipEvent;
 import xyz.oribuin.eternaltags.gui.menu.TagsGUI;
 import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
@@ -359,12 +358,6 @@ public abstract class PluginMenu {
     public final void clearTag(Player player) {
         TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
         LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
-        Tag tag = manager.getUserTag(player);
-
-        TagUnequipEvent event = new TagUnequipEvent(player, tag);
-        Bukkit.getPluginManager().callEvent(event);
-        if (event.isCancelled())
-            return;
 
         manager.clearTag(player.getUniqueId());
         locale.sendMessage(player, "command-clear-cleared");

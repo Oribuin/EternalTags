@@ -6,9 +6,7 @@ import dev.rosewood.rosegarden.command.framework.RoseCommand;
 import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import xyz.oribuin.eternaltags.event.TagEquipEvent;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
@@ -31,12 +29,7 @@ public class RandomCommand extends RoseCommand {
             return;
         }
 
-        final TagEquipEvent event = new TagEquipEvent(sender, randomTag);
-        Bukkit.getPluginManager().callEvent(event);
-        if (event.isCancelled())
-            return;
-
-        manager.setTag(sender.getUniqueId(), randomTag);
+        randomTag.equip(sender);
         locale.sendMessage(sender, "command-set-changed", StringPlaceholders.of("tag", manager.getDisplayTag(randomTag, sender)));
     }
 

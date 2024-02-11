@@ -1,9 +1,13 @@
 package xyz.oribuin.eternaltags.obj;
 
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.oribuin.eternaltags.EternalTags;
+import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
+import xyz.oribuin.eternaltags.manager.DataManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +34,34 @@ public class Tag {
         this.icon = null;
         this.category = null;
         this.handIcon = false;
+    }
+
+    /**
+     * Equip a tag to a specific player.
+     *
+     * @param player The player to equip the tag to
+     */
+    public void equip(Player player) {
+        DataManager dataManager = EternalTags.getInstance().getManager(DataManager.class);
+
+        // Remove the tag if the player does not have permission
+        if (Setting.REMOVE_TAGS.getBoolean() && this.permission != null && !player.hasPermission(this.permission)) {
+            dataManager.removeUser(player.getUniqueId());
+            return;
+        }
+
+        // Set the player's tag
+        dataManager.saveUser(player.getUniqueId(), this.id.toLowerCase());
+    }
+
+    /**
+     * Unequip a tag from a specific player.
+     *
+     * @param player The player to unequip the tag from
+     */
+    public void unequip(Player player) {
+        DataManager dataManager = EternalTags.getInstance().getManager(DataManager.class);
+        dataManager.removeUser(player.getUniqueId());
     }
 
     public @NotNull String getId() {
@@ -68,12 +100,12 @@ public class Tag {
         this.description = description;
     }
 
-    public void setOrder(int order) {
-        this.order = order;
-    }
-
     public int getOrder() {
         return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
     }
 
     public @Nullable ItemStack getIcon() {

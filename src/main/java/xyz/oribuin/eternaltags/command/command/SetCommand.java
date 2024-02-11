@@ -7,10 +7,8 @@ import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
 import dev.rosewood.rosegarden.command.framework.annotation.Optional;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import xyz.oribuin.eternaltags.event.TagEquipEvent;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
@@ -40,12 +38,7 @@ public class SetCommand extends RoseCommand {
                 return;
             }
 
-            final TagEquipEvent event = new TagEquipEvent(player, tag);
-            Bukkit.getPluginManager().callEvent(event);
-            if (event.isCancelled())
-                return;
-
-            manager.setTag(player.getUniqueId(), tag);
+            tag.equip(player);
             if (silent == null || !silent) {
                 locale.sendMessage(player, "command-set-changed", StringPlaceholders.of("tag", manager.getDisplayTag(tag, player)));
             }
@@ -68,12 +61,7 @@ public class SetCommand extends RoseCommand {
             return;
         }
 
-        final TagEquipEvent event = new TagEquipEvent(pl, tag);
-        Bukkit.getPluginManager().callEvent(event);
-        if (event.isCancelled())
-            return;
-
-        manager.setTag(pl.getUniqueId(), tag);
+        tag.equip(pl);
         locale.sendMessage(sender, "command-set-changed", StringPlaceholders.of("tag", manager.getDisplayTag(tag, pl)));
     }
 

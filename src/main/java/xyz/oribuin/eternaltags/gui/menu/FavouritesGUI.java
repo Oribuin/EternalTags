@@ -16,7 +16,6 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.action.Action;
-import xyz.oribuin.eternaltags.event.TagEquipEvent;
 import xyz.oribuin.eternaltags.gui.MenuItem;
 import xyz.oribuin.eternaltags.gui.MenuProvider;
 import xyz.oribuin.eternaltags.gui.PluginMenu;
@@ -250,12 +249,7 @@ public class FavouritesGUI extends PluginMenu {
             return;
         }
 
-        final TagEquipEvent event = new TagEquipEvent(player, tag);
-        Bukkit.getPluginManager().callEvent(event);
-        if (event.isCancelled())
-            return;
-
-        this.manager.setTag(player.getUniqueId(), tag);
+        tag.equip(player);
         this.locale.sendMessage(player, "command-set-changed", StringPlaceholders.of("tag", this.manager.getDisplayTag(tag, player)));
     }
 
