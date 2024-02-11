@@ -50,10 +50,11 @@ dependencies {
 
     // Mojang dependencies
     compileOnly 'com.mojang:authlib:1.5.21'
+    compileOnly 'net.kyori:adventure-text-minimessage:4.14.0'
 
     // Frameworks & APIs
     api "dev.rosewood:rosegarden:1.2.5"
-    api('dev.triumphteam:triumph-gui:3.1.4') {  // https://mf.mattstudios.me/triumph-gui/introduction
+    api('dev.triumphteam:triumph-gui:3.1.7') {  // https://mf.mattstudios.me/triumph-gui/introduction
         exclude group: "com.google.code.gson", module: "gson" // Remove GSON, Already included in spigot api
         exclude group: "net.kyori", module: "*" // Remove kyori, we're using plugin.yml libraries
     }

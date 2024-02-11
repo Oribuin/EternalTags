@@ -6,9 +6,10 @@ api-version: "1.16"
 description: A simple tag plugin alternative to other Tag plugins (With Hex Support)
 website: https://www.spigotmc.org/resources/eternaltags.91842/
 libraries:
-  - "net.kyori:adventure-api:4.11.0"
-  - "net.kyori:adventure-text-serializer-legacy:4.11.0"
-  - "net.kyori:adventure-text-serializer-gson:4.11.0"
+  - "net.kyori:adventure-api:4.14.0"
+  - "net.kyori:adventure-text-minimessage:4.14.0"
+  - "net.kyori:adventure-text-serializer-legacy:4.14.0"
+  - "net.kyori:adventure-text-serializer-gson:4.14.0"
 depend:
   - PlaceholderAPI
 softdepend:
