@@ -4,8 +4,6 @@
 # sort-type - The type of sorting to use in the GUI [ALPHABETICAL, CUSTOM, NONE, RANDOM]
 # favourite-first - Whether to show favourite tags first
 # add-all-tags - Whether to add all tags to the GUI (Favourite tags will be shown first, Then the player's tags, Then the remaining tags)
-# dynamic-gui - Whether the gui should update repeatedly (This is useful for tags that change over time)
-# dynamic-speed - The interval in seconds to update the GUI
 # description-format - The format of the %description% placeholder
 # scrolling-gui - Whether to use a scrolling GUI
 # scrolling-type - The type of scrolling for the GUI [HORIZONTAL, VERTICAL]
@@ -48,8 +46,6 @@ gui-settings:
   sort-type: CUSTOM
   favourite-first: true
   add-all-tags: false
-  dynamic-gui: false
-  dynamic-speed: 3
   description-format: ' &f| &7'
   scrolling-gui: false
   scrolling-type: HORIZONTAL

@@ -121,24 +121,6 @@ public class TagsGUI extends PluginMenu {
 
         gui.open(player);
 
-        int dynamicSpeed = this.config.getInt("gui-settings.dynamic-speed", 3);
-        if (this.config.getBoolean("gui-settings.dynamic-gui", false) && dynamicSpeed > 0) {
-            this.rosePlugin.getServer().getScheduler().runTaskTimerAsynchronously(this.rosePlugin, task -> {
-                if (gui.getInventory().getViewers().isEmpty()) {
-                    task.cancel();
-                    return;
-                }
-
-                this.addTags(gui, player, filter);
-
-                if (this.reloadTitle())
-                    this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
-
-            }, 0, dynamicSpeed);
-
-            return;
-        }
-
         Runnable task = () -> {
             this.addTags(gui, player, filter);
 
@@ -210,7 +192,7 @@ public class TagsGUI extends PluginMenu {
                 if (!this.manager.canUseTag(player, tag))
                     return;
 
-                if (tagActions.size() == 0) {
+                if (tagActions.isEmpty()) {
 
                     if (tagSound != null) {
                         player.playSound(player.getLocation(), tagSound, 75, 1);

@@ -4,8 +4,6 @@
 # sort-type - The type of sorting to use in the GUI [ALPHABETICAL, CUSTOM, NONE, RANDOM, TAG_COUNT]
 # only-unlocked-categories - Whether to only show categories that the player has unlocked tags in (This may have a performance impact)
 # use-category-permissions - Whether to use category permissions (Categories in the categories.yml must have a permission set)
-# dynamic-gui - Whether the gui should update repeatedly (This is useful for tags that change over time)
-# dynamic-speed - The interval in seconds to update the GUI
 # scrolling-gui - Whether to use a scrolling GUI
 # scrolling-type - The type of scrolling for the GUI [HORIZONTAL, VERTICAL]
 # update-title - Whether to update the title of the GUI on load, If this is set to false, the title will be the "pre-title" option until the page is changed.
@@ -33,8 +31,6 @@ gui-settings:
   sort-type: CUSTOM
   only-unlocked-categories: false
   use-category-permissions: true
-  dynamic-gui: false
-  dynamic-speed: 3
   scrolling-gui: false
   scrolling-type: HORIZONTAL
   update-title: true

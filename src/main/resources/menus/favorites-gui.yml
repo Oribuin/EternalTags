@@ -2,8 +2,6 @@
 # title - The title of the GUI
 # rows - The amount of rows in the GUI
 # sort-type - The type of sorting to use in the GUI [ALPHABETICAL, CUSTOM, NONE, RANDOM]
-# dynamic-gui - Whether the gui should update repeatedly (This is useful for tags that change over time)
-# dynamic-speed - The interval in seconds to update the GUI
 # description-format - The format of the %description% placeholder
 # scrolling-gui - Whether to use a scrolling GUI
 # scrolling-type - The type of scrolling for the GUI [HORIZONTAL, VERTICAL]
@@ -45,8 +43,6 @@ gui-settings:
   title: Favourite Tags | %page%/%total%
   rows: 5
   sort-type: CUSTOM
-  dynamic-gui: false
-  dynamic-speed: 3
   description-format: ' &f| &7'
   scrolling-gui: false
   scrolling-type: HORIZONTAL
