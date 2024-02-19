@@ -45,7 +45,7 @@ public class TagsCommand extends BaseRoseCommand {
 
     @Override
     protected ArgumentsDefinition createArgumentsDefinition() {
-        return ArgumentsDefinition.builder().requiredSub(
+        return ArgumentsDefinition.builder().optionalSub(
                 new CategoriesCommand(this.rosePlugin),
                 new ClearCommand(this.rosePlugin),
                 new ConvertCommand(this.rosePlugin),
