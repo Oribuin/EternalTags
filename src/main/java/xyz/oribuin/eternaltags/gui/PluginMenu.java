@@ -364,10 +364,20 @@ public abstract class PluginMenu {
     }
 
     public final void async(Runnable runnable) {
+        if (TagsUtils.isFolia()) {
+            Bukkit.getAsyncScheduler().runNow(this.rosePlugin, scheduledTask -> runnable.run());
+            return;
+        }
+
         Bukkit.getScheduler().runTaskAsynchronously(this.rosePlugin, runnable);
     }
 
     public final void sync(Runnable runnable) {
+        if (TagsUtils.isFolia()) {
+            Bukkit.getAsyncScheduler().runNow(this.rosePlugin, scheduledTask -> runnable.run());
+            return;
+        }
+
         Bukkit.getScheduler().runTask(this.rosePlugin, runnable);
     }
 

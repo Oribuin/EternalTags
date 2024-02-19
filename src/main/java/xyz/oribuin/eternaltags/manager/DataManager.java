@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.database.DataMigration;
 import dev.rosewood.rosegarden.manager.AbstractDataManager;
-import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.database.migration._1_CreateInitialTables;
 import xyz.oribuin.eternaltags.database.migration._2_CreateNewTagTables;
@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 public class DataManager extends AbstractDataManager {
 
@@ -52,7 +51,7 @@ public class DataManager extends AbstractDataManager {
         this.cachedUsers.put(uuid, user);
 
         final String query = "REPLACE INTO " + this.getTablePrefix() + "tags (player, tagID) VALUES (?, ?)";
-        this.async(task -> this.databaseConnector.connect(connection -> {
+        this.async(() -> this.databaseConnector.connect(connection -> {
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, uuid.toString());
                 statement.setString(2, tag);
@@ -70,7 +69,7 @@ public class DataManager extends AbstractDataManager {
         this.cachedUsers.remove(uuid);
 
         final String query = "DELETE FROM " + this.getTablePrefix() + "tags WHERE player = ?";
-        this.async(task -> this.databaseConnector.connect(connection -> {
+        this.async(() -> this.databaseConnector.connect(connection -> {
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, uuid.toString());
                 statement.executeUpdate();
@@ -88,7 +87,7 @@ public class DataManager extends AbstractDataManager {
         this.cachedUsers.values().removeIf(tag -> tag.getActiveTag() != null && tag.getActiveTag().equalsIgnoreCase(id));
 
         final String query = "DELETE FROM " + this.getTablePrefix() + "tags WHERE tagID = ?";
-        this.async(task -> this.databaseConnector.connect(connection -> {
+        this.async(() -> this.databaseConnector.connect(connection -> {
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, id);
                 statement.executeUpdate();
@@ -110,7 +109,7 @@ public class DataManager extends AbstractDataManager {
         });
 
 
-        this.async(task -> this.databaseConnector.connect(connection -> {
+        this.async(() -> this.databaseConnector.connect(connection -> {
             final String query = "REPLACE INTO " + this.getTablePrefix() + "tags (player, tagID) VALUES (?, ?)";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 for (UUID player : players) {
@@ -134,7 +133,7 @@ public class DataManager extends AbstractDataManager {
         user.getFavourites().add(tag.getId());
         this.cachedUsers.put(uuid, user);
 
-        this.async(task -> this.databaseConnector.connect(connection -> {
+        this.async(() -> this.databaseConnector.connect(connection -> {
             final String query = "INSERT INTO " + this.getTablePrefix() + "favourites (player, tagID) VALUES (?, ?)";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, uuid.toString());
@@ -155,7 +154,7 @@ public class DataManager extends AbstractDataManager {
         user.getFavourites().remove(tag.getId());
         this.cachedUsers.put(uuid, user);
 
-        this.async(task -> this.databaseConnector.connect(connection -> {
+        this.async(() -> this.databaseConnector.connect(connection -> {
             final String query = "DELETE FROM " + this.getTablePrefix() + "favourites WHERE player = ? AND tagID = ?";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, uuid.toString());
@@ -169,7 +168,7 @@ public class DataManager extends AbstractDataManager {
     public void clearFavourites(UUID uuid) {
         this.cachedUsers.remove(uuid);
 
-        this.async(task -> this.databaseConnector.connect(connection -> {
+        this.async(() -> this.databaseConnector.connect(connection -> {
             final String query = "DELETE FROM " + this.getTablePrefix() + "favourites WHERE player = ?";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, uuid.toString());
@@ -186,7 +185,7 @@ public class DataManager extends AbstractDataManager {
     public void loadUser(@NotNull UUID uuid) {
         final TagUser user = new TagUser(uuid);
 
-        this.async(task -> this.databaseConnector.connect(connection -> {
+        this.async(() -> this.databaseConnector.connect(connection -> {
             final String selectTag = "SELECT tagID FROM " + this.getTablePrefix() + "tags WHERE player = ?";
 
             // Load the active tag from the database.
@@ -221,7 +220,7 @@ public class DataManager extends AbstractDataManager {
 
         if (users.isEmpty()) return;
 
-        this.async(task -> this.databaseConnector.connect(connection -> {
+        this.async(() -> this.databaseConnector.connect(connection -> {
             for (UUID user : users) {
                 final String selectTag = "SELECT tagID FROM " + this.getTablePrefix() + "tags WHERE player = ?";
                 final String favouriteTags = "SELECT tagID FROM " + this.getTablePrefix() + "favourites WHERE player = ?";
@@ -257,7 +256,7 @@ public class DataManager extends AbstractDataManager {
     public void loadTagData(Map<String, Tag> cachedTags) {
         cachedTags.clear();
 
-        this.async(task -> this.databaseConnector.connect(connection -> {
+        this.async(() -> this.databaseConnector.connect(connection -> {
             final String query = "SELECT * FROM " + this.getTablePrefix() + "tag_data";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
 
@@ -284,7 +283,7 @@ public class DataManager extends AbstractDataManager {
      * @param tag The tag to save.
      */
     public void saveTagData(@NotNull Tag tag) {
-        this.async(task -> this.databaseConnector.connect(connection -> {
+        this.async(() -> this.databaseConnector.connect(connection -> {
             final String query = "REPLACE INTO " + this.getTablePrefix() + "tag_data (`tagId`, `name`, " +
                                  "`description`, `tag`, `permission`, `order`, `icon`, `category`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
@@ -307,7 +306,7 @@ public class DataManager extends AbstractDataManager {
      * @param tags The tags to save.
      */
     public void saveTagData(Map<String, Tag> tags) {
-        this.async(task -> this.databaseConnector.connect(connection -> {
+        this.async(() -> this.databaseConnector.connect(connection -> {
             final String query = "REPLACE INTO " + this.getTablePrefix() + "tag_data (`tagId`, `name`, " +
                                  "`description`, `tag`, `permission`, `order`, `icon`, `category`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -335,7 +334,7 @@ public class DataManager extends AbstractDataManager {
      * @param tag The tag to delete.
      */
     public void deleteTagData(Tag tag) {
-        this.async(task -> this.databaseConnector.connect(connection -> {
+        this.async(() -> this.databaseConnector.connect(connection -> {
             final String query = "DELETE FROM " + this.getTablePrefix() + "tag_data WHERE tagId = ?";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, tag.getId());
@@ -348,7 +347,7 @@ public class DataManager extends AbstractDataManager {
      * Delete all the tag data from the database.
      */
     public void deleteAllTagData() {
-        this.async(task -> this.databaseConnector.connect(connection -> {
+        this.async(() -> this.databaseConnector.connect(connection -> {
             final String query = "DELETE FROM " + this.getTablePrefix() + "tag_data";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.executeUpdate();
@@ -388,8 +387,13 @@ public class DataManager extends AbstractDataManager {
         );
     }
 
-    private void async(Consumer<BukkitTask> callback) {
-        this.rosePlugin.getServer().getScheduler().runTaskAsynchronously(rosePlugin, callback);
+    private void async(Runnable runnable) {
+        if (TagsUtils.isFolia()) {
+            Bukkit.getAsyncScheduler().rfunNow(this.rosePlugin, scheduledTask -> runnable.run());
+            return;
+        }
+
+        this.rosePlugin.getServer().getScheduler().runTaskAsynchronously(rosePlugin, runnable);
     }
 
     public Map<UUID, TagUser> getCachedUsers() {

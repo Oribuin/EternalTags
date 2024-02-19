@@ -8,7 +8,6 @@ import dev.triumphteam.gui.guis.BaseGui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
 import dev.triumphteam.gui.guis.ScrollingGui;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -140,7 +139,8 @@ public class FavouritesGUI extends PluginMenu {
                 this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
         };
 
-        if (this.addPagesAsynchronously()) this.async(task);
+        if (this.addPagesAsynchronously())
+            this.async(task);
         else task.run();
     }
 
