@@ -60,13 +60,13 @@ public final class PluginAction {
      */
     public static @Nullable Action parse(String text) {
         // Check if the text matches the pattern ("[<action>] <message>") and get the action and message
-        final Matcher matcher = ACTION_PATTERN.matcher(text);
+        Matcher matcher = ACTION_PATTERN.matcher(text);
         if (!matcher.find()) {
             return null;
         }
 
-        final String actionName = matcher.group(1).toLowerCase(Locale.ROOT); // toLowerCase to avoid case-sensitive issues
-        final String actionText = matcher.group(2);
+        String actionName = matcher.group(1).toLowerCase(Locale.ROOT); // toLowerCase to avoid case-sensitive issues
+        String actionText = matcher.group(2);
 
         Function<String, Action> action = ACTIONS.get(actionName);
 

@@ -1,33 +1,32 @@
-package xyz.oribuin.eternaltags.command.command;
+package xyz.oribuin.eternaltags.command.impl;
 
 import dev.rosewood.rosegarden.RosePlugin;
+import dev.rosewood.rosegarden.command.framework.ArgumentsDefinition;
+import dev.rosewood.rosegarden.command.framework.BaseRoseCommand;
 import dev.rosewood.rosegarden.command.framework.CommandContext;
-import dev.rosewood.rosegarden.command.framework.RoseCommand;
-import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
-import dev.rosewood.rosegarden.command.framework.annotation.Optional;
+import dev.rosewood.rosegarden.command.framework.CommandInfo;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import org.bukkit.entity.Player;
+import xyz.oribuin.eternaltags.command.argument.TagsArgumentHandler;
 import xyz.oribuin.eternaltags.gui.MenuProvider;
 import xyz.oribuin.eternaltags.gui.menu.FavouritesGUI;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 
-import java.util.Collections;
-import java.util.List;
+public class FavoriteCommand extends BaseRoseCommand {
 
-public class FavoriteCommand extends RoseCommand {
-
-    public FavoriteCommand(RosePlugin rosePlugin, RoseCommandWrapper parent) {
-        super(rosePlugin, parent);
+    public FavoriteCommand(RosePlugin rosePlugin) {
+        super(rosePlugin);
     }
 
     @RoseExecutable
-    public void execute(CommandContext context, @Optional Tag tag) {
-        final LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
-        final TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
+    public void execute(CommandContext context) {
+        LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
+        TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
         Player sender = (Player) context.getSender();
+        Tag tag = context.get("tag");
 
         if (tag == null) {
             MenuProvider.get(FavouritesGUI.class).open(sender);
@@ -54,30 +53,21 @@ public class FavoriteCommand extends RoseCommand {
                 .build());
     }
 
-
     @Override
-    protected String getDefaultName() {
-        return "favorite";
+    protected CommandInfo createCommandInfo() {
+        return CommandInfo.builder("favorite")
+                .descriptionKey("command-favorite-description")
+                .permission("eternaltags.favorite")
+                .aliases("favourite")
+                .playerOnly(true)
+                .build();
     }
 
     @Override
-    protected List<String> getDefaultAliases() {
-        return Collections.singletonList("favourite");
-    }
-
-    @Override
-    public String getDescriptionKey() {
-        return "command-favorite-description";
-    }
-
-    @Override
-    public String getRequiredPermission() {
-        return "eternaltags.favorite";
-    }
-
-    @Override
-    public boolean isPlayerOnly() {
-        return true;
+    protected ArgumentsDefinition createArgumentsDefinition() {
+        return ArgumentsDefinition.builder()
+                .optional("tag", new TagsArgumentHandler())
+                .build();
     }
 
 }

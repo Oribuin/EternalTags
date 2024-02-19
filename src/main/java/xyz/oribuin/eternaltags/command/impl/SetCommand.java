@@ -1,29 +1,34 @@
-package xyz.oribuin.eternaltags.command.command;
+package xyz.oribuin.eternaltags.command.impl;
 
 import dev.rosewood.rosegarden.RosePlugin;
+import dev.rosewood.rosegarden.command.argument.ArgumentHandlers;
+import dev.rosewood.rosegarden.command.framework.ArgumentsDefinition;
+import dev.rosewood.rosegarden.command.framework.BaseRoseCommand;
 import dev.rosewood.rosegarden.command.framework.CommandContext;
-import dev.rosewood.rosegarden.command.framework.RoseCommand;
-import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
-import dev.rosewood.rosegarden.command.framework.annotation.Optional;
+import dev.rosewood.rosegarden.command.framework.CommandInfo;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import xyz.oribuin.eternaltags.command.argument.TagsArgumentHandler;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 
-public class SetCommand extends RoseCommand {
+public class SetCommand extends BaseRoseCommand {
 
-    public SetCommand(RosePlugin rosePlugin, RoseCommandWrapper parent) {
-        super(rosePlugin, parent);
+    public SetCommand(RosePlugin rosePlugin) {
+        super(rosePlugin);
     }
 
     @RoseExecutable
-    public void execute(CommandContext context, Tag tag, @Optional Player player, @Optional Boolean silent) {
-        final LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
-        final TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
+    public void execute(CommandContext context) {
+        LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
+        TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
         CommandSender sender = context.getSender();
+        Tag tag = context.get("tag");
+        Player player = context.get("player");
+        String silent = context.get("silent");
 
         // may need to check if tag == null?
         if (tag == null) {
@@ -39,7 +44,7 @@ public class SetCommand extends RoseCommand {
             }
 
             tag.equip(player);
-            if (silent == null || !silent) {
+            if (silent == null) {
                 locale.sendMessage(player, "command-set-changed", StringPlaceholders.of("tag", manager.getDisplayTag(tag, player)));
             }
 
@@ -65,20 +70,21 @@ public class SetCommand extends RoseCommand {
         locale.sendMessage(sender, "command-set-changed", StringPlaceholders.of("tag", manager.getDisplayTag(tag, pl)));
     }
 
-
     @Override
-    protected String getDefaultName() {
-        return "set";
+    protected CommandInfo createCommandInfo() {
+        return CommandInfo.builder("set")
+                .descriptionKey("command-set-description")
+                .permission("eternaltags.set")
+                .build();
     }
 
     @Override
-    public String getDescriptionKey() {
-        return "command-set-description";
-    }
-
-    @Override
-    public String getRequiredPermission() {
-        return "eternaltags.set";
+    protected ArgumentsDefinition createArgumentsDefinition() {
+        return ArgumentsDefinition.builder()
+                .required("tag", new TagsArgumentHandler())
+                .optional("player", ArgumentHandlers.PLAYER)
+                .optional("silent", ArgumentHandlers.STRING)
+                .build();
     }
 
 }

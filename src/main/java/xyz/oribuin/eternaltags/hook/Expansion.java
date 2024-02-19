@@ -34,12 +34,12 @@ public class Expansion extends PlaceholderExpansion {
             return "Error: Player is null";
 
         // Allow the ability to get any tag from the id
-        final String[] args = params.split("_");
+        String[] args = params.split("_");
 
         // Add new specific tags here
         if (args.length >= 2) {
-            final String tagId = params.substring(args[0].length() + 1);
-            final Tag tag = this.manager.getTagFromId(tagId);
+            String tagId = params.substring(args[0].length() + 1);
+            Tag tag = this.manager.getTagFromId(tagId);
             // Can't use the switch statement here
             if (tag != null) {
                 return switch (args[0].toLowerCase()) {
@@ -61,7 +61,7 @@ public class Expansion extends PlaceholderExpansion {
         if (player == null)
             return "Error: Player is null";
 
-        final Tag activeTag = this.manager.getUserTag(player);
+        Tag activeTag = this.manager.getUserTag(player);
         return switch (params.toLowerCase()) {
             // Set bracket placeholders to allow \o/ Placeholder Inception \o/
             case "tag" -> this.manager.getDisplayTag(activeTag, offlineUser, "");

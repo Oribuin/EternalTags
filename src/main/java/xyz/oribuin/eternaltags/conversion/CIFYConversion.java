@@ -17,11 +17,11 @@ public class CIFYConversion extends ConversionPlugin {
 
     @Override
     public Map<String, Tag> getPluginTags(RosePlugin plugin) {
-        final TagsManager manager = plugin.getManager(TagsManager.class);
+        TagsManager manager = plugin.getManager(TagsManager.class);
 
-        final Map<String, Tag> convertedTags = new HashMap<>();
-        final FileConfiguration config = YamlConfiguration.loadConfiguration(this.getTagsFile());
-        final ConfigurationSection section = config.getConfigurationSection("tags");
+        Map<String, Tag> convertedTags = new HashMap<>();
+        FileConfiguration config = YamlConfiguration.loadConfiguration(this.getTagsFile());
+        ConfigurationSection section = config.getConfigurationSection("tags");
         if (section == null)
             return convertedTags;
 
@@ -29,7 +29,7 @@ public class CIFYConversion extends ConversionPlugin {
                 .stream()
                 .filter(s -> !manager.checkTagExists(s))
                 .forEach(key -> {
-                    final Tag tag = new Tag(key, StringUtils.capitalize(key), section.getString(key + ".prefix", ""));
+                    Tag tag = new Tag(key, StringUtils.capitalize(key), section.getString(key + ".prefix", ""));
 
                     if (section.get(key + ".description") != null)
                         tag.setDescription(Collections.singletonList(section.getString(key + ".description")));

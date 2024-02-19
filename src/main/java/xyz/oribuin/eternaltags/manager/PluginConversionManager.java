@@ -29,9 +29,9 @@ public class PluginConversionManager extends Manager {
         if (conversionPlugin == null)
             return new HashMap<>();
 
-        final TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
-        final CategoryManager categoryManager = this.rosePlugin.getManager(CategoryManager.class);
-        final Map<String, Tag> tags = conversionPlugin.getPluginTags(this.rosePlugin);
+        TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
+        CategoryManager categoryManager = this.rosePlugin.getManager(CategoryManager.class);
+        Map<String, Tag> tags = conversionPlugin.getPluginTags(this.rosePlugin);
 
         // Create a category for the plugin
         Category category = new Category(conversionPlugin.getPluginName().toLowerCase());

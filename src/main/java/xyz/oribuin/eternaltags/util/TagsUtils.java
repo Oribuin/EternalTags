@@ -77,7 +77,7 @@ public final class TagsUtils {
      * @return The center of the block
      */
     public static Location center(Location location) {
-        final Location loc = location.getBlock().getLocation().clone();
+        Location loc = location.getBlock().getLocation().clone();
         loc.add(0.5, 0.5, 0.5);
         loc.setYaw(180f);
         loc.setPitch(0f);
@@ -111,7 +111,7 @@ public final class TagsUtils {
      * @return The amount of empty slots.
      */
     public static int getSpareSlots(Player player) {
-        final List<Integer> slots = new ArrayList<>();
+        List<Integer> slots = new ArrayList<>();
         for (int i = 0; i < 36; i++)
             slots.add(i);
 
@@ -142,7 +142,7 @@ public final class TagsUtils {
             return null;
 
         // format is world;x;y;z
-        final String[] split = key.split(";");
+        String[] split = key.split(";");
         if (split.length != 4)
             return null;
 
@@ -175,16 +175,16 @@ public final class TagsUtils {
             @NotNull String key,
             @NotNull StringPlaceholders placeholders
     ) {
-        final LocaleManager locale = EternalTags.getInstance().getManager(LocaleManager.class);
-        final Material material = Material.getMaterial(locale.format(sender, section.getString(key + ".material"), placeholders), false);
+        LocaleManager locale = EternalTags.getInstance().getManager(LocaleManager.class);
+        Material material = Material.getMaterial(locale.format(sender, section.getString(key + ".material"), placeholders), false);
         if (material == null) return null;
 
         // Load enchantments
-        final Map<Enchantment, Integer> enchantments = new HashMap<>();
-        final ConfigurationSection enchantmentSection = section.getConfigurationSection(key + ".enchantments");
+        Map<Enchantment, Integer> enchantments = new HashMap<>();
+        ConfigurationSection enchantmentSection = section.getConfigurationSection(key + ".enchantments");
         if (enchantmentSection != null) {
             for (String enchantmentKey : enchantmentSection.getKeys(false)) {
-                final Enchantment enchantment = Enchantment.getByKey(NamespacedKey.minecraft(enchantmentKey.toLowerCase()));
+                Enchantment enchantment = Enchantment.getByKey(NamespacedKey.minecraft(enchantmentKey.toLowerCase()));
                 if (enchantment == null) continue;
 
                 enchantments.put(enchantment, enchantmentSection.getInt(enchantmentKey, 1));
@@ -192,12 +192,12 @@ public final class TagsUtils {
         }
 
         // Load potion item flags
-        final ItemFlag[] flags = section.getStringList(key + ".flags").stream()
+        ItemFlag[] flags = section.getStringList(key + ".flags").stream()
                 .map(ItemFlag::valueOf)
                 .toArray(ItemFlag[]::new);
 
         // Load offline player texture
-        final String owner = section.getString(key + ".owner");
+        String owner = section.getString(key + ".owner");
         OfflinePlayer offlinePlayer = null;
         if (owner != null) {
             if (owner.equalsIgnoreCase("self") && sender instanceof Player player) {
@@ -322,7 +322,7 @@ public final class TagsUtils {
             return List.of(start);
         }
 
-        final List<Integer> list = new ArrayList<>();
+        List<Integer> list = new ArrayList<>();
         for (int i = start; i <= end; i++) {
             list.add(i);
         }

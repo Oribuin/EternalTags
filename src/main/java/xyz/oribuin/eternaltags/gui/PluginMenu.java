@@ -3,6 +3,7 @@ package xyz.oribuin.eternaltags.gui;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
+import dev.rosewood.rosegarden.utils.NMSUtil;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.triumphteam.gui.components.ScrollType;
 import dev.triumphteam.gui.guis.BaseGui;
@@ -85,8 +86,8 @@ public abstract class PluginMenu {
      */
     protected final @NotNull PaginatedGui createPagedGUI(Player player) {
 
-        final int rows = this.config.getInt("gui-settings.rows");
-        final String preTitle = this.config.getString("gui-settings.pre-title", "EternalTags");
+        int rows = this.config.getInt("gui-settings.rows");
+        String preTitle = this.config.getString("gui-settings.pre-title", "EternalTags");
 
         return Gui.paginated()
                 .rows(rows == 0 ? 6 : rows)
@@ -102,8 +103,8 @@ public abstract class PluginMenu {
      * @return The created GUI
      */
     protected final @NotNull Gui createGUI(Player player) {
-        final int rows = this.config.getInt("gui-settings.rows");
-        final String preTitle = this.config.getString("gui-settings.pre-title", "EternalTags");
+        int rows = this.config.getInt("gui-settings.rows");
+        String preTitle = this.config.getString("gui-settings.pre-title", "EternalTags");
 
         return Gui.gui()
                 .rows(rows == 0 ? 6 : rows)
@@ -120,8 +121,8 @@ public abstract class PluginMenu {
      */
     protected final @NotNull ScrollingGui createScrollingGui(Player player, ScrollType scrollType) {
 
-        final int rows = this.config.getInt("gui-settings.rows");
-        final String preTitle = this.config.getString("gui-settings.pre-title", "EternalTags");
+        int rows = this.config.getInt("gui-settings.rows");
+        String preTitle = this.config.getString("gui-settings.pre-title", "EternalTags");
 
         return Gui.scrolling()
                 .scrollType(scrollType)
@@ -140,7 +141,7 @@ public abstract class PluginMenu {
      * @return The created item
      */
     public ItemStack getTagItem(Player player, Tag tag) {
-        final StringPlaceholders tagPlaceholders = this.getTagPlaceholders(tag, player);
+        StringPlaceholders tagPlaceholders = this.getTagPlaceholders(tag, player);
 
         ItemStack baseItem = TagsUtils.deserialize(this.config, player, "tag-item", tagPlaceholders);
         if (baseItem == null)
@@ -148,7 +149,7 @@ public abstract class PluginMenu {
 
         baseItem = baseItem.clone();
 
-        final List<String> configLore = this.config.getStringList("tag-item.lore");
+        List<String> configLore = this.config.getStringList("tag-item.lore");
         List<String> lore = new ArrayList<>();
 
         // im not happy about this but it works
@@ -193,11 +194,11 @@ public abstract class PluginMenu {
      * @since 1.1.7
      */
     protected final @NotNull Map<ClickType, List<Action>> getTagActions() {
-        final CommentedConfigurationSection customActions = this.config.getConfigurationSection("tag-item.commands");
+        CommentedConfigurationSection customActions = this.config.getConfigurationSection("tag-item.commands");
         if (customActions == null)
             return new HashMap<>();
 
-        final Map<ClickType, List<Action>> actions = new HashMap<>();
+        Map<ClickType, List<Action>> actions = new HashMap<>();
 
         for (String key : customActions.getKeys(false)) {
             ClickType clickType = TagsUtils.getEnum(ClickType.class, key.toUpperCase());
@@ -379,6 +380,11 @@ public abstract class PluginMenu {
         gui.close(player);
     }
 
+    /**
+     * Run a task asynchronously
+     *
+     * @param runnable The task to run
+     */
     public final void async(Runnable runnable) {
         if (TagsUtils.isFolia()) {
             Bukkit.getAsyncScheduler().runNow(this.rosePlugin, scheduledTask -> runnable.run());
@@ -388,6 +394,11 @@ public abstract class PluginMenu {
         Bukkit.getScheduler().runTaskAsynchronously(this.rosePlugin, runnable);
     }
 
+    /**
+     * Run a task synchronously
+     *
+     * @param runnable The task to run
+     */
     public final void sync(Runnable runnable) {
         if (TagsUtils.isFolia()) {
             Bukkit.getGlobalRegionScheduler().execute(this.rosePlugin, runnable);
@@ -395,16 +406,6 @@ public abstract class PluginMenu {
         }
 
         Bukkit.getScheduler().runTask(this.rosePlugin, runnable);
-    }
-
-    public ScrollType match(String name) {
-        for (ScrollType scrollType : ScrollType.values()) {
-            if (scrollType.name().equalsIgnoreCase(name)) {
-                return scrollType;
-            }
-        }
-
-        return null;
     }
 
     /**

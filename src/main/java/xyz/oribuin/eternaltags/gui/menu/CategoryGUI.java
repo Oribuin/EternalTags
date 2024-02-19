@@ -61,11 +61,15 @@ public class CategoryGUI extends PluginMenu {
         String finalMenuTitle = menuTitle;
 
         boolean scrollingGui = this.config.getBoolean("gui-settings.scrolling-gui", false);
-        ScrollType scrollingType = this.match(this.config.getString("gui-settings.scrolling-type"));
+        ScrollType scrollingType = TagsUtils.getEnum(
+                ScrollType.class,
+                this.config.getString("gui-settings.scrolling-type"),
+                ScrollType.VERTICAL
+        );
 
         PaginatedGui gui = (scrollingGui && scrollingType != null) ? this.createScrollingGui(player, scrollingType) : this.createPagedGUI(player);
 
-        final CommentedConfigurationSection extraItems = this.config.getConfigurationSection("extra-items");
+        CommentedConfigurationSection extraItems = this.config.getConfigurationSection("extra-items");
         if (extraItems != null) {
             for (String key : extraItems.getKeys(false)) {
                 MenuItem.create(this.config)
@@ -142,13 +146,13 @@ public class CategoryGUI extends PluginMenu {
         if (gui instanceof PaginatedGui paginated)
             paginated.clearPageItems();
 
-        final TagsGUI tagsGUI = MenuProvider.get(TagsGUI.class);
+        TagsGUI tagsGUI = MenuProvider.get(TagsGUI.class);
         if (tagsGUI == null) // This should never happen, but just in case.
             return;
 
         this.getCategories(player).forEach(category -> {
 
-            final GuiAction<InventoryClickEvent> action = event -> {
+            GuiAction<InventoryClickEvent> action = event -> {
                 // Filter out tags that are not in the category.
                 if (category.getType() == CategoryType.GLOBAL) {
                     tagsGUI.open(player);
@@ -198,8 +202,8 @@ public class CategoryGUI extends PluginMenu {
      * @return A list of categories
      */
     public List<Category> getCategories(@NotNull Player player) {
-        final List<Category> categories = new ArrayList<>(this.categoryManager.getCategories());
-        final SortType sortType = TagsUtils.getEnum(
+        List<Category> categories = new ArrayList<>(this.categoryManager.getCategories());
+        SortType sortType = TagsUtils.getEnum(
                 SortType.class,
                 this.config.getString("gui-settings.sort-type"),
                 SortType.ALPHABETICAL

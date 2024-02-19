@@ -1,9 +1,9 @@
 package xyz.oribuin.eternaltags.command.argument;
 
-import dev.rosewood.rosegarden.RosePlugin;
-import dev.rosewood.rosegarden.command.framework.ArgumentParser;
-import dev.rosewood.rosegarden.command.framework.RoseCommandArgumentHandler;
-import dev.rosewood.rosegarden.command.framework.RoseCommandArgumentInfo;
+import dev.rosewood.rosegarden.command.framework.Argument;
+import dev.rosewood.rosegarden.command.framework.ArgumentHandler;
+import dev.rosewood.rosegarden.command.framework.CommandContext;
+import dev.rosewood.rosegarden.command.framework.InputIterator;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import xyz.oribuin.eternaltags.conversion.ConversionPlugin;
 import xyz.oribuin.eternaltags.conversion.ValidPlugin;
@@ -11,15 +11,15 @@ import xyz.oribuin.eternaltags.conversion.ValidPlugin;
 import java.util.List;
 import java.util.Optional;
 
-public class PluginArgumentHandler extends RoseCommandArgumentHandler<ConversionPlugin> {
+public class PluginArgumentHandler extends ArgumentHandler<ConversionPlugin> {
 
-    public PluginArgumentHandler(RosePlugin rosePlugin) {
-        super(rosePlugin, ConversionPlugin.class);
+    public PluginArgumentHandler() {
+        super(ConversionPlugin.class);
     }
 
     @Override
-    protected ConversionPlugin handleInternal(RoseCommandArgumentInfo argumentInfo, ArgumentParser argumentParser) throws HandledArgumentException {
-        String input = argumentParser.next();
+    public ConversionPlugin handle(CommandContext context, Argument argument, InputIterator inputIterator) throws HandledArgumentException {
+        String input = inputIterator.next();
 
         Optional<ConversionPlugin> conversion = ValidPlugin.match(input);
         if (conversion.isEmpty())
@@ -29,12 +29,11 @@ public class PluginArgumentHandler extends RoseCommandArgumentHandler<Conversion
     }
 
     @Override
-    protected List<String> suggestInternal(RoseCommandArgumentInfo argumentInfo, ArgumentParser argumentParser) {
-        argumentParser.next();
-
+    public List<String> suggest(CommandContext context, Argument argument, String[] args) {
         return ValidPlugin.PLUGINS
                 .keySet()
                 .stream()
                 .toList();
     }
+
 }

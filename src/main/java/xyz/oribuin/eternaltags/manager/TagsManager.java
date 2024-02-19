@@ -184,7 +184,7 @@ public class TagsManager extends Manager {
      * @param tag The tag
      */
     public void updateActiveTag(Tag tag) {
-        final DataManager data = this.rosePlugin.getManager(DataManager.class);
+        DataManager data = this.rosePlugin.getManager(DataManager.class);
 
         data.getCachedUsers().values().forEach(user -> {
             if (user.getActiveTag() != null && user.getActiveTag().equalsIgnoreCase(tag.getId())) {
@@ -364,8 +364,8 @@ public class TagsManager extends Manager {
      */
     @NotNull
     public Map<String, Tag> getUsersFavourites(UUID uuid) {
-        final Map<String, Tag> favourites = new HashMap<>();
-        final TagUser user = this.rosePlugin.getManager(DataManager.class).getCachedUser(uuid);
+        Map<String, Tag> favourites = new HashMap<>();
+        TagUser user = this.rosePlugin.getManager(DataManager.class).getCachedUser(uuid);
 
         user.getFavourites().stream()
                 .filter(Objects::nonNull)

@@ -57,11 +57,15 @@ public class FavouritesGUI extends PluginMenu {
         String finalMenuTitle = menuTitle;
 
         boolean scrollingGui = this.config.getBoolean("gui-settings.scrolling-gui", false);
-        ScrollType scrollingType = this.match(this.config.getString("gui-settings.scrolling-type"));
+        ScrollType scrollingType = TagsUtils.getEnum(
+                ScrollType.class,
+                this.config.getString("gui-settings.scrolling-type"),
+                ScrollType.VERTICAL
+        );
 
         PaginatedGui gui = (scrollingGui && scrollingType != null) ? this.createScrollingGui(player, scrollingType) : this.createPagedGUI(player);
 
-        final CommentedConfigurationSection extraItems = this.config.getConfigurationSection("extra-items");
+        CommentedConfigurationSection extraItems = this.config.getConfigurationSection("extra-items");
         if (extraItems != null) {
             for (String key : extraItems.getKeys(false)) {
                 MenuItem.create(this.config)

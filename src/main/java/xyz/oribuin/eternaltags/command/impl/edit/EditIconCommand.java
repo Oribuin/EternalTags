@@ -1,29 +1,32 @@
-package xyz.oribuin.eternaltags.command.command.edit;
+package xyz.oribuin.eternaltags.command.impl.edit;
 
 import dev.rosewood.rosegarden.RosePlugin;
+import dev.rosewood.rosegarden.command.argument.ArgumentHandlers;
+import dev.rosewood.rosegarden.command.framework.ArgumentsDefinition;
+import dev.rosewood.rosegarden.command.framework.BaseRoseCommand;
 import dev.rosewood.rosegarden.command.framework.CommandContext;
-import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
-import dev.rosewood.rosegarden.command.framework.RoseSubCommand;
-import dev.rosewood.rosegarden.command.framework.annotation.Inject;
-import dev.rosewood.rosegarden.command.framework.annotation.Optional;
+import dev.rosewood.rosegarden.command.framework.CommandInfo;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import xyz.oribuin.eternaltags.command.argument.TagsArgumentHandler;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 
-public class EditIconCommand extends RoseSubCommand {
+public class EditIconCommand extends BaseRoseCommand {
 
-    public EditIconCommand(RosePlugin rosePlugin, RoseCommandWrapper parent) {
-        super(rosePlugin, parent);
+    public EditIconCommand(RosePlugin rosePlugin) {
+        super(rosePlugin);
     }
 
     @RoseExecutable
-    public void execute(@Inject CommandContext context, Tag tag, @Optional Boolean remove) {
+    public void execute(CommandContext context) {
         TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
         LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
+        Tag tag = context.get("tag");
+        Boolean remove = context.get("remove");
 
         Player player = (Player) context.getSender();
         ItemStack item = player.getInventory().getItemInMainHand();
@@ -45,7 +48,7 @@ public class EditIconCommand extends RoseSubCommand {
         manager.saveTag(tag);
         manager.updateActiveTag(tag);
 
-        final StringPlaceholders placeholders = StringPlaceholders.builder()
+        StringPlaceholders placeholders = StringPlaceholders.builder()
                 .add("tag", manager.getDisplayTag(tag, player))
                 .add("option", "icon")
                 .add("id", tag.getId())
@@ -57,13 +60,19 @@ public class EditIconCommand extends RoseSubCommand {
     }
 
     @Override
-    protected String getDefaultName() {
-        return "icon";
+    protected CommandInfo createCommandInfo() {
+        return CommandInfo.builder("icon")
+                .permission("eternaltags.edit")
+                .playerOnly(true)
+                .build();
     }
 
     @Override
-    public boolean isPlayerOnly() {
-        return true;
+    protected ArgumentsDefinition createArgumentsDefinition() {
+        return ArgumentsDefinition.builder()
+                .required("tag", new TagsArgumentHandler())
+                .optional("remove", ArgumentHandlers.BOOLEAN)
+                .build();
     }
 
 }

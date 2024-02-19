@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.database.DataMigration;
 import dev.rosewood.rosegarden.manager.AbstractDataManager;
+import dev.rosewood.rosegarden.utils.NMSUtil;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.database.migration._1_CreateInitialTables;
@@ -50,7 +51,7 @@ public class DataManager extends AbstractDataManager {
         user.setUsingDefaultTag(false);
         this.cachedUsers.put(uuid, user);
 
-        final String query = "REPLACE INTO " + this.getTablePrefix() + "tags (player, tagID) VALUES (?, ?)";
+        String query = "REPLACE INTO " + this.getTablePrefix() + "tags (player, tagID) VALUES (?, ?)";
         this.async(() -> this.databaseConnector.connect(connection -> {
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, uuid.toString());
@@ -68,7 +69,7 @@ public class DataManager extends AbstractDataManager {
     public void removeUser(final UUID uuid) {
         this.cachedUsers.remove(uuid);
 
-        final String query = "DELETE FROM " + this.getTablePrefix() + "tags WHERE player = ?";
+        String query = "DELETE FROM " + this.getTablePrefix() + "tags WHERE player = ?";
         this.async(() -> this.databaseConnector.connect(connection -> {
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, uuid.toString());
@@ -86,7 +87,7 @@ public class DataManager extends AbstractDataManager {
     public void clearTagForAll(String id) {
         this.cachedUsers.values().removeIf(tag -> tag.getActiveTag() != null && tag.getActiveTag().equalsIgnoreCase(id));
 
-        final String query = "DELETE FROM " + this.getTablePrefix() + "tags WHERE tagID = ?";
+        String query = "DELETE FROM " + this.getTablePrefix() + "tags WHERE tagID = ?";
         this.async(() -> this.databaseConnector.connect(connection -> {
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, id);
@@ -110,7 +111,7 @@ public class DataManager extends AbstractDataManager {
 
 
         this.async(() -> this.databaseConnector.connect(connection -> {
-            final String query = "REPLACE INTO " + this.getTablePrefix() + "tags (player, tagID) VALUES (?, ?)";
+            String query = "REPLACE INTO " + this.getTablePrefix() + "tags (player, tagID) VALUES (?, ?)";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 for (UUID player : players) {
                     statement.setString(1, player.toString());
@@ -134,7 +135,7 @@ public class DataManager extends AbstractDataManager {
         this.cachedUsers.put(uuid, user);
 
         this.async(() -> this.databaseConnector.connect(connection -> {
-            final String query = "INSERT INTO " + this.getTablePrefix() + "favourites (player, tagID) VALUES (?, ?)";
+            String query = "INSERT INTO " + this.getTablePrefix() + "favourites (player, tagID) VALUES (?, ?)";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, uuid.toString());
                 statement.setString(2, tag.getId());
@@ -155,7 +156,7 @@ public class DataManager extends AbstractDataManager {
         this.cachedUsers.put(uuid, user);
 
         this.async(() -> this.databaseConnector.connect(connection -> {
-            final String query = "DELETE FROM " + this.getTablePrefix() + "favourites WHERE player = ? AND tagID = ?";
+            String query = "DELETE FROM " + this.getTablePrefix() + "favourites WHERE player = ? AND tagID = ?";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, uuid.toString());
                 statement.setString(2, tag.getId());
@@ -169,7 +170,7 @@ public class DataManager extends AbstractDataManager {
         this.cachedUsers.remove(uuid);
 
         this.async(() -> this.databaseConnector.connect(connection -> {
-            final String query = "DELETE FROM " + this.getTablePrefix() + "favourites WHERE player = ?";
+            String query = "DELETE FROM " + this.getTablePrefix() + "favourites WHERE player = ?";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, uuid.toString());
                 statement.executeUpdate();
@@ -183,24 +184,24 @@ public class DataManager extends AbstractDataManager {
      * @param uuid The player's uuid
      */
     public void loadUser(@NotNull UUID uuid) {
-        final TagUser user = new TagUser(uuid);
+        TagUser user = new TagUser(uuid);
 
         this.async(() -> this.databaseConnector.connect(connection -> {
-            final String selectTag = "SELECT tagID FROM " + this.getTablePrefix() + "tags WHERE player = ?";
+            String selectTag = "SELECT tagID FROM " + this.getTablePrefix() + "tags WHERE player = ?";
 
             // Load the active tag from the database.
             try (PreparedStatement statement = connection.prepareStatement(selectTag)) {
                 statement.setString(1, uuid.toString());
-                final ResultSet result = statement.executeQuery();
+                ResultSet result = statement.executeQuery();
                 if (result.next()) {
                     user.setActiveTag(result.getString(1));
                 }
             }
 
-            final String favouriteTagsQuery = "SELECT tagID FROM " + this.getTablePrefix() + "favourites WHERE player = ?";
+            String favouriteTagsQuery = "SELECT tagID FROM " + this.getTablePrefix() + "favourites WHERE player = ?";
             try (PreparedStatement statement = connection.prepareStatement(favouriteTagsQuery)) {
                 statement.setString(1, uuid.toString());
-                final ResultSet result = statement.executeQuery();
+                ResultSet result = statement.executeQuery();
                 while (result.next()) {
                     user.getFavourites().add(result.getString(1));
                 }
@@ -222,14 +223,14 @@ public class DataManager extends AbstractDataManager {
 
         this.async(() -> this.databaseConnector.connect(connection -> {
             for (UUID user : users) {
-                final String selectTag = "SELECT tagID FROM " + this.getTablePrefix() + "tags WHERE player = ?";
-                final String favouriteTags = "SELECT tagID FROM " + this.getTablePrefix() + "favourites WHERE player = ?";
+                String selectTag = "SELECT tagID FROM " + this.getTablePrefix() + "tags WHERE player = ?";
+                String favouriteTags = "SELECT tagID FROM " + this.getTablePrefix() + "favourites WHERE player = ?";
 
                 TagUser tagUser = new TagUser(user);
 
                 try (PreparedStatement statement = connection.prepareStatement(selectTag)) {
                     statement.setString(1, user.toString());
-                    final ResultSet result = statement.executeQuery();
+                    ResultSet result = statement.executeQuery();
                     if (result.next()) {
                         tagUser.setActiveTag(result.getString(1));
                     }
@@ -237,7 +238,7 @@ public class DataManager extends AbstractDataManager {
 
                 try (PreparedStatement statement = connection.prepareStatement(favouriteTags)) {
                     statement.setString(1, user.toString());
-                    final ResultSet result = statement.executeQuery();
+                    ResultSet result = statement.executeQuery();
                     while (result.next()) {
                         tagUser.getFavourites().add(result.getString(1));
                     }
@@ -257,13 +258,13 @@ public class DataManager extends AbstractDataManager {
         cachedTags.clear();
 
         this.async(() -> this.databaseConnector.connect(connection -> {
-            final String query = "SELECT * FROM " + this.getTablePrefix() + "tag_data";
+            String query = "SELECT * FROM " + this.getTablePrefix() + "tag_data";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
 
-                final ResultSet result = statement.executeQuery();
+                ResultSet result = statement.executeQuery();
                 while (result.next()) {
-                    final String id = result.getString("tagId");
-                    final List<String> description = gson.fromJson(result.getString("description"), TagDescription.class).description();
+                    String id = result.getString("tagId");
+                    List<String> description = gson.fromJson(result.getString("description"), TagDescription.class).description();
 
                     Tag tag = new Tag(id, result.getString("name"), result.getString("tag"));
                     tag.setPermission(result.getString("permission"));
@@ -284,7 +285,7 @@ public class DataManager extends AbstractDataManager {
      */
     public void saveTagData(@NotNull Tag tag) {
         this.async(() -> this.databaseConnector.connect(connection -> {
-            final String query = "REPLACE INTO " + this.getTablePrefix() + "tag_data (`tagId`, `name`, " +
+            String query = "REPLACE INTO " + this.getTablePrefix() + "tag_data (`tagId`, `name`, " +
                                  "`description`, `tag`, `permission`, `order`, `icon`, `category`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, tag.getId());
@@ -307,7 +308,7 @@ public class DataManager extends AbstractDataManager {
      */
     public void saveTagData(Map<String, Tag> tags) {
         this.async(() -> this.databaseConnector.connect(connection -> {
-            final String query = "REPLACE INTO " + this.getTablePrefix() + "tag_data (`tagId`, `name`, " +
+            String query = "REPLACE INTO " + this.getTablePrefix() + "tag_data (`tagId`, `name`, " +
                                  "`description`, `tag`, `permission`, `order`, `icon`, `category`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
             try (PreparedStatement statement = connection.prepareStatement(query)) {
@@ -335,7 +336,7 @@ public class DataManager extends AbstractDataManager {
      */
     public void deleteTagData(Tag tag) {
         this.async(() -> this.databaseConnector.connect(connection -> {
-            final String query = "DELETE FROM " + this.getTablePrefix() + "tag_data WHERE tagId = ?";
+            String query = "DELETE FROM " + this.getTablePrefix() + "tag_data WHERE tagId = ?";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, tag.getId());
                 statement.executeUpdate();
@@ -348,7 +349,7 @@ public class DataManager extends AbstractDataManager {
      */
     public void deleteAllTagData() {
         this.async(() -> this.databaseConnector.connect(connection -> {
-            final String query = "DELETE FROM " + this.getTablePrefix() + "tag_data";
+            String query = "DELETE FROM " + this.getTablePrefix() + "tag_data";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.executeUpdate();
             }

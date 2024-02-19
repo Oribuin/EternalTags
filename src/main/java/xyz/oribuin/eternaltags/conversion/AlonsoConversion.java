@@ -17,11 +17,11 @@ public class AlonsoConversion extends ConversionPlugin {
 
     @Override
     public Map<String, Tag> getPluginTags(RosePlugin plugin) {
-        final TagsManager manager = plugin.getManager(TagsManager.class);
-        final Map<String, Tag> convertedTags = new HashMap<>();
+        TagsManager manager = plugin.getManager(TagsManager.class);
+        Map<String, Tag> convertedTags = new HashMap<>();
 
-        final FileConfiguration config = YamlConfiguration.loadConfiguration(this.getTagsFile());
-        final ConfigurationSection section = config.getConfigurationSection("Tags");
+        FileConfiguration config = YamlConfiguration.loadConfiguration(this.getTagsFile());
+        ConfigurationSection section = config.getConfigurationSection("Tags");
 
         if (section == null)
             return convertedTags;
@@ -30,7 +30,7 @@ public class AlonsoConversion extends ConversionPlugin {
                 .stream()
                 .filter(s -> !manager.checkTagExists(s))
                 .forEach(key -> {
-                    final Tag tag = new Tag(key, section.getString("Displayname"), section.getString(key + ".Tag"));
+                    Tag tag = new Tag(key, section.getString("Displayname"), section.getString(key + ".Tag"));
 
                     if (tag.getName() == null)
                         tag.setName(key);

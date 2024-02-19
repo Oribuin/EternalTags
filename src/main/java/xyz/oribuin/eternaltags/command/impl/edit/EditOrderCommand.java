@@ -1,33 +1,37 @@
-package xyz.oribuin.eternaltags.command.command.edit;
+package xyz.oribuin.eternaltags.command.impl.edit;
 
 import dev.rosewood.rosegarden.RosePlugin;
+import dev.rosewood.rosegarden.command.argument.ArgumentHandlers;
+import dev.rosewood.rosegarden.command.framework.ArgumentsDefinition;
+import dev.rosewood.rosegarden.command.framework.BaseRoseCommand;
 import dev.rosewood.rosegarden.command.framework.CommandContext;
-import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
-import dev.rosewood.rosegarden.command.framework.RoseSubCommand;
-import dev.rosewood.rosegarden.command.framework.annotation.Inject;
+import dev.rosewood.rosegarden.command.framework.CommandInfo;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import org.bukkit.entity.Player;
+import xyz.oribuin.eternaltags.command.argument.TagsArgumentHandler;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 
-public class EditOrderCommand extends RoseSubCommand {
+public class EditOrderCommand extends BaseRoseCommand {
 
-    public EditOrderCommand(RosePlugin rosePlugin, RoseCommandWrapper parent) {
-        super(rosePlugin, parent);
+    public EditOrderCommand(RosePlugin rosePlugin) {
+        super(rosePlugin);
     }
 
     @RoseExecutable
-    public void execute(@Inject CommandContext context, Tag tag, int order) {
+    public void execute(CommandContext context) {
         TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
         LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
+        Tag tag = context.get("tag");
+        int order = context.get("order");
 
         tag.setOrder(order);
         manager.saveTag(tag);
         manager.updateActiveTag(tag);
 
-        final StringPlaceholders placeholders = StringPlaceholders.builder()
+        StringPlaceholders placeholders = StringPlaceholders.builder()
                 .add("tag", manager.getDisplayTag(tag, context.getSender() instanceof Player ? (Player) context.getSender() : null))
                 .add("option", "order")
                 .add("id", tag.getId())
@@ -39,13 +43,18 @@ public class EditOrderCommand extends RoseSubCommand {
     }
 
     @Override
-    protected String getDefaultName() {
-        return "order";
+    protected CommandInfo createCommandInfo() {
+        return CommandInfo.builder("order")
+                .permission("eternaltags.edit")
+                .build();
     }
 
     @Override
-    public boolean isPlayerOnly() {
-        return false;
+    protected ArgumentsDefinition createArgumentsDefinition() {
+        return ArgumentsDefinition.builder()
+                .required("tag", new TagsArgumentHandler())
+                .required("order", ArgumentHandlers.INTEGER)
+                .build();
     }
 
 }
