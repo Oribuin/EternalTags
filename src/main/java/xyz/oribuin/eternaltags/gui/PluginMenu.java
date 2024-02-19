@@ -333,7 +333,7 @@ public abstract class PluginMenu {
     @SuppressWarnings("deprecation")
     public final void searchTags(Player player, BaseGui gui) {
         LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
-        gui.close(player);
+        this.close(gui, player);
 
         locale.sendMessage(player, "command-search-start");
         EternalTags.getEventWaiter().waitForEvent(AsyncPlayerChatEvent.class,
@@ -363,6 +363,22 @@ public abstract class PluginMenu {
         locale.sendMessage(player, "command-clear-cleared");
     }
 
+    /**
+     * Close the gui with folia support to prevent UnsupportedOperationException
+     *
+     * @param gui    The gui to close
+     * @param player The player to close the gui for
+     */
+    public void close(BaseGui gui, Player player) {
+        if (TagsUtils.isFolia()) {
+            // Recreate the close function since the original one uses BukkitScheduler
+            this.sync(player::closeInventory);
+            return;
+        }
+
+        gui.close(player);
+    }
+
     public final void async(Runnable runnable) {
         if (TagsUtils.isFolia()) {
             Bukkit.getAsyncScheduler().runNow(this.rosePlugin, scheduledTask -> runnable.run());
@@ -374,7 +390,7 @@ public abstract class PluginMenu {
 
     public final void sync(Runnable runnable) {
         if (TagsUtils.isFolia()) {
-            Bukkit.getAsyncScheduler().runNow(this.rosePlugin, scheduledTask -> runnable.run());
+            Bukkit.getGlobalRegionScheduler().execute(this.rosePlugin, runnable);
             return;
         }
 

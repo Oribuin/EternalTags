@@ -389,7 +389,7 @@ public class DataManager extends AbstractDataManager {
 
     private void async(Runnable runnable) {
         if (TagsUtils.isFolia()) {
-            Bukkit.getAsyncScheduler().rfunNow(this.rosePlugin, scheduledTask -> runnable.run());
+            Bukkit.getAsyncScheduler().runNow(this.rosePlugin, scheduledTask -> runnable.run());
             return;
         }
 

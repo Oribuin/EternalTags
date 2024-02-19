@@ -173,7 +173,7 @@ public class FavouritesGUI extends PluginMenu {
                     }
 
                     this.setTag(player, tag);
-                    gui.close(player);
+                    this.close(gui, player);
                     return;
                 }
 
@@ -261,7 +261,7 @@ public class FavouritesGUI extends PluginMenu {
     private void clearFavourites(Player player, BaseGui gui) {
         this.manager.clearFavourites(player.getUniqueId());
         this.locale.sendMessage(player, "command-favorite-cleared");
-        gui.close(player);
+        this.close(gui, player);
     }
 
     @Override

@@ -119,7 +119,7 @@ public class TagsGUI extends PluginMenu {
                 })
                 .place(gui);
 
-        gui.open(player);
+        this.sync(() -> gui.open(player));
 
         Runnable task = () -> {
             this.addTags(gui, player, filter);
@@ -205,7 +205,7 @@ public class TagsGUI extends PluginMenu {
                     }
 
                     this.setTag(player, tag);
-                    gui.close(player);
+                    this.close(gui, player);
                     return;
                 }
 
