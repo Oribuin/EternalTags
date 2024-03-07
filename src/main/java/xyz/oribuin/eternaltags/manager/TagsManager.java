@@ -441,34 +441,30 @@ public class TagsManager extends Manager {
      */
     @Nullable
     public Tag getUserTag(@NotNull Player player) {
-        DataManager dataManager = this.rosePlugin.getManager(DataManager.class);
-        TagUser user = dataManager.getCachedUsers().computeIfAbsent(player.getUniqueId(), k -> new TagUser(player));
+        DataManager data = this.rosePlugin.getManager(DataManager.class);
+        TagUser user = data.getCachedUsers().getOrDefault(player.getUniqueId(), new TagUser(player.getUniqueId()));
         Tag tag = this.getTagFromId(user.getActiveTag());
 
-        // Check if the player is using a default tag.
-        if (user.isUsingDefaultTag() && this.usingDefaultTags) {
+        // Update the default tag for the user if they don't have one equipped
+        if (tag == null && this.usingDefaultTags) {
+            // Check if the player is using a default tag.
             tag = this.getDefaultTag(player);
+
+            if (tag != null) {
+                user.setActiveTag(tag.getId());
+                user.setUsingDefaultTag(true);
+                data.getCachedUsers().put(player.getUniqueId(), user);
+            }
         }
 
         // Remove the tag if the player doesn't have permission to use it.
-        if (Setting.REMOVE_TAGS.getBoolean() && tag != null && !this.canUseTag(player, tag)) {
-            dataManager.removeUser(player.getUniqueId());
-            user.setActiveTag(null); // Remove the tag from the user.
-            user.setUsingDefaultTag(false); // Remove the default tag flag.
-            tag = null; // Set the tag to null.
+        if (Setting.REMOVE_TAGS.getBoolean() && tag != null && !this.canUseTag(player, tag) && !user.isUsingDefaultTag()) {
+            data.removeUser(player.getUniqueId());
+            user.setActiveTag(null);
+            user.setUsingDefaultTag(false);
+            tag = null;
         }
 
-        // Use default tag if no active tag found.
-        if (tag == null && this.usingDefaultTags) {
-            tag = this.getDefaultTag(player);
-            if (tag == null)
-                return null;
-
-            user.setActiveTag(tag.getId());
-            user.setUsingDefaultTag(true);
-        }
-
-        dataManager.getCachedUsers().put(player.getUniqueId(), user);
         return tag;
     }
 
