@@ -48,6 +48,7 @@ public class Expansion extends PlaceholderExpansion {
                     case "has" -> (offlineUser.getPlayer() == null ? "false" : this.manager.canUseTag(offlineUser.getPlayer(), tag) ? "true" : "false");
                     case "has-unlocked" -> (offlineUser.getPlayer() == null ? "false" : this.manager.canUseTag(offlineUser.getPlayer(), tag) ? Setting.TAG_UNLOCKED_FORMAT.getString() : Setting.TAG_LOCKED_FORMAT.getString());
                     case "active" -> String.valueOf(this.manager.getOfflineUserTag(offlineUser) == tag);
+                    case "description" -> TagsUtils.formatList(tag.getDescription(), Setting.DESCRIPTION_DELIMITER.getString());
                     default -> "Unknown Placeholder";
                 };
             }
