@@ -1,9 +1,7 @@
 package xyz.oribuin.eternaltags.command.command;
 
 import dev.rosewood.rosegarden.RosePlugin;
-import dev.rosewood.rosegarden.command.framework.CommandContext;
-import dev.rosewood.rosegarden.command.framework.RoseCommand;
-import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
+import dev.rosewood.rosegarden.command.framework.*;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import org.bukkit.Bukkit;
@@ -13,10 +11,10 @@ import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 
-public class RandomCommand extends RoseCommand {
+public class RandomCommand extends BaseRoseCommand {
 
-    public RandomCommand(RosePlugin rosePlugin, RoseCommandWrapper parent) {
-        super(rosePlugin, parent);
+    public RandomCommand(RosePlugin rosePlugin) {
+        super(rosePlugin);
     }
 
     @RoseExecutable
@@ -40,25 +38,13 @@ public class RandomCommand extends RoseCommand {
         locale.sendMessage(sender, "command-set-changed", StringPlaceholders.of("tag", manager.getDisplayTag(randomTag, sender)));
     }
 
-
     @Override
-    protected String getDefaultName() {
-        return "random";
-    }
-
-    @Override
-    public String getDescriptionKey() {
-        return "command-random-description";
-    }
-
-    @Override
-    public String getRequiredPermission() {
-        return "eternaltags.random";
-    }
-
-    @Override
-    public boolean isPlayerOnly() {
-        return true;
+    protected CommandInfo createCommandInfo() {
+        return CommandInfo.builder("random")
+                .permission("eternaltags.random")
+                .descriptionKey("command-random-description")
+                .playerOnly(true)
+                .build();
     }
 
 }

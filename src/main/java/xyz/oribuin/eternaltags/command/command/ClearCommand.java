@@ -1,10 +1,8 @@
 package xyz.oribuin.eternaltags.command.command;
 
 import dev.rosewood.rosegarden.RosePlugin;
-import dev.rosewood.rosegarden.command.framework.CommandContext;
-import dev.rosewood.rosegarden.command.framework.RoseCommand;
-import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
-import dev.rosewood.rosegarden.command.framework.annotation.Optional;
+import dev.rosewood.rosegarden.command.argument.ArgumentHandlers;
+import dev.rosewood.rosegarden.command.framework.*;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import org.bukkit.Bukkit;
@@ -15,14 +13,14 @@ import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 
-public class ClearCommand extends RoseCommand {
+public class ClearCommand extends BaseRoseCommand {
 
-    public ClearCommand(RosePlugin rosePlugin, RoseCommandWrapper parent) {
-        super(rosePlugin, parent);
+    public ClearCommand(RosePlugin rosePlugin) {
+        super(rosePlugin);
     }
 
     @RoseExecutable
-    public void execute(CommandContext context, @Optional Player player, @Optional Boolean silent) {
+    public void execute(CommandContext context, Player player, Boolean silent) {
         final LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
         final TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
         CommandSender sender = context.getSender();
@@ -64,20 +62,19 @@ public class ClearCommand extends RoseCommand {
         locale.sendMessage(sender, "command-clear-cleared");
     }
 
-
     @Override
-    protected String getDefaultName() {
-        return "clear";
+    protected CommandInfo createCommandInfo() {
+        return CommandInfo.builder("clear")
+                .permission("eternaltags.clear")
+                .descriptionKey("command-clear-description")
+                .build();
     }
 
     @Override
-    public String getDescriptionKey() {
-        return "command-clear-description";
+    protected ArgumentsDefinition createArgumentsDefinition() {
+        return ArgumentsDefinition.builder()
+                .optional("player", ArgumentHandlers.PLAYER)
+                .optional("silent", ArgumentHandlers.BOOLEAN)
+                .build();
     }
-
-    @Override
-    public String getRequiredPermission() {
-        return "eternaltags.clear";
-    }
-
 }

@@ -1,30 +1,31 @@
 package xyz.oribuin.eternaltags.command.command.edit;
 
 import dev.rosewood.rosegarden.RosePlugin;
+import dev.rosewood.rosegarden.command.argument.ArgumentHandlers;
+import dev.rosewood.rosegarden.command.framework.ArgumentsDefinition;
+import dev.rosewood.rosegarden.command.framework.BaseRoseCommand;
 import dev.rosewood.rosegarden.command.framework.CommandContext;
-import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
-import dev.rosewood.rosegarden.command.framework.RoseSubCommand;
-import dev.rosewood.rosegarden.command.framework.annotation.Inject;
+import dev.rosewood.rosegarden.command.framework.CommandInfo;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
-import dev.rosewood.rosegarden.command.framework.types.GreedyString;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import org.bukkit.entity.Player;
+import xyz.oribuin.eternaltags.command.argument.TagsArgumentHandler;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 
-public class EditPermissionCommand extends RoseSubCommand {
+public class EditPermissionCommand extends BaseRoseCommand {
 
-    public EditPermissionCommand(RosePlugin rosePlugin, RoseCommandWrapper parent) {
-        super(rosePlugin, parent);
+    public EditPermissionCommand(RosePlugin rosePlugin) {
+        super(rosePlugin);
     }
 
     @RoseExecutable
-    public void execute(@Inject CommandContext context, Tag tag, GreedyString permission) {
+    public void execute(CommandContext context, Tag tag, String permission) {
         TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
         LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
 
-        tag.setPermission(permission.get());
+        tag.setPermission(permission);
         manager.saveTag(tag);
         manager.updateActiveTag(tag);
 
@@ -33,20 +34,24 @@ public class EditPermissionCommand extends RoseSubCommand {
                 .add("option", "permission")
                 .add("id", tag.getId())
                 .add("name", tag.getName())
-                .add("value", permission.get())
+                .add("value", permission)
                 .build();
 
         locale.sendMessage(context.getSender(), "command-edit-edited", placeholders);
     }
 
     @Override
-    protected String getDefaultName() {
-        return "permission";
+    protected CommandInfo createCommandInfo() {
+        return CommandInfo.builder("permission")
+                .playerOnly(false)
+                .build();
     }
 
     @Override
-    public boolean isPlayerOnly() {
-        return false;
+    protected ArgumentsDefinition createArgumentsDefinition() {
+        return ArgumentsDefinition.builder()
+                .required("tag", new TagsArgumentHandler(this.rosePlugin))
+                .required("permission", ArgumentHandlers.STRING)
+                .build();
     }
-
 }

@@ -1,12 +1,12 @@
 package xyz.oribuin.eternaltags.manager;
 
 import dev.rosewood.rosegarden.RosePlugin;
-import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
+import dev.rosewood.rosegarden.command.framework.BaseRoseCommand;
 import dev.rosewood.rosegarden.manager.AbstractCommandManager;
-import xyz.oribuin.eternaltags.command.TagsCommandWrapper;
+import xyz.oribuin.eternaltags.command.RootTagsCommand;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 public class CommandManager extends AbstractCommandManager {
 
@@ -15,12 +15,8 @@ public class CommandManager extends AbstractCommandManager {
     }
 
     @Override
-    public List<Class<? extends RoseCommandWrapper>> getRootCommands() {
-        return Collections.singletonList(TagsCommandWrapper.class);
+    public List<Function<RosePlugin, BaseRoseCommand>> getRootCommands() {
+        return List.of(RootTagsCommand::new);
     }
 
-    @Override
-    public List<String> getArgumentHandlerPackages() {
-        return Collections.singletonList("xyz.oribuin.eternaltags.command.argument");
-    }
 }

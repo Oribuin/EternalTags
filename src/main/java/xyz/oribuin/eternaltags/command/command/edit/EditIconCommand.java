@@ -1,27 +1,28 @@
 package xyz.oribuin.eternaltags.command.command.edit;
 
 import dev.rosewood.rosegarden.RosePlugin;
+import dev.rosewood.rosegarden.command.argument.ArgumentHandlers;
+import dev.rosewood.rosegarden.command.framework.ArgumentsDefinition;
+import dev.rosewood.rosegarden.command.framework.BaseRoseCommand;
 import dev.rosewood.rosegarden.command.framework.CommandContext;
-import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
-import dev.rosewood.rosegarden.command.framework.RoseSubCommand;
-import dev.rosewood.rosegarden.command.framework.annotation.Inject;
-import dev.rosewood.rosegarden.command.framework.annotation.Optional;
+import dev.rosewood.rosegarden.command.framework.CommandInfo;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import xyz.oribuin.eternaltags.command.argument.TagsArgumentHandler;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 
-public class EditIconCommand extends RoseSubCommand {
+public class EditIconCommand extends BaseRoseCommand {
 
-    public EditIconCommand(RosePlugin rosePlugin, RoseCommandWrapper parent) {
-        super(rosePlugin, parent);
+    public EditIconCommand(RosePlugin rosePlugin) {
+        super(rosePlugin);
     }
 
     @RoseExecutable
-    public void execute(@Inject CommandContext context, Tag tag, @Optional Boolean remove) {
+    public void execute(CommandContext context, Tag tag, Boolean remove) {
         TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
         LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
 
@@ -57,13 +58,17 @@ public class EditIconCommand extends RoseSubCommand {
     }
 
     @Override
-    protected String getDefaultName() {
-        return "icon";
+    protected CommandInfo createCommandInfo() {
+        return CommandInfo.builder("icon")
+                .playerOnly(true)
+                .build();
     }
 
     @Override
-    public boolean isPlayerOnly() {
-        return true;
+    protected ArgumentsDefinition createArgumentsDefinition() {
+        return ArgumentsDefinition.builder()
+                .required("tag", new TagsArgumentHandler(this.rosePlugin))
+                .optional("remove", ArgumentHandlers.BOOLEAN)
+                .build();
     }
-
 }
