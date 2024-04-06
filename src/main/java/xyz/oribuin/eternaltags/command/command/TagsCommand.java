@@ -1,9 +1,9 @@
 package xyz.oribuin.eternaltags.command.command;
 
 import dev.rosewood.rosegarden.RosePlugin;
-import dev.rosewood.rosegarden.command.command.BaseCommand;
+import dev.rosewood.rosegarden.command.framework.BaseRoseCommand;
 import dev.rosewood.rosegarden.command.framework.CommandContext;
-import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
+import dev.rosewood.rosegarden.command.framework.CommandInfo;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import org.bukkit.entity.Player;
 import xyz.oribuin.eternaltags.gui.MenuProvider;
@@ -12,10 +12,10 @@ import xyz.oribuin.eternaltags.gui.menu.TagsGUI;
 import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 
-public class TagsCommand extends BaseCommand {
+public class TagsCommand extends BaseRoseCommand {
 
-    public TagsCommand(RosePlugin rosePlugin, RoseCommandWrapper parent) {
-        super(rosePlugin, parent);
+    public TagsCommand(RosePlugin rosePlugin) {
+        super(rosePlugin);
     }
 
     @RoseExecutable
@@ -35,9 +35,10 @@ public class TagsCommand extends BaseCommand {
     }
 
     @Override
-    public String getRequiredPermission() {
-        return "eternaltags.use";
+    protected CommandInfo createCommandInfo() {
+        return CommandInfo.builder(null)
+                .permission("eternaltags.use")
+                .build();
     }
-
 
 }

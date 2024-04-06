@@ -1,2 +1,8 @@
+sourceControl {
+    gitRepository(new URI("https://github.com/HarvelsX/RoseGarden.git")) {
+        producesModule("dev.rosewood:RoseGarden")
+    }
+}
+
 rootProject.name = 'EternalTags'
 

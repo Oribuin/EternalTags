@@ -1,9 +1,10 @@
 package xyz.oribuin.eternaltags.command.argument;
 
 import dev.rosewood.rosegarden.RosePlugin;
-import dev.rosewood.rosegarden.command.framework.ArgumentParser;
-import dev.rosewood.rosegarden.command.framework.RoseCommandArgumentHandler;
-import dev.rosewood.rosegarden.command.framework.RoseCommandArgumentInfo;
+import dev.rosewood.rosegarden.command.framework.Argument;
+import dev.rosewood.rosegarden.command.framework.ArgumentHandler;
+import dev.rosewood.rosegarden.command.framework.CommandContext;
+import dev.rosewood.rosegarden.command.framework.InputIterator;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Category;
@@ -11,15 +12,18 @@ import xyz.oribuin.eternaltags.obj.Category;
 import java.util.List;
 import java.util.Map;
 
-public class CategoryArgumentHandler extends RoseCommandArgumentHandler<Category> {
+public class CategoryArgumentHandler extends ArgumentHandler<Category> {
+
+    private final RosePlugin rosePlugin;
 
     public CategoryArgumentHandler(RosePlugin rosePlugin) {
-        super(rosePlugin, Category.class);
+        super(Category.class);
+        this.rosePlugin = rosePlugin;
     }
 
     @Override
-    protected Category handleInternal(RoseCommandArgumentInfo argumentInfo, ArgumentParser argumentParser) throws HandledArgumentException {
-        String input = argumentParser.next();
+    public Category handle(CommandContext context, Argument argument, InputIterator inputIterator) throws HandledArgumentException {
+        String input = inputIterator.next();
         Category value = this.rosePlugin.getManager(TagsManager.class).getCategory(input.toLowerCase());
         if (value == null || value.isGlobal())
             throw new HandledArgumentException("argument-handler-category", StringPlaceholders.of("input", input));
@@ -28,14 +32,11 @@ public class CategoryArgumentHandler extends RoseCommandArgumentHandler<Category
     }
 
     @Override
-    protected List<String> suggestInternal(RoseCommandArgumentInfo argumentInfo, ArgumentParser argumentParser) {
-        argumentParser.next();
-
+    public List<String> suggest(CommandContext context, Argument argument, String[] args) {
         return this.rosePlugin.getManager(TagsManager.class).getCachedCategories()
                 .entrySet()
                 .stream().filter(entry -> !entry.getValue().isGlobal())
                 .map(Map.Entry::getKey)
                 .toList();
     }
-
 }

@@ -1,30 +1,31 @@
 package xyz.oribuin.eternaltags.command.command.edit;
 
 import dev.rosewood.rosegarden.RosePlugin;
+import dev.rosewood.rosegarden.command.argument.ArgumentHandlers;
+import dev.rosewood.rosegarden.command.framework.ArgumentsDefinition;
+import dev.rosewood.rosegarden.command.framework.BaseRoseCommand;
 import dev.rosewood.rosegarden.command.framework.CommandContext;
-import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
-import dev.rosewood.rosegarden.command.framework.RoseSubCommand;
-import dev.rosewood.rosegarden.command.framework.annotation.Inject;
+import dev.rosewood.rosegarden.command.framework.CommandInfo;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
-import dev.rosewood.rosegarden.command.framework.types.GreedyString;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import org.bukkit.entity.Player;
+import xyz.oribuin.eternaltags.command.argument.TagsArgumentHandler;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 
-public class EditNameCommand extends RoseSubCommand {
+public class EditNameCommand extends BaseRoseCommand {
 
-    public EditNameCommand(RosePlugin rosePlugin, RoseCommandWrapper parent) {
-        super(rosePlugin, parent);
+    public EditNameCommand(RosePlugin rosePlugin) {
+        super(rosePlugin);
     }
 
     @RoseExecutable
-    public void execute(@Inject CommandContext context, Tag tag, GreedyString name) {
+    public void execute(CommandContext context, Tag tag, String name) {
         TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
         LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
 
-        tag.setName(name.get());
+        tag.setName(name);
         manager.saveTag(tag);
         manager.updateActiveTag(tag);
 
@@ -33,20 +34,24 @@ public class EditNameCommand extends RoseSubCommand {
                 .add("option", "name")
                 .add("id", tag.getId())
                 .add("name", tag.getName())
-                .add("value", name.get())
+                .add("value", name)
                 .build();
 
         locale.sendMessage(context.getSender(), "command-edit-edited", placeholders);
     }
 
     @Override
-    protected String getDefaultName() {
-        return "name";
+    protected CommandInfo createCommandInfo() {
+        return CommandInfo.builder("name")
+                .playerOnly(false)
+                .build();
     }
 
     @Override
-    public boolean isPlayerOnly() {
-        return false;
+    protected ArgumentsDefinition createArgumentsDefinition() {
+        return ArgumentsDefinition.builder()
+                .required("tag", new TagsArgumentHandler(this.rosePlugin))
+                .required("name", ArgumentHandlers.GREEDY_STRING)
+                .build();
     }
-
 }
