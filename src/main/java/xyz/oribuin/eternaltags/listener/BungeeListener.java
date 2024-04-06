@@ -190,7 +190,7 @@ public class BungeeListener implements PluginMessageListener {
         try {
             ByteArrayOutputStream msgBytes = new ByteArrayOutputStream();
             DataOutputStream msgOut = new DataOutputStream(msgBytes);
-            msgOut.writeUTF(message);
+            if (message != null) msgOut.writeUTF(message);
 
             stream.writeShort(msgBytes.toByteArray().length);
             stream.write(msgBytes.toByteArray());
