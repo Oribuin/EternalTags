@@ -54,7 +54,7 @@ dependencies {
     compileOnly 'com.mojang:authlib:1.5.21'
 
     // Frameworks & APIs
-    api "dev.rosewood:rosegarden:1.3.0.22-DEV-SNAPSHOT"
+    api "com.github.HarvelsX:RoseGarden:master-SNAPSHOT"
     api('dev.triumphteam:triumph-gui:3.1.4') {  // https://mf.mattstudios.me/triumph-gui/introduction
         exclude group: "com.google.code.gson", module: "gson" // Remove GSON, Already included in spigot api
         exclude group: "net.kyori", module: "*" // Remove kyori, we're using plugin.yml libraries
