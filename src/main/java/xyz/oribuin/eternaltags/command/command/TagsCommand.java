@@ -36,7 +36,7 @@ public class TagsCommand extends BaseRoseCommand {
 
     @Override
     protected CommandInfo createCommandInfo() {
-        return CommandInfo.builder(null)
+        return CommandInfo.builder("")
                 .permission("eternaltags.use")
                 .build();
     }
