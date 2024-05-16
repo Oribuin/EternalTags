@@ -209,27 +209,32 @@ public class TagsGUI extends PluginMenu {
         this.getTags(player, filter).forEach(tag -> {
 
             GuiAction<InventoryClickEvent> action = event -> {
-                if (!this.manager.canUseTag(player, tag))
-                    return;
-
-                if (tagActions.size() == 0) {
-
-                    if (tagSound != null) {
-                        player.playSound(player.getLocation(), tagSound, 75, 1);
-                    }
-
-                    if (event.isShiftClick()) {
-                        this.toggleFavourite(player, tag);
-                        this.addTags(gui, player, filter);
-                        return;
-                    }
-
-                    this.setTag(player, tag);
+                if (!this.manager.canUseTag(player, tag)) {
+                    this.locale.sendMessage(player, "no-permission");
                     gui.close(player);
                     return;
                 }
 
-                this.runActions(tagActions, event, this.getTagPlaceholders(tag, player));
+                if (!tagActions.isEmpty()) {
+                    this.runActions(tagActions, event, this.getTagPlaceholders(tag, player));
+                    return;
+                }
+
+
+                if (tagSound != null) {
+                    player.playSound(player.getLocation(), tagSound, 75, 1);
+                }
+
+                if (event.isShiftClick()) {
+                    this.toggleFavourite(player, tag);
+                    this.addTags(gui, player, filter);
+                    return;
+                }
+
+                this.setTag(player, tag);
+                gui.close(player);
+                return;
+
             };
 
             // If the tag is already in the cache, use that instead of creating a new one.

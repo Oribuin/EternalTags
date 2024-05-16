@@ -79,6 +79,12 @@ public class Expansion extends PlaceholderExpansion {
             case "tag_description" -> activeTag != null ? TagsUtils.formatList(activeTag.getDescription(), Setting.DESCRIPTION_DELIMITER.getString()) : this.formattedPlaceholder;
             case "tag_order" -> activeTag != null ? String.valueOf(activeTag.getOrder()) : this.formattedPlaceholder;
             case "active" -> String.valueOf(activeTag != null);
+            case "has-unlocked" -> {
+                if (activeTag == null)
+                    yield Setting.TAG_LOCKED_FORMAT.getString();
+
+                yield this.manager.canUseTag(player, activeTag) ? Setting.TAG_UNLOCKED_FORMAT.getString() : Setting.TAG_LOCKED_FORMAT.getString();
+            }
 
             // These are the tags that return a number.
             case "joined" -> this.joinTags(this.manager.getPlayerTags(offlineUser.getPlayer()));
