@@ -126,7 +126,7 @@ public class ItemBuilder {
      * @return Item.Builder
      */
     public ItemBuilder flags(ItemFlag[] flags) {
-        this.meta.removeItemFlags(ItemFlag.values());
+        this.meta.addItemFlags(ItemFlag.values());
         return this;
     }
 
