@@ -1,6 +1,5 @@
 package xyz.oribuin.eternaltags.util;
 
-
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -24,19 +23,35 @@ import java.util.Map;
 public class ItemBuilder {
 
     private final ItemStack item;
-    private ItemMeta meta;
+    private final ItemMeta meta;
 
+    /**
+     * Create a new Item Builder with a Material.
+     *
+     * @param material The Material.
+     */
     public ItemBuilder(Material material) {
         this.item = new ItemStack(material);
         this.meta = this.item.getItemMeta();
     }
 
+    /**
+     * Create a new Item Builder with an existing ItemStack.
+     *
+     * @param item The ItemStack.
+     */
     public ItemBuilder(ItemStack item) {
         this.item = item.clone();
         this.meta = this.item.getItemMeta();
     }
 
-    public ItemBuilder setMaterial(Material material) {
+    /**
+     * Set the ItemStack's Material.
+     *
+     * @param material The Material.
+     * @return Item.Builder.
+     */
+    public ItemBuilder material(Material material) {
         this.item.setType(material);
         return this;
     }
