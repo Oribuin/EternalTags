@@ -1,12 +1,11 @@
 package xyz.oribuin.eternaltags.command.command;
 
 import dev.rosewood.rosegarden.RosePlugin;
-import dev.rosewood.rosegarden.command.framework.CommandContext;
-import dev.rosewood.rosegarden.command.framework.RoseCommand;
-import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
+import dev.rosewood.rosegarden.command.framework.*;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import org.bukkit.command.CommandSender;
+import xyz.oribuin.eternaltags.command.argument.TagsArgumentHandlers;
 import xyz.oribuin.eternaltags.conversion.ConversionPlugin;
 import xyz.oribuin.eternaltags.conversion.ValidPlugin;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
@@ -15,10 +14,10 @@ import xyz.oribuin.eternaltags.util.TagsUtils;
 
 import java.util.stream.Collectors;
 
-public class ConvertCommand extends RoseCommand {
+public class ConvertCommand extends BaseRoseCommand {
 
-    public ConvertCommand(RosePlugin rosePlugin, RoseCommandWrapper parent) {
-        super(rosePlugin, parent);
+    public ConvertCommand(RosePlugin rosePlugin) {
+        super(rosePlugin);
     }
 
     @RoseExecutable
@@ -40,25 +39,19 @@ public class ConvertCommand extends RoseCommand {
         locale.sendMessage(sender, "command-convert-converted", StringPlaceholders.of("total", total));
     }
 
-
     @Override
-    protected String getDefaultName() {
-        return "convert";
+    protected CommandInfo createCommandInfo() {
+        return CommandInfo.builder("convert")
+                .descriptionKey("command-convert-description")
+                .permission("eternaltags.convert")
+                .playerOnly(false)
+                .build();
     }
 
     @Override
-    public String getDescriptionKey() {
-        return "command-convert-description";
+    protected ArgumentsDefinition createArgumentsDefinition() {
+        return ArgumentsDefinition.builder()
+                .required("plugin", TagsArgumentHandlers.CONVERSION_PLUGIN)
+                .build();
     }
-
-    @Override
-    public String getRequiredPermission() {
-        return "eternaltags.convert";
-    }
-
-    @Override
-    public boolean isPlayerOnly() {
-        return false;
-    }
-
 }

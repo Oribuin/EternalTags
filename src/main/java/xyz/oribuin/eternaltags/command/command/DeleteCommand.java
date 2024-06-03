@@ -1,22 +1,21 @@
 package xyz.oribuin.eternaltags.command.command;
 
 import dev.rosewood.rosegarden.RosePlugin;
-import dev.rosewood.rosegarden.command.framework.CommandContext;
-import dev.rosewood.rosegarden.command.framework.RoseCommand;
-import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
+import dev.rosewood.rosegarden.command.framework.*;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import xyz.oribuin.eternaltags.command.argument.TagsArgumentHandlers;
 import xyz.oribuin.eternaltags.event.TagDeleteEvent;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 
-public class DeleteCommand extends RoseCommand {
+public class DeleteCommand extends BaseRoseCommand {
 
-    public DeleteCommand(RosePlugin rosePlugin, RoseCommandWrapper parent) {
-        super(rosePlugin, parent);
+    public DeleteCommand(RosePlugin rosePlugin) {
+        super(rosePlugin);
     }
 
     @RoseExecutable
@@ -39,20 +38,18 @@ public class DeleteCommand extends RoseCommand {
         locale.sendMessage(sender, "command-delete-deleted", StringPlaceholders.of("tag", manager.getDisplayTag(tag, null)));
     }
 
-
     @Override
-    protected String getDefaultName() {
-        return "delete";
+    protected CommandInfo createCommandInfo() {
+        return CommandInfo.builder("delete")
+                .descriptionKey("command-delete-description")
+                .permission("eternaltags.delete")
+                .build();
     }
 
     @Override
-    public String getDescriptionKey() {
-        return "command-delete-description";
+    protected ArgumentsDefinition createArgumentsDefinition() {
+        return ArgumentsDefinition.builder()
+                .required("tag", TagsArgumentHandlers.TAG)
+                .build();
     }
-
-    @Override
-    public String getRequiredPermission() {
-        return "eternaltags.delete";
-    }
-
 }

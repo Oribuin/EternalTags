@@ -1,30 +1,31 @@
 package xyz.oribuin.eternaltags.command.command.edit;
 
 import dev.rosewood.rosegarden.RosePlugin;
+import dev.rosewood.rosegarden.command.argument.ArgumentHandlers;
+import dev.rosewood.rosegarden.command.framework.ArgumentsDefinition;
+import dev.rosewood.rosegarden.command.framework.BaseRoseCommand;
 import dev.rosewood.rosegarden.command.framework.CommandContext;
-import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
-import dev.rosewood.rosegarden.command.framework.RoseSubCommand;
-import dev.rosewood.rosegarden.command.framework.annotation.Inject;
+import dev.rosewood.rosegarden.command.framework.CommandInfo;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
-import dev.rosewood.rosegarden.command.framework.types.GreedyString;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import org.bukkit.entity.Player;
+import xyz.oribuin.eternaltags.command.argument.TagsArgumentHandlers;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 
-public class EditTagCommand extends RoseSubCommand {
+public class EditTagCommand extends BaseRoseCommand {
 
-    public EditTagCommand(RosePlugin rosePlugin, RoseCommandWrapper parent) {
-        super(rosePlugin, parent);
+    public EditTagCommand(RosePlugin rosePlugin) {
+        super(rosePlugin);
     }
 
     @RoseExecutable
-    public void execute(@Inject CommandContext context, Tag tagId, GreedyString newTag) {
+    public void execute(CommandContext context, Tag tagId, String newTag) {
         TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
         LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
 
-        tagId.setTag(newTag.get());
+        tagId.setTag(newTag);
         manager.saveTag(tagId);
         manager.updateActiveTag(tagId);
 
@@ -33,20 +34,25 @@ public class EditTagCommand extends RoseSubCommand {
                 .add("option", "tag")
                 .add("id", tagId.getId())
                 .add("name", tagId.getName())
-                .add("value", newTag.get())
+                .add("value", newTag)
                 .build();
 
         locale.sendMessage(context.getSender(), "command-edit-edited", placeholders);
     }
 
     @Override
-    protected String getDefaultName() {
-        return "tag";
+    protected CommandInfo createCommandInfo() {
+        return CommandInfo.builder("tag")
+                .playerOnly(false)
+                .build();
     }
+
 
     @Override
-    public boolean isPlayerOnly() {
-        return false;
+    protected ArgumentsDefinition createArgumentsDefinition() {
+        return ArgumentsDefinition.builder()
+                .required("tag", TagsArgumentHandlers.TAG)
+                .required("newTag", ArgumentHandlers.GREEDY_STRING)
+                .build();
     }
-
 }

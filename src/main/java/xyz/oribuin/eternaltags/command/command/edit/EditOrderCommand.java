@@ -1,25 +1,34 @@
 package xyz.oribuin.eternaltags.command.command.edit;
 
 import dev.rosewood.rosegarden.RosePlugin;
+import dev.rosewood.rosegarden.command.argument.ArgumentHandlers;
+import dev.rosewood.rosegarden.command.framework.ArgumentsDefinition;
+import dev.rosewood.rosegarden.command.framework.BaseRoseCommand;
 import dev.rosewood.rosegarden.command.framework.CommandContext;
-import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
-import dev.rosewood.rosegarden.command.framework.RoseSubCommand;
-import dev.rosewood.rosegarden.command.framework.annotation.Inject;
+import dev.rosewood.rosegarden.command.framework.CommandInfo;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import org.bukkit.entity.Player;
+import xyz.oribuin.eternaltags.command.argument.TagsArgumentHandlers;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 
-public class EditOrderCommand extends RoseSubCommand {
+public class EditOrderCommand extends BaseRoseCommand {
 
-    public EditOrderCommand(RosePlugin rosePlugin, RoseCommandWrapper parent) {
-        super(rosePlugin, parent);
+    public EditOrderCommand(RosePlugin rosePlugin) {
+        super(rosePlugin);
+    }
+
+    @Override
+    protected CommandInfo createCommandInfo() {
+        return CommandInfo.builder("order")
+                .playerOnly(false)
+                .build();
     }
 
     @RoseExecutable
-    public void execute(@Inject CommandContext context, Tag tag, int order) {
+    public void execute(CommandContext context, Tag tag, int order) {
         TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
         LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
 
@@ -39,13 +48,10 @@ public class EditOrderCommand extends RoseSubCommand {
     }
 
     @Override
-    protected String getDefaultName() {
-        return "order";
+    protected ArgumentsDefinition createArgumentsDefinition() {
+        return ArgumentsDefinition.builder()
+                .required("tag", TagsArgumentHandlers.TAG)
+                .required("order", ArgumentHandlers.INTEGER)
+                .build();
     }
-
-    @Override
-    public boolean isPlayerOnly() {
-        return false;
-    }
-
 }
