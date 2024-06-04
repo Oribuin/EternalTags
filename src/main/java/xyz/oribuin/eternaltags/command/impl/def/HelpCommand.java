@@ -6,8 +6,8 @@ import dev.rosewood.rosegarden.command.framework.CommandInfo;
 
 public class HelpCommand extends dev.rosewood.rosegarden.command.HelpCommand {
 
-    public HelpCommand(RosePlugin rosePlugin, BaseRoseCommand parent) {
-        super(rosePlugin, parent);
+    public HelpCommand(RosePlugin rosePlugin, BaseRoseCommand parent, CommandInfo commandInfo) {
+        super(rosePlugin, parent, commandInfo);
     }
 
     @Override
