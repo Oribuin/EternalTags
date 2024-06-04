@@ -47,7 +47,6 @@ public class TagsArgumentHandler extends ArgumentHandler<Tag> {
         if (tags.isEmpty())
             return Collections.singletonList("<no tags>");
 
-
         return tags;
     }
 

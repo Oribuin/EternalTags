@@ -21,11 +21,9 @@ public class EditPermissionCommand extends BaseRoseCommand {
     }
 
     @RoseExecutable
-    public void execute(CommandContext context) {
+    public void execute(CommandContext context, Tag tag, String permission) {
         TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
         LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
-        Tag tag = context.get("tag");
-        String permission = context.get("permission");
 
         tag.setPermission(permission);
         manager.saveTag(tag);

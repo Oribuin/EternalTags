@@ -20,12 +20,10 @@ public class ClearCommand extends BaseRoseCommand {
     }
 
     @RoseExecutable
-    public void execute(CommandContext context) {
+    public void execute(CommandContext context, Player target, String silent) {
         LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
         TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
         CommandSender sender = context.getSender();
-        Player target = context.get("player");
-        String silent = context.get("silent");
 
         // Check if the player arg was provided.
         if (target != null) {
@@ -63,7 +61,7 @@ public class ClearCommand extends BaseRoseCommand {
     @Override
     protected ArgumentsDefinition createArgumentsDefinition() {
         return ArgumentsDefinition.builder()
-                .optional("player", ArgumentHandlers.PLAYER)
+                .optional("target", ArgumentHandlers.PLAYER)
                 .optional("silent", ArgumentHandlers.BOOLEAN)
                 .build();
     }

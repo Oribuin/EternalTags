@@ -21,8 +21,8 @@ public class SearchCommand extends BaseRoseCommand {
     }
 
     @RoseExecutable
-    public void execute(CommandContext context) {
-        MenuProvider.get(TagsGUI.class).open((Player) context.getSender(), this.containsKeyword(context.get("keyword")));
+    public void execute(CommandContext context, String keyword) {
+        MenuProvider.get(TagsGUI.class).open((Player) context.getSender(), this.containsKeyword(keyword));
     }
 
     /**

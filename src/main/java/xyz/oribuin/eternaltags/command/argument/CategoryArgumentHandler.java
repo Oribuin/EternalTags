@@ -30,8 +30,7 @@ public class CategoryArgumentHandler extends ArgumentHandler<Category> {
 
     @Override
     public List<String> suggest(CommandContext context, Argument argument, String[] args) {
-        return EternalTags.getInstance().getManager(CategoryManager.class)
-                .getCategories()
+        return EternalTags.getInstance().getManager(CategoryManager.class).getCategories()
                 .stream()
                 .filter(category -> category.getType() != CategoryType.GLOBAL)
                 .map(Category::getId)

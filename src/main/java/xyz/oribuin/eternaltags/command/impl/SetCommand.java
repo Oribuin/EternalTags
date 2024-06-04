@@ -22,13 +22,10 @@ public class SetCommand extends BaseRoseCommand {
     }
 
     @RoseExecutable
-    public void execute(CommandContext context) {
+    public void execute(CommandContext context, Tag tag, Player target, String silent) {
         LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
         TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
         CommandSender sender = context.getSender();
-        Tag tag = context.get("tag");
-        Player player = context.get("player");
-        String silent = context.get("silent");
 
         // may need to check if tag == null?
         if (tag == null) {
@@ -37,19 +34,20 @@ public class SetCommand extends BaseRoseCommand {
         }
 
         // Setting another player's tag
-        if (player != null) {
+        if (target != null) {
             if (!sender.hasPermission("eternaltags.set.other")) {
                 locale.sendMessage(sender, "no-permission");
                 return;
             }
 
-            tag.equip(player);
+            tag.equip(target);
+
             if (silent == null) {
-                locale.sendMessage(player, "command-set-changed", StringPlaceholders.of("tag", manager.getDisplayTag(tag, player)));
+                locale.sendMessage(target, "command-set-changed", StringPlaceholders.of("tag", manager.getDisplayTag(tag, target)));
             }
 
-            locale.sendMessage(sender, "command-set-changed-other", StringPlaceholders.builder("tag", manager.getDisplayTag(tag, player))
-                    .add("player", player.getName())
+            locale.sendMessage(sender, "command-set-changed-other", StringPlaceholders.builder("tag", manager.getDisplayTag(tag, target))
+                    .add("player", target.getName())
                     .build());
 
             return;
@@ -82,7 +80,7 @@ public class SetCommand extends BaseRoseCommand {
     protected ArgumentsDefinition createArgumentsDefinition() {
         return ArgumentsDefinition.builder()
                 .required("tag", new TagsArgumentHandler())
-                .optional("player", ArgumentHandlers.PLAYER)
+                .optional("target", ArgumentHandlers.PLAYER)
                 .optional("silent", ArgumentHandlers.STRING)
                 .build();
     }

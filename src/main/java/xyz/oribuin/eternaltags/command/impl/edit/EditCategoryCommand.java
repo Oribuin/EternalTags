@@ -22,22 +22,20 @@ public class EditCategoryCommand extends BaseRoseCommand {
     }
 
     @RoseExecutable
-    public void execute(CommandContext context) {
+    public void execute(CommandContext context, Tag tag, Category category) {
         TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
         LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
-        Tag tag = context.get("tag");
-        Category newCategory = context.get("category");
 
-        tag.setCategory(newCategory.getId());
+        tag.setCategory(category.getId());
         manager.saveTag(tag);
         manager.updateActiveTag(tag);
 
         StringPlaceholders placeholders = StringPlaceholders.builder()
-                .add("tag", manager.getDisplayTag(tag, context.getSender() instanceof Player ? (Player) context.getSender() : null))
+                .add("tag", manager.getDisplayTag(tag, context.getSender() instanceof Player player ? player : null))
                 .add("option", "category")
                 .add("id", tag.getId())
                 .add("name", tag.getName())
-                .add("value", newCategory.getId())
+                .add("value", category.getId())
                 .build();
 
         locale.sendMessage(context.getSender(), "command-edit-edited", placeholders);

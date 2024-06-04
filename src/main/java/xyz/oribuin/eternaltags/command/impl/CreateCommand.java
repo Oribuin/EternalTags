@@ -22,12 +22,10 @@ public class CreateCommand extends BaseRoseCommand {
     }
 
     @RoseExecutable
-    public void execute(CommandContext context) {
+    public void execute(CommandContext context, String name, String tag) {
         LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
         TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
         CommandSender sender = context.getSender();
-        String name = context.get("name");
-        String tag = context.get("tag");
 
         if (manager.checkTagExists(name)) {
             locale.sendMessage(sender, "command-create-tag-exists");

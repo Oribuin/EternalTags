@@ -22,11 +22,9 @@ public class EditIconCommand extends BaseRoseCommand {
     }
 
     @RoseExecutable
-    public void execute(CommandContext context) {
+    public void execute(CommandContext context, Tag tag, Boolean remove) {
         TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
         LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
-        Tag tag = context.get("tag");
-        Boolean remove = context.get("remove");
 
         Player player = (Player) context.getSender();
         ItemStack item = player.getInventory().getItemInMainHand();

@@ -29,7 +29,10 @@ public class CategoryManager extends Manager {
         this.categoryConfig = CommentedFileConfiguration.loadConfiguration(this.categoryFile);
         this.cachedCategories.clear();
 
-        for (String key : this.categoryConfig.getKeys(false)) {
+        CommentedConfigurationSection section = this.categoryConfig.getConfigurationSection("categories");
+        if (section == null) return;
+
+        for (String key : section.getKeys(false)) {
             this.loadCategory(this.categoryConfig, key);
         }
 

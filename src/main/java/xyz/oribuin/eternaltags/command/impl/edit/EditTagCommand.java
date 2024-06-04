@@ -21,11 +21,9 @@ public class EditTagCommand extends BaseRoseCommand {
     }
 
     @RoseExecutable
-    public void execute(CommandContext context) {
+    public void execute(CommandContext context, Tag tag, String newTag) {
         TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
         LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
-        Tag tag = context.get("tag");
-        String newTag = context.get("newTag");
 
         tag.setTag(newTag);
         manager.saveTag(tag);

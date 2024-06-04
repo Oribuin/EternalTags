@@ -24,10 +24,9 @@ public class ConvertCommand extends BaseRoseCommand {
     }
 
     @RoseExecutable
-    public void execute(CommandContext context) {
+    public void execute(CommandContext context, ConversionPlugin plugin) {
         LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
         PluginConversionManager manager = this.rosePlugin.getManager(PluginConversionManager.class);
-        ConversionPlugin plugin = context.get("plugin");
         CommandSender sender = context.getSender();
 
         // Check if the player arg was provided.

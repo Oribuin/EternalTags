@@ -12,7 +12,6 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-// God this plugin sucks to configure in terms of config readability
 public class AlonsoConversion extends ConversionPlugin {
 
     @Override
@@ -31,12 +30,6 @@ public class AlonsoConversion extends ConversionPlugin {
                 .filter(s -> !manager.checkTagExists(s))
                 .forEach(key -> {
                     Tag tag = new Tag(key, section.getString("Displayname"), section.getString(key + ".Tag"));
-
-                    if (tag.getName() == null)
-                        tag.setName(key);
-
-                    if (tag.getTag() == null)
-                        return;
 
                     if (section.get(key + ".Lore.Unlocked") != null)
                         tag.setDescription(section.getStringList(key + ".Lore.Unlocked"));

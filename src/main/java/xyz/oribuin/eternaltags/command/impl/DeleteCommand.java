@@ -20,11 +20,10 @@ public class DeleteCommand extends BaseRoseCommand {
     }
 
     @RoseExecutable
-    public void execute(CommandContext context) {
+    public void execute(CommandContext context, Tag tag) {
         LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
         TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
         CommandSender sender = context.getSender();
-        Tag tag = context.get("tag");
 
         if (tag == null) {
             locale.sendMessage(sender, "tag-doesnt-exist");

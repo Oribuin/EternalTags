@@ -22,12 +22,10 @@ public class SetAllCommand extends BaseRoseCommand {
     }
 
     @RoseExecutable
-    public void execute(CommandContext context) {
+    public void execute(CommandContext context, Tag tag, String silent) {
         LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
         TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
         CommandSender sender = context.getSender();
-        Tag tag = context.get("tag");
-        String silent = context.get("silent");
         manager.setEveryone(tag);
 
         if (silent == null) {

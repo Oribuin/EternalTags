@@ -24,13 +24,9 @@ public class EditDescriptionCommand extends BaseRoseCommand {
     }
 
     @RoseExecutable
-    public void execute(CommandContext context) {
+    public void execute(CommandContext context, Tag tag, int order, String line) {
         TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
         LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
-        Tag tag = context.get("tag");
-        int order = context.get("order");
-        String line = context.get("line");
-
 
         List<String> description = new ArrayList<>(tag.getDescription());
 
