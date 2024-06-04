@@ -91,17 +91,15 @@ public final class TagsUtils {
      * @return The bukkit color
      */
     public static Color fromHex(String hex) {
-        if (hex == null)
-            return Color.BLACK;
-
-        java.awt.Color awtColor;
         try {
-            awtColor = java.awt.Color.decode(hex);
+            if (hex == null || hex.isEmpty())
+                return Color.WHITE;
+
+            java.awt.Color decoded = java.awt.Color.decode(hex);
+            return Color.fromRGB(decoded.getRed(), decoded.getGreen(), decoded.getBlue());
         } catch (NumberFormatException e) {
             return Color.BLACK;
         }
-
-        return Color.fromRGB(awtColor.getRed(), awtColor.getGreen(), awtColor.getBlue());
     }
 
     /**
@@ -219,7 +217,7 @@ public final class TagsUtils {
                 .model(toInt(locale.format(sender, section.getString(key + ".model-data", "0"), placeholders)))
                 .enchant(enchantments)
                 .texture(locale.format(sender, section.getString(key + ".texture"), placeholders))
-                .color(fromHex(locale.format(sender, section.getString(key + ".potion-color"), placeholders)))
+                .color(fromHex(section.getString(key + ".potion-color")))
                 .owner(offlinePlayer)
                 .build();
     }

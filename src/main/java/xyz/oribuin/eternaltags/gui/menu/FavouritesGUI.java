@@ -163,25 +163,33 @@ public class FavouritesGUI extends PluginMenu {
 
 
         Map<ClickType, List<Action>> tagActions = this.getTagActions();
-        this.getTags(player).forEach(tag -> {
-
+        for (Tag tag : this.getTags(player)) {
             GuiAction<InventoryClickEvent> action = event -> {
-                if (!manager.canUseTag(player, tag))
-                    return;
 
-                if (tagActions.isEmpty()) {
-                    if (event.isShiftClick()) {
-                        this.toggleFavourite(player, tag);
-                        this.addTags(gui, player);
-                        return;
-                    }
-
-                    this.setTag(player, tag);
-                    this.close(gui, player);
+                // Make sure the player has permission to use the tag
+                if (!this.manager.canUseTag(player, tag)) {
+                    this.locale.sendMessage(player, "no-permission");
+                    gui.close(player);
                     return;
                 }
 
-                this.runActions(tagActions, event, this.getTagPlaceholders(tag, player));
+                // Run the tag actions
+                if (!tagActions.isEmpty()) {
+                    this.runActions(tagActions, event, this.getTagPlaceholders(tag, player));
+                    gui.close(player);
+                    return;
+                }
+
+                // If the player is shift clicking, toggle the favourite
+                if (event.isShiftClick()) {
+                    this.toggleFavourite(player, tag);
+                    this.addTags(gui, player);
+                    return;
+                }
+
+                // Set the tag
+                this.setTag(player, tag);
+                gui.close(player);
             };
 
             // If the tag is already in the cache, use that instead of creating a new one.
@@ -189,7 +197,7 @@ public class FavouritesGUI extends PluginMenu {
                 GuiItem item = new GuiItem(this.tagItems.get(tag.getId()));
                 item.setAction(action);
                 gui.addItem(item);
-                return;
+                continue;
             }
 
             GuiItem item = new GuiItem(this.getTagItem(player, tag), action);
@@ -200,7 +208,7 @@ public class FavouritesGUI extends PluginMenu {
 
             gui.addItem(item);
 
-        });
+        }
 
         gui.update();
     }

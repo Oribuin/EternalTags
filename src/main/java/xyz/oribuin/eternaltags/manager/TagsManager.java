@@ -289,18 +289,18 @@ public class TagsManager extends Manager {
     @Nullable
     public Tag getUserTag(@NotNull Player player) {
         DataManager data = this.rosePlugin.getManager(DataManager.class);
-        TagUser user = data.getCachedUser(player.getUniqueId());
+        TagUser user = data.getCachedUsers().getOrDefault(player.getUniqueId(), new TagUser(player.getUniqueId()));
         Tag tag = this.getTagFromId(user.getActiveTag());
 
-        // Update the default tag for the user if they dont have one equipped
+        // Update the default tag for the user if they don't have one equipped
         if (tag == null && this.isDefaultTagEnabled) {
-
             // Check if the player is using a default tag.
             tag = this.getDefaultTag(player);
+
             if (tag != null) {
                 user.setActiveTag(tag.getId());
                 user.setUsingDefaultTag(true);
-                data.updateCachedUser(user);
+                data.getCachedUsers().put(player.getUniqueId(), user);
             }
         }
 

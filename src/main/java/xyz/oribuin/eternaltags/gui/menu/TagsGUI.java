@@ -191,29 +191,36 @@ public class TagsGUI extends PluginMenu {
         Sound tagSound = TagsUtils.getEnum(Sound.class, this.config.getString("tag-item.sound", ""));
 
         this.getTags(player, filter).forEach(tag -> {
-
             GuiAction<InventoryClickEvent> action = event -> {
-                if (!this.manager.canUseTag(player, tag))
-                    return;
 
-                if (tagActions.isEmpty()) {
-
-                    if (tagSound != null) {
-                        player.playSound(player.getLocation(), tagSound, 75, 1);
-                    }
-
-                    if (event.isShiftClick()) {
-                        this.toggleFavourite(player, tag);
-                        this.addTags(gui, player, filter);
-                        return;
-                    }
-
-                    this.setTag(player, tag);
-                    this.close(gui, player);
+                // Check if the player has permission to use the tag
+                if (!this.manager.canUseTag(player, tag)) {
+                    this.locale.sendMessage(player, "no-permission");
+                    gui.close(player);
                     return;
                 }
 
-                this.runActions(tagActions, event, this.getTagPlaceholders(tag, player));
+                // Run the actions for the tag
+                if (!tagActions.isEmpty()) {
+                    this.runActions(tagActions, event, this.getTagPlaceholders(tag, player));
+                    return;
+                }
+
+                // Play the sound if it's not null
+                if (tagSound != null) {
+                    player.playSound(player.getLocation(), tagSound, 75, 1);
+                }
+
+                // If the player is shift clicking, toggle the favourite status of the tag
+                if (event.isShiftClick()) {
+                    this.toggleFavourite(player, tag);
+                    this.addTags(gui, player, filter);
+                    return;
+                }
+
+                // Set the tag if the player is not shift clicking
+                this.setTag(player, tag);
+                gui.close(player);
             };
 
             // If the tag is already in the cache, use that instead of creating a new one.
