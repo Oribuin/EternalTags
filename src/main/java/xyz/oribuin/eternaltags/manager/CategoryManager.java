@@ -62,7 +62,7 @@ public class CategoryManager extends Manager {
         if (global) categoryType = CategoryType.GLOBAL;
         if (defaultCategory) categoryType = CategoryType.DEFAULT;
 
-        Category category = new Category(newKey.toLowerCase());
+        Category category = new Category(key.toLowerCase());
         category.setDisplayName(section.getString(newKey + ".display-name", newKey));
         category.setType(categoryType);
         category.setOrder(section.getInt(newKey + ".order", -1));
