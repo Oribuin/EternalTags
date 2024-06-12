@@ -60,12 +60,12 @@ public final class TagsUtils {
     public static String colorAsString(String text) {
         if (text == null) return "";
 
-        if (Setting.TAG_FORMATTING.getString().equalsIgnoreCase("mini_message")) {
-            if (MINIMESSAGE == null) MINIMESSAGE = MiniMessage.miniMessage();
-            if (LEGACY == null) LEGACY = LegacyComponentSerializer.legacySection();
-
-            return LEGACY.serialize(MINIMESSAGE.deserialize(text));
-        }
+//        if (Setting.TAG_FORMATTING.getString().equalsIgnoreCase("mini_message")) {
+//            if (MINIMESSAGE == null) MINIMESSAGE = MiniMessage.miniMessage();
+//            if (LEGACY == null) LEGACY = LegacyComponentSerializer.legacySection();
+//
+//            return LEGACY.serialize(MINIMESSAGE.deserialize(text));
+//        }
 
         return HexUtils.colorify(text);
     }
