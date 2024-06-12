@@ -39,11 +39,11 @@ public class DeleteCommand extends BaseRoseCommand {
         return CommandInfo.builder("delete")
                 .descriptionKey("command-delete-description")
                 .permission("eternaltags.delete")
+                .arguments(this.createArguments())
                 .build();
     }
 
-    @Override
-    protected ArgumentsDefinition createArgumentsDefinition() {
+    private ArgumentsDefinition createArguments() {
         return ArgumentsDefinition.builder()
                 .required("tag", new TagsArgumentHandler())
                 .build();

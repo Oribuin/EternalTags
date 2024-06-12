@@ -64,11 +64,11 @@ public class EditDescriptionCommand extends BaseRoseCommand {
     protected CommandInfo createCommandInfo() {
         return CommandInfo.builder("description")
                 .permission("eternaltags.edit")
+                .arguments(this.createArguments())
                 .build();
     }
 
-    @Override
-    protected ArgumentsDefinition createArgumentsDefinition() {
+    private ArgumentsDefinition createArguments() {
         return ArgumentsDefinition.builder()
                 .required("tag", new TagsArgumentHandler())
                 .required("order", ArgumentHandlers.INTEGER)

@@ -45,11 +45,11 @@ public class EditCategoryCommand extends BaseRoseCommand {
     protected CommandInfo createCommandInfo() {
         return CommandInfo.builder("category")
                 .permission("eternaltags.edit")
+                .arguments(this.createArguments())
                 .build();
     }
 
-    @Override
-    protected ArgumentsDefinition createArgumentsDefinition() {
+    private ArgumentsDefinition createArguments() {
         return ArgumentsDefinition.builder()
                 .required("tag", new TagsArgumentHandler())
                 .required("category", new CategoryArgumentHandler())

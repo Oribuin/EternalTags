@@ -59,11 +59,11 @@ public class FavoriteCommand extends BaseRoseCommand {
                 .permission("eternaltags.favorite")
                 .aliases("favourite")
                 .playerOnly(true)
+                .arguments(this.createArguments())
                 .build();
     }
 
-    @Override
-    protected ArgumentsDefinition createArgumentsDefinition() {
+    private ArgumentsDefinition createArguments() {
         return ArgumentsDefinition.builder()
                 .optional("tag", new TagsArgumentHandler())
                 .build();

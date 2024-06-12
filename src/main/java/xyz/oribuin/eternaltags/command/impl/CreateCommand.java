@@ -46,11 +46,11 @@ public class CreateCommand extends BaseRoseCommand {
         return CommandInfo.builder("create")
                 .descriptionKey("command-create-description")
                 .permission("eternaltags.create")
+                .arguments(this.createArguments())
                 .build();
     }
 
-    @Override
-    protected ArgumentsDefinition createArgumentsDefinition() {
+    private ArgumentsDefinition createArguments() {
         return ArgumentsDefinition.builder()
                 .required("name", ArgumentHandlers.STRING)
                 .required("tag", ArgumentHandlers.GREEDY_STRING)

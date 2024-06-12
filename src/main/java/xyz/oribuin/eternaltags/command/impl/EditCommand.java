@@ -30,11 +30,11 @@ public class EditCommand extends BaseRoseCommand {
         return CommandInfo.builder("edit")
                 .descriptionKey("command-edit-description")
                 .permission("eternaltags.edit")
+                .arguments(this.createArguments())
                 .build();
     }
 
-    @Override
-    protected ArgumentsDefinition createArgumentsDefinition() {
+    private ArgumentsDefinition createArguments() {
         return ArgumentsDefinition.builder().requiredSub(
                 new EditCategoryCommand(this.rosePlugin),
                 new EditDescriptionCommand(this.rosePlugin),

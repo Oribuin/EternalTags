@@ -47,11 +47,11 @@ public class ConvertCommand extends BaseRoseCommand {
         return CommandInfo.builder("convert")
                 .descriptionKey("command-convert-description")
                 .permission("eternaltags.convert")
+                .arguments(this.createArguments())
                 .build();
     }
 
-    @Override
-    protected ArgumentsDefinition createArgumentsDefinition() {
+    private ArgumentsDefinition createArguments() {
         return ArgumentsDefinition.builder()
                 .required("plugin", new PluginArgumentHandler())
                 .build();

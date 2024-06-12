@@ -40,11 +40,11 @@ public class TagsCommand extends BaseRoseCommand {
         return CommandInfo.builder("tags")
                 .descriptionKey("command-tags-description")
                 .permission("eternaltags.use")
+                .arguments(this.createArguments())
                 .build();
     }
 
-    @Override
-    protected ArgumentsDefinition createArgumentsDefinition() {
+    private ArgumentsDefinition createArguments() {
         return ArgumentsDefinition.builder().optionalSub(
                 new CategoriesCommand(this.rosePlugin),
                 new ClearCommand(this.rosePlugin),

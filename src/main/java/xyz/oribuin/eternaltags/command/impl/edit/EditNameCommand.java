@@ -44,11 +44,11 @@ public class EditNameCommand extends BaseRoseCommand {
     protected CommandInfo createCommandInfo() {
         return CommandInfo.builder("name")
                 .permission("eternaltags.edit")
+                .arguments(this.createArguments())
                 .build();
     }
 
-    @Override
-    protected ArgumentsDefinition createArgumentsDefinition() {
+    private ArgumentsDefinition createArguments() {
         return ArgumentsDefinition.builder()
                 .required("tag", new TagsArgumentHandler())
                 .optional("name", ArgumentHandlers.GREEDY_STRING)

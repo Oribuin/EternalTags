@@ -44,11 +44,12 @@ public class EditPermissionCommand extends BaseRoseCommand {
     protected CommandInfo createCommandInfo() {
         return CommandInfo.builder("permission")
                 .permission("eternaltags.edit")
+                .arguments(this.createArguments())
+                .arguments(this.createArguments())
                 .build();
     }
 
-    @Override
-    protected ArgumentsDefinition createArgumentsDefinition() {
+    private ArgumentsDefinition createArguments() {
         return ArgumentsDefinition.builder()
                 .required("tag", new TagsArgumentHandler())
                 .required("permission", ArgumentHandlers.GREEDY_STRING)

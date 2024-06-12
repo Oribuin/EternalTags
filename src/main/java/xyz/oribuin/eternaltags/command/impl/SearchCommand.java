@@ -43,11 +43,11 @@ public class SearchCommand extends BaseRoseCommand {
                 .descriptionKey("command-search-description")
                 .permission("eternaltags.search")
                 .playerOnly(true)
+                .arguments(this.createArguments())
                 .build();
     }
 
-    @Override
-    protected ArgumentsDefinition createArgumentsDefinition() {
+    private ArgumentsDefinition createArguments() {
         return ArgumentsDefinition.builder()
                 .required("keyword", ArgumentHandlers.GREEDY_STRING)
                 .build();

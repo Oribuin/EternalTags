@@ -62,11 +62,11 @@ public class EditIconCommand extends BaseRoseCommand {
         return CommandInfo.builder("icon")
                 .permission("eternaltags.edit")
                 .playerOnly(true)
+                .arguments(this.createArguments())
                 .build();
     }
 
-    @Override
-    protected ArgumentsDefinition createArgumentsDefinition() {
+    private ArgumentsDefinition createArguments() {
         return ArgumentsDefinition.builder()
                 .required("tag", new TagsArgumentHandler())
                 .optional("remove", ArgumentHandlers.BOOLEAN)

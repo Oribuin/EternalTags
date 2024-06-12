@@ -40,11 +40,11 @@ public class SetAllCommand extends BaseRoseCommand {
         return CommandInfo.builder("setall")
                 .descriptionKey("command-setall-description")
                 .permission("eternaltags.setall")
+                .arguments(this.createArguments())
                 .build();
     }
 
-    @Override
-    protected ArgumentsDefinition createArgumentsDefinition() {
+    private ArgumentsDefinition createArguments() {
         return ArgumentsDefinition.builder()
                 .required("tag", new TagsArgumentHandler())
                 .optional("silent", ArgumentHandlers.STRING)

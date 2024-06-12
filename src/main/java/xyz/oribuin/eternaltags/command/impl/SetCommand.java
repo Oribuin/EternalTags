@@ -73,11 +73,11 @@ public class SetCommand extends BaseRoseCommand {
         return CommandInfo.builder("set")
                 .descriptionKey("command-set-description")
                 .permission("eternaltags.set")
+                .arguments(this.createArguments())
                 .build();
     }
 
-    @Override
-    protected ArgumentsDefinition createArgumentsDefinition() {
+    private ArgumentsDefinition createArguments() {
         return ArgumentsDefinition.builder()
                 .required("tag", new TagsArgumentHandler())
                 .optional("target", ArgumentHandlers.PLAYER)

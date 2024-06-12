@@ -55,11 +55,11 @@ public class ClearCommand extends BaseRoseCommand {
         return CommandInfo.builder("clear")
                 .descriptionKey("command-clear-description")
                 .permission("eternaltags.clear")
+                .arguments(this.createArguments())
                 .build();
     }
 
-    @Override
-    protected ArgumentsDefinition createArgumentsDefinition() {
+    private ArgumentsDefinition createArguments() {
         return ArgumentsDefinition.builder()
                 .optional("target", ArgumentHandlers.PLAYER)
                 .optional("silent", ArgumentHandlers.BOOLEAN)
