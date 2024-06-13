@@ -8,6 +8,9 @@ only-player: This command can only be executed by a player.
 only-console: This command can only be executed by console.
 unknown-command: 'Unknown command, use #00B4DB/%cmd%&f help for more info'
 
+# Main Tags Command
+command-tags-description: Displays the tags menu.
+
 # Categories Command
 command-categories-description: Displays the categories menu.
 
@@ -38,11 +41,6 @@ command-favorite-toggled: You have toggled the tag %tag% &fas a favorite %toggle
 command-favorite-cleared: You have cleared all your favorite tags.
 command-favorite-on: 'on'
 command-favorite-off: 'off'
-
-# Migrate Command
-command-migrate-description: Migrates tags from one plugin to another.
-command-migrate-success: You have successfully migrated your tags from %from% to %to%.
-command-migrate-matching: Choose two different data storage types to migrate from and to.
 
 # Random Command
 command-random-description: Automatically equips a random tag you own.
@@ -88,4 +86,3 @@ argument-handler-tags: '%input% is not a valid tag id.'
 argument-handler-edit-option: Please provide a valid tag value option.
 argument-handler-category: Please provide a valid category.
 argument-handler-material: Please provide a valid material.
-argument-handler-data-storage-type: Please provide a valid data storage type.
