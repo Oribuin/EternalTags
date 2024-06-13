@@ -95,7 +95,7 @@ public class CategoryManager extends Manager {
      * @return The category
      */
     public Category getCategory(String id) {
-        if (this.cachedCategories.isEmpty()) return null;
+        if (this.cachedCategories.isEmpty() || id == null) return null;
 
         return this.cachedCategories.get(id.toLowerCase());
     }
