@@ -177,7 +177,7 @@ public class CategoryGUI extends PluginMenu {
             if (this.config.getBoolean("gui-settings.only-unlocked-categories"))
                 placeholders.add("unlocked", this.manager.getCategoryTags(category, player).size());
 
-            ItemStack item = TagsUtils.deserialize(this.config, player, "categories." + category.getId().toLowerCase() + ".display-item", placeholders.build());
+            ItemStack item = TagsUtils.deserialize(this.config, player, "categories." + category.getId() + ".display-item", placeholders.build());
             if (item == null) {
 //                this.rosePlugin.getLogger().info("Failed to load category " + category.getId() + " for the gui, the display item is invalid, Using default value.");
 
