@@ -64,6 +64,20 @@ public class Tag {
         dataManager.removeUser(player.getUniqueId());
     }
 
+    /**
+     * Check if a player has permission to use the tag.
+     *
+     * @param player The player to check
+     *
+     * @return Whether the player has permission or not
+     */
+    public boolean hasPermission(Player player) {
+        if (this.permission == null) return true; // No permission required
+        if (player.hasPermission("eternaltags.tags.*")) return true; // Bypass all permissions
+
+        return player.hasPermission(this.permission);
+    }
+
     public @NotNull String getId() {
         return id;
     }

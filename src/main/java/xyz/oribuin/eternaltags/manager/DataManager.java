@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public class DataManager extends AbstractDataManager {
 
@@ -183,32 +184,36 @@ public class DataManager extends AbstractDataManager {
      *
      * @param uuid The player's uuid
      */
-    public void loadUser(@NotNull UUID uuid) {
-        TagUser user = new TagUser(uuid);
+    public CompletableFuture<TagUser> loadUser(@NotNull UUID uuid) {
+        return CompletableFuture.supplyAsync(() -> {
+            TagUser user = new TagUser(uuid);
 
-        this.async(() -> this.databaseConnector.connect(connection -> {
-            String selectTag = "SELECT tagID FROM " + this.getTablePrefix() + "tags WHERE player = ?";
+            this.databaseConnector.connect(connection -> {
+                String selectTag = "SELECT tagID FROM " + this.getTablePrefix() + "tags WHERE player = ?";
 
-            // Load the active tag from the database.
-            try (PreparedStatement statement = connection.prepareStatement(selectTag)) {
-                statement.setString(1, uuid.toString());
-                ResultSet result = statement.executeQuery();
-                if (result.next()) {
-                    user.setActiveTag(result.getString(1));
+                // Load the active tag from the database.
+                try (PreparedStatement statement = connection.prepareStatement(selectTag)) {
+                    statement.setString(1, uuid.toString());
+                    ResultSet result = statement.executeQuery();
+                    if (result.next()) {
+                        user.setActiveTag(result.getString(1));
+                    }
                 }
-            }
 
-            String favouriteTagsQuery = "SELECT tagID FROM " + this.getTablePrefix() + "favourites WHERE player = ?";
-            try (PreparedStatement statement = connection.prepareStatement(favouriteTagsQuery)) {
-                statement.setString(1, uuid.toString());
-                ResultSet result = statement.executeQuery();
-                while (result.next()) {
-                    user.getFavourites().add(result.getString(1));
+                String favouriteTagsQuery = "SELECT tagID FROM " + this.getTablePrefix() + "favourites WHERE player = ?";
+                try (PreparedStatement statement = connection.prepareStatement(favouriteTagsQuery)) {
+                    statement.setString(1, uuid.toString());
+                    ResultSet result = statement.executeQuery();
+                    while (result.next()) {
+                        user.getFavourites().add(result.getString(1));
+                    }
                 }
-            }
 
-            this.cachedUsers.put(uuid, user);
-        }));
+                this.cachedUsers.put(uuid, user);
+            });
+
+            return user;
+        });
     }
 
     /**

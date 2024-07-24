@@ -257,7 +257,9 @@ public class TagsManager extends Manager {
      * Get a tag by the UUID, load the user if they aren't cached.
      *
      * @param uuid The UUID of the player.
+     *
      * @return The active tag if present
+     *
      * @deprecated Use {@link TagsManager#getUserTag(UUID)} instead.
      */
     @Nullable
@@ -270,6 +272,7 @@ public class TagsManager extends Manager {
      * Get a tag by the UUID, If the user isn't cached, return null.
      *
      * @param uuid The UUID of the player.
+     *
      * @return The active tag if present
      */
     @Nullable
@@ -284,6 +287,7 @@ public class TagsManager extends Manager {
      * if a player needs to have their tag updated. (Remove Inactive Tags or Default Tags)
      *
      * @param player The player object.
+     *
      * @return The active tag if present
      */
     @Nullable
@@ -309,7 +313,7 @@ public class TagsManager extends Manager {
             data.removeUser(player.getUniqueId());
             user.setActiveTag(null);
             user.setUsingDefaultTag(false);
-            tag = null;
+            return null;
         }
 
         return tag;
@@ -319,7 +323,9 @@ public class TagsManager extends Manager {
      * Get a tag by the offline player object, If the user isn't cached, return null.
      *
      * @param player The offline player object.
+     *
      * @return The active tag if present
+     *
      * @since 1.1.6
      */
     @Nullable
@@ -360,6 +366,7 @@ public class TagsManager extends Manager {
      * Get a user's favourite tags.
      *
      * @param uuid The UUID of the player.
+     *
      * @return The map of favourite tags.
      */
     @NotNull
@@ -378,6 +385,7 @@ public class TagsManager extends Manager {
      * Get all the tags a player has permission to use.
      *
      * @param player The player
+     *
      * @return The tags the player has.
      */
     @NotNull
@@ -394,6 +402,7 @@ public class TagsManager extends Manager {
      * Check if a tag exists from the id.
      *
      * @param id The id of the tag.
+     *
      * @return true if the tag exists.
      */
     public boolean checkTagExists(String id) {
@@ -404,6 +413,7 @@ public class TagsManager extends Manager {
      * Match a tag based on the id.
      *
      * @param id The id of the tag.
+     *
      * @return An optional tag.
      */
     @Nullable
@@ -457,6 +467,7 @@ public class TagsManager extends Manager {
      *
      * @param player The player
      * @param tag    The tag
+     *
      * @return If the tag is favourited.
      */
     public boolean isFavourite(UUID player, Tag tag) {
@@ -481,6 +492,7 @@ public class TagsManager extends Manager {
      * Get a randomized tag from a user's available tags.
      *
      * @param offlinePlayer The offlinePlayer
+     *
      * @return The random tag.
      */
     public Tag getRandomTag(@Nullable OfflinePlayer offlinePlayer) {
@@ -501,15 +513,14 @@ public class TagsManager extends Manager {
      * @param tag         The tag.
      * @param player      The player.
      * @param placeholder The placeholder.
+     *
      * @return The display tag.
      */
     public String getDisplayTag(@Nullable Tag tag, OfflinePlayer player, @NotNull String placeholder) {
-        StringPlaceholders placeholders = StringPlaceholders.empty();
-        if (tag != null) placeholders = this.getTagPlaceholders(tag);
+        if (tag == null) return placeholder; // Return the placeholder if the tag is null
 
-        return TagsUtils.colorAsString(PlaceholderAPI.setPlaceholders(player, tag == null
-                ? placeholder
-                : placeholders.apply(
+        StringPlaceholders placeholders = this.getTagPlaceholders(tag);
+        return TagsUtils.colorAsString(PlaceholderAPI.setPlaceholders(player, placeholders.apply(
                 Setting.TAG_PREFIX.getString() + tag.getTag() + Setting.TAG_SUFFIX.getString())
         ));
     }
@@ -519,6 +530,7 @@ public class TagsManager extends Manager {
      *
      * @param tag    The tag.
      * @param player The player.
+     *
      * @return The display tag.
      */
     public String getDisplayTag(@Nullable Tag tag, OfflinePlayer player) {
@@ -538,6 +550,7 @@ public class TagsManager extends Manager {
      * Get the tags in a category
      *
      * @param category The category
+     *
      * @return The tags in the category
      */
     public List<Tag> getTagsInCategory(Category category) {
@@ -555,18 +568,19 @@ public class TagsManager extends Manager {
      * Get all the tags in a category
      *
      * @param category The category
+     *
      * @return The tags in the category
      */
     public List<Tag> getCategoryTags(Category category) {
         return this.getCategoryTags(category, null);
     }
 
-
     /**
      * Get the tags in a category that a player has access to
      *
      * @param category The category
      * @param player   The player
+     *
      * @return The tags in the category that the player has access to
      */
     public List<Tag> getCategoryTags(Category category, Player player) {
@@ -591,29 +605,32 @@ public class TagsManager extends Manager {
      *
      * @param player The player
      * @param tag    The tag
+     *
      * @return If the player has access to the tag
      */
     public boolean canUseTag(@NotNull Player player, @NotNull Tag tag) {
         CategoryManager manager = this.rosePlugin.getManager(CategoryManager.class);
-
-        boolean defaultResult = tag.getPermission() == null || player.hasPermission(tag.getPermission());
+        boolean defaultResult = tag.hasPermission(player); // Check if the player has permission to use the tag
+        TagUser user = this.rosePlugin.getManager(DataManager.class).getCachedUser(player.getUniqueId());
+        if (user.isUsingDefaultTag()) return true; // Players can always use a default tag.
 
         // If the tag has no category, then we can just return the tag unlocked status
-        if (tag.getCategory() == null) {
-            return defaultResult;
-        }
-
         Category category = manager.getCategory(tag.getCategory());
         if (category == null) return defaultResult;
         if (category.getPermission() == null) return defaultResult;
 
-        return player.hasPermission(category.getPermission()) || defaultResult;
+        // If the category can bypass tag permissions and the category has a permission set
+        if (category.isBypassPermission() && category.getPermission() != null)
+            return player.hasPermission(category.getPermission()) || defaultResult;
+
+        return defaultResult;
     }
 
     /**
      * Get the tag placeholders for the given player
      *
      * @param tag The tag
+     *
      * @return The tag placeholders
      */
     private StringPlaceholders getTagPlaceholders(Tag tag) {
