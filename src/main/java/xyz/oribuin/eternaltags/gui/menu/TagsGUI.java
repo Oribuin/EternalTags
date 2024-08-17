@@ -175,7 +175,6 @@ public class TagsGUI extends PluginMenu {
         this.addNavigationIcons(gui, player, finalMenuTitle);
     }
 
-
     private void addTagsToGui(PaginatedGui gui, Player player, Predicate<Tag> filter) {
         List<Tag> tags = this.getTags(player, filter);
         Map<ClickType, List<Action>> tagActions = this.getTagActions();
