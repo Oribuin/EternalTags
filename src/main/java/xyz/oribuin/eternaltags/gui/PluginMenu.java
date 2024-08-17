@@ -77,7 +77,6 @@ public abstract class PluginMenu {
         this.config.save(menuFile);
     }
 
-
     /**
      * Create a paged GUI for the given player
      *
@@ -85,15 +84,18 @@ public abstract class PluginMenu {
      * @return The created GUI
      */
     protected final @NotNull PaginatedGui createPagedGUI(Player player) {
-
-        int rows = this.config.getInt("gui-settings.rows");
+        int rows = this.config.getInt("gui-settings.rows", 6);
         String preTitle = this.config.getString("gui-settings.pre-title", "EternalTags");
 
         return Gui.paginated()
-                .rows(rows == 0 ? 6 : rows)
+                .rows(rows)
                 .title(this.format(player, preTitle))
                 .disableAllInteractions()
                 .create();
+    }
+
+    protected void setPageSize(PaginatedGui gui, int pageSize) {
+        gui.setPageSize(pageSize);
     }
 
     /**

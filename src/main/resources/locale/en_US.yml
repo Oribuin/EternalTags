@@ -12,7 +12,8 @@ unknown-command: 'Unknown command, use #00B4DB/%cmd%&f help for more info'
 command-tags-description: Displays the tags menu.
 
 # Categories Command
-command-categories-description: Displays the categories menu.
+command-categories-description: "Open the categories menu or a specific category"
+argument-handler-category-global: "&cYou cannot open the global category directly."
 
 # Clear Command
 command-clear-description: Clears your active tag.

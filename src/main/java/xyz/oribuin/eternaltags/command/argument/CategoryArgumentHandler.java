@@ -1,7 +1,7 @@
 package xyz.oribuin.eternaltags.command.argument;
 
-import dev.rosewood.rosegarden.command.framework.Argument;
 import dev.rosewood.rosegarden.command.framework.ArgumentHandler;
+import dev.rosewood.rosegarden.command.framework.Argument;
 import dev.rosewood.rosegarden.command.framework.CommandContext;
 import dev.rosewood.rosegarden.command.framework.InputIterator;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
@@ -22,8 +22,11 @@ public class CategoryArgumentHandler extends ArgumentHandler<Category> {
     public Category handle(CommandContext context, Argument argument, InputIterator inputIterator) throws HandledArgumentException {
         String input = inputIterator.next();
         Category value = EternalTags.getInstance().getManager(CategoryManager.class).getCategory(input.toLowerCase());
-        if (value == null || value.getType() == CategoryType.GLOBAL)
+        if (value == null)
             throw new HandledArgumentException("argument-handler-category", StringPlaceholders.of("input", input));
+
+        if (value.getType() == CategoryType.GLOBAL)
+            throw new HandledArgumentException("argument-handler-category-global");
 
         return value;
     }
@@ -34,7 +37,7 @@ public class CategoryArgumentHandler extends ArgumentHandler<Category> {
                 .stream()
                 .filter(category -> category.getType() != CategoryType.GLOBAL)
                 .map(Category::getId)
+                .filter(id -> args.length == 0 || id.toLowerCase().startsWith(args[args.length - 1].toLowerCase()))
                 .toList();
     }
-
 }

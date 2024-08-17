@@ -133,7 +133,6 @@ public class CategoryGUI extends PluginMenu {
 
         if (this.addPagesAsynchronously()) this.async(task);
         else task.run();
-
     }
 
     /**
@@ -147,13 +146,18 @@ public class CategoryGUI extends PluginMenu {
             paginated.clearPageItems();
 
         TagsGUI tagsGUI = MenuProvider.get(TagsGUI.class);
-        if (tagsGUI == null) // This should never happen, but just in case.
+        if (tagsGUI == null)
             return;
 
         this.getCategories(player).forEach(category -> {
+            String categoryPath = "categories." + category.getId();
+
+            // Skip categories that are not in the config or are set to hidden
+            if (!this.config.contains(categoryPath) || this.config.getBoolean(categoryPath + ".hidden", false)) {
+                return;
+            }
 
             GuiAction<InventoryClickEvent> action = event -> {
-                // Filter out tags that are not in the category.
                 if (category.getType() == CategoryType.GLOBAL) {
                     tagsGUI.open(player);
                     return;
@@ -162,14 +166,6 @@ public class CategoryGUI extends PluginMenu {
                 tagsGUI.open(player, tag -> tag.getCategory() != null && tag.getCategory().equalsIgnoreCase(category.getId()));
             };
 
-            if (Setting.CACHE_GUI_CATEGORIES.getBoolean() && this.categoryIcons.containsKey(category)) {
-                GuiItem item = this.categoryIcons.get(category);
-                item.setAction(action);
-
-                gui.addItem(item);
-                return;
-            }
-
             StringPlaceholders.Builder placeholders = StringPlaceholders.builder()
                     .add("category", category.getDisplayName())
                     .add("total", this.manager.getTagsInCategory(category).size());
@@ -177,22 +173,61 @@ public class CategoryGUI extends PluginMenu {
             if (this.config.getBoolean("gui-settings.only-unlocked-categories"))
                 placeholders.add("unlocked", this.manager.getCategoryTags(category, player).size());
 
-            ItemStack item = TagsUtils.deserialize(this.config, player, "categories." + category.getId() + ".display-item", placeholders.build());
+            ItemStack item = TagsUtils.deserialize(this.config, player, categoryPath + ".display-item", placeholders.build());
             if (item == null) {
-//                this.rosePlugin.getLogger().info("Failed to load category " + category.getId() + " for the gui, the display item is invalid, Using default value.");
-
                 item = new ItemBuilder(Material.OAK_SIGN)
                         .name(formatString(player, "#00B4DB" + category.getDisplayName()))
                         .build();
             }
 
             GuiItem guiItem = new GuiItem(item, action);
-            gui.addItem(guiItem);
+
+            // Get the slots for this category
+            List<Integer> slots = this.getCategorySlots(category);
+
+            // If no slots are specified, add to the first empty slot
+            if (slots.isEmpty()) {
+                gui.addItem(guiItem);
+            } else {
+                // Add the item to all specified slots
+                for (int slot : slots) {
+                    gui.setItem(slot, guiItem);
+                }
+            }
 
             if (Setting.CACHE_GUI_CATEGORIES.getBoolean())
                 this.categoryIcons.put(category, guiItem);
         });
+    }
 
+    private List<Integer> getCategorySlots(Category category) {
+        List<Integer> slots = new ArrayList<>();
+
+        // Try to get slots as a list first
+        List<String> slotsConfig = this.config.getStringList("categories." + category.getId() + ".slots");
+
+        // If the list is empty, try to get it as a single string (for backwards compatibility)
+        if (slotsConfig.isEmpty()) {
+            String slotString = this.config.getString("categories." + category.getId() + ".slots");
+            if (slotString != null && !slotString.isEmpty()) {
+                slotsConfig = List.of(slotString);
+            }
+        }
+
+        // If we still don't have any slots, check for a single 'slot' entry
+        if (slotsConfig.isEmpty()) {
+            int singleSlot = this.config.getInt("categories." + category.getId() + ".slot", -1);
+            if (singleSlot != -1) {
+                return List.of(singleSlot);
+            }
+        }
+
+        // Parse the slot ranges
+        for (String slotRange : slotsConfig) {
+            slots.addAll(TagsUtils.parseList(List.of(slotRange)));
+        }
+
+        return slots;
     }
 
     /**
@@ -209,6 +244,12 @@ public class CategoryGUI extends PluginMenu {
                 SortType.ALPHABETICAL
         );
 
+        // Remove categories that are not defined in the config or are set to hidden
+        categories.removeIf(category -> {
+            String categoryPath = "categories." + category.getId();
+            return !this.config.contains(categoryPath) || this.config.getBoolean(categoryPath + ".hidden", false);
+        });
+
         if (this.config.getBoolean("gui-settings.use-category-permissions", false)) {
             categories.removeIf(category -> !category.canUse(player));
         }
@@ -216,19 +257,9 @@ public class CategoryGUI extends PluginMenu {
         if (this.config.getBoolean("gui-settings.only-unlocked-categories", false)) {
             categories.removeIf(category -> {
                 if (category.getType() == CategoryType.GLOBAL) return false;
-
                 return this.manager.getCategoryTags(category, player).isEmpty();
             });
         }
-
-        // TODO: 2023-05-07 Fix this code
-//        categories.removeIf(category -> !category.isGlobal() || this.config.getBoolean("categories." + category.getId() + ".hidden"));
-//        categories.removeIf(category -> {
-//            if (category.isGlobal())
-//                return false;
-//
-//            return this.config.getBoolean("categories." + category.getId() + ".hidden");
-//        });
 
         sortType.sortCategories(categories);
 
