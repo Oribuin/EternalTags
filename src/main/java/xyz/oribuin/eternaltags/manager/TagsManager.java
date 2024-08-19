@@ -20,15 +20,15 @@ import xyz.oribuin.eternaltags.obj.TagUser;
 import xyz.oribuin.eternaltags.util.TagsUtils;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Random;
-import java.util.UUID;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.*;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class TagsManager extends Manager {
 
@@ -66,6 +66,8 @@ public class TagsManager extends Manager {
             this.tagsFolder.mkdirs();
         }
 
+        this.copyDefaultTagsIfEmpty();
+
         this.cachedTags.clear();
         this.loadTagsFromFolder(this.tagsFolder);
 
@@ -81,6 +83,49 @@ public class TagsManager extends Manager {
 
         // Get each user and load their tags
         users.forEach(this::getUserTag);
+    }
+
+    private void copyDefaultTagsIfEmpty() {
+        if (this.tagsFolder.listFiles() == null || this.tagsFolder.listFiles().length == 0) {
+            this.rosePlugin.getLogger().info("Tags folder is empty. Copying default tag files...");
+            try {
+                URI uri = this.getClass().getResource("/tags").toURI();
+                Path myPath;
+                if (uri.getScheme().equals("jar")) {
+                    FileSystem fileSystem = FileSystems.newFileSystem(uri, Collections.<String, Object>emptyMap());
+                    myPath = fileSystem.getPath("/tags");
+                } else {
+                    myPath = Paths.get(uri);
+                }
+                Stream<Path> walk = Files.walk(myPath);
+                for (Iterator<Path> it = walk.iterator(); it.hasNext(); ) {
+                    Path path = it.next();
+                    String relativePath = myPath.relativize(path).toString();
+                    if (!relativePath.isEmpty()) {
+                        copyFile(relativePath);
+                    }
+                }
+                walk.close();
+            } catch (URISyntaxException | IOException e) {
+                this.rosePlugin.getLogger().severe("Failed to copy default tag files: " + e.getMessage());
+            }
+        }
+    }
+
+    private void copyFile(String relativePath) {
+        InputStream inputStream = this.rosePlugin.getResource("tags/" + relativePath);
+        if (inputStream != null) {
+            File outFile = new File(this.tagsFolder, relativePath);
+            try {
+                outFile.getParentFile().mkdirs();
+                Files.copy(inputStream, outFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                this.rosePlugin.getLogger().info("Copied " + relativePath + " to tags folder.");
+            } catch (IOException e) {
+                this.rosePlugin.getLogger().severe("Failed to copy " + relativePath + " to tags folder: " + e.getMessage());
+            }
+        } else {
+            this.rosePlugin.getLogger().warning("Default tag file " + relativePath + " not found in plugin resources.");
+        }
     }
 
     @Override

@@ -74,6 +74,18 @@ processResources {
         filter ReplaceTokens, tokens: ["version": project.property("version")]
         duplicatesStrategy DuplicatesStrategy.INCLUDE
     }
+
+    // Explicitly include the tags folder and its contents
+    from(sourceSets.main.resources.srcDirs) {
+        include 'tags/**/*.yml'  // This line ensures .yml files in the tags folder are included
+        duplicatesStrategy DuplicatesStrategy.INCLUDE
+    }
+
+    // Include other non-yml files
+    from(sourceSets.main.resources.srcDirs) {
+        exclude '**/*.yml'
+        duplicatesStrategy DuplicatesStrategy.INCLUDE
+    }
 }
 
 publishing {

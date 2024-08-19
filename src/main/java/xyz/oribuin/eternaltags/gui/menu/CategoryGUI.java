@@ -59,7 +59,16 @@ public class CategoryGUI extends PluginMenu {
         this.allocatedSlots.clear();
         List<String> slotsConfig = this.config.getStringList("gui-settings.allocated-slots");
         for (String slotConfig : slotsConfig) {
-            this.allocatedSlots.addAll(TagsUtils.parseList(List.of(slotConfig)));
+            if (slotConfig.contains("-")) {
+                String[] range = slotConfig.split("-");
+                int start = Integer.parseInt(range[0]);
+                int end = Integer.parseInt(range[1]);
+                for (int i = start; i <= end; i++) {
+                    this.allocatedSlots.add(i);
+                }
+            } else {
+                this.allocatedSlots.add(Integer.parseInt(slotConfig));
+            }
         }
     }
 

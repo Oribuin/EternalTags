@@ -54,7 +54,7 @@ public class ConfigurationManager extends AbstractConfigurationManager {
                 "This will reduce the amount of lag when opening the GUI, but will use more memory.",
                 "This will also make categories with placeholders not update until the plugin is reloaded."
         ),
-        OPEN_CATEGORY_GUI_FIRST("open-category-gui-first", false, "Should the category GUI be opened first when a player types /tags?"),
+        OPEN_CATEGORY_GUI_FIRST("open-category-gui-first", true, "Should the category GUI be opened first when a player types /tags?"),
 
         // Data Systems
         MYSQL_TAGDATA("save-tagdata-sql", false, "Should the tag data be stored in a MySQL/SQLite database? (Tags that would be saved in tags.yml)"),

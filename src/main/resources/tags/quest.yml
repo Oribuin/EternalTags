@@ -1,0 +1,47 @@
+# Configure all the tags you want to use in your server here.
+# Here are all the options you can use
+# tags:
+#  test: # The ID of the tag
+#    name: Test # The name of the tag
+#    description: # The description of the tag
+#     - '&7This is a test tag'
+#     - '&7It has multiple lines'
+#    permission: # The permission required to use this tag
+#    order: 1 # The order of the tag in the GUI
+#    icon: # The icon of the tag, Item Names, Lore, Are Overwritten by the tag
+#      material: PLAYER_HEAD # The material of the icon
+#      texture: You can use a base64 texture here # The texture of the icon, if using HeadDB you can use 'hdb:<id>'
+#      glow: true # Whether the icon should glow (You can use a placeholder here too)
+#      owner: <username> # The owner of the icon, if using a player head (Set to 'self' to use the player's name)
+#      model-data: 1 # The model data of the icon
+#      enchantments: # The enchantments of the icon
+#       DURABILITY: 1 # The enchantment and level
+#      flags: # The item flags of the icon
+#       - HIDE_ENCHANTS # The item flags
+tags:
+  quest_master:
+    name: 'Quest Master'
+    tag: '&f&l[<g:#FFD700:#FFA500>Quest Master&f&l]'
+    description:
+      - '&7Complete 100 quests to earn this tag!'
+    permission: 'eternaltags.tag.quest_master'
+    category: quest
+    order: 1
+
+  dragon_slayer:
+    name: 'Dragon Slayer'
+    tag: '&f&l[<g:#800080:#FF00FF>Dragon Slayer&f&l]'
+    description:
+      - '&7Defeat the Ender Dragon to earn this tag!'
+    permission: 'eternaltags.tag.dragon_slayer'
+    category: quest
+    order: 2
+
+  treasure_hunter:
+    name: 'Treasure Hunter'
+    tag: '&f&l[<g:#C4A484:#FFD700>Treasure Hunter&f&l]'
+    description:
+      - '&7Find 50 buried treasures to earn this tag!'
+    permission: 'eternaltags.tag.treasure_hunter'
+    category: quest
+    order: 3

@@ -1,0 +1,27 @@
+tags:
+  helper:
+    name: 'Helper'
+    tag: '&f&l[<g:#4B0082:#8A2BE2>Helper&f&l]'
+    description:
+      - '&7Always ready to assist players!'
+    permission: 'eternaltags.tag.helper'
+    category: staff
+    order: 1
+
+  moderator:
+    name: 'Moderator'
+    tag: '&f&l[<g:#1E90FF:#00BFFF>Moderator&f&l]'
+    description:
+      - '&7Keeping the server safe and fun!'
+    permission: 'eternaltags.tag.moderator'
+    category: staff
+    order: 2
+
+  admin:
+    name: 'Admin'
+    tag: '&f&l[<g:#FF0000:#FF6347>Admin&f&l]'
+    description:
+      - '&7Server administrator extraordinaire!'
+    permission: 'eternaltags.tag.admin'
+    category: staff
+    order: 3
