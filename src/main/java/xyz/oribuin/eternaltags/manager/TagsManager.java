@@ -60,6 +60,12 @@ public class TagsManager extends Manager {
         // Check if we're using default tags
         this.isDefaultTagEnabled = this.usingGroupDefaults() || !Setting.DEFAULT_TAG.getString().equalsIgnoreCase("none");
 
+        // Load all tags from mysql instead of tags.yml
+        if (Setting.MYSQL_TAGDATA.getBoolean()) {
+            dataManager.loadTagData(this.cachedTags);
+            return;
+        }
+
         // Create and load from the tags folder
         this.tagsFolder = new File(this.rosePlugin.getDataFolder(), "tags");
         if (!this.tagsFolder.exists()) {
@@ -67,7 +73,6 @@ public class TagsManager extends Manager {
         }
 
         this.copyDefaultTagsIfEmpty();
-
         this.cachedTags.clear();
         this.loadTagsFromFolder(this.tagsFolder);
 
@@ -76,6 +81,7 @@ public class TagsManager extends Manager {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
+        // Load all the users from the database
         dataManager.loadUsers(users.stream()
                 .map(Player::getUniqueId)
                 .collect(Collectors.toList())
@@ -234,21 +240,25 @@ public class TagsManager extends Manager {
      * @param tag The tag being saved.
      */
     public void saveTag(Tag tag) {
-        File file = new File(this.tagsFolder, tag.getId() + ".yml");
-        CommentedFileConfiguration config = CommentedFileConfiguration.loadConfiguration(file);
+        if (Setting.MYSQL_TAGDATA.getBoolean()) {
+            this.rosePlugin.getManager(DataManager.class).saveTagData(tag);
+        } else {
+            File file = new File(this.tagsFolder, tag.getId() + ".yml");
+            CommentedFileConfiguration config = CommentedFileConfiguration.loadConfiguration(file);
 
-        config.set("tags." + tag.getId() + ".name", tag.getName());
-        config.set("tags." + tag.getId() + ".tag", tag.getTag());
-        config.set("tags." + tag.getId() + ".description", tag.getDescription());
-        config.set("tags." + tag.getId() + ".permission", tag.getPermission());
-        config.set("tags." + tag.getId() + ".order", tag.getOrder());
-        config.set("tags." + tag.getId() + ".category", tag.getCategory());
+            config.set("tags." + tag.getId() + ".name", tag.getName());
+            config.set("tags." + tag.getId() + ".tag", tag.getTag());
+            config.set("tags." + tag.getId() + ".description", tag.getDescription());
+            config.set("tags." + tag.getId() + ".permission", tag.getPermission());
+            config.set("tags." + tag.getId() + ".order", tag.getOrder());
+            config.set("tags." + tag.getId() + ".category", tag.getCategory());
 
-        if (tag.getIcon() != null) {
-            config.set("tags." + tag.getId() + ".icon", TagsUtils.serializeItem(tag.getIcon()));
+            if (tag.getIcon() != null) {
+                config.set("tags." + tag.getId() + ".icon", TagsUtils.serializeItem(tag.getIcon()));
+            }
+
+            config.save(file);
         }
-
-        config.save(file);
         this.cachedTags.put(tag.getId(), tag);
     }
 
@@ -297,10 +307,13 @@ public class TagsManager extends Manager {
         this.cachedTags.remove(id);
         this.rosePlugin.getManager(DataManager.class).clearTagForAll(id);
 
-        // Find the file containing this tag
-        File tagFile = findFileForTag(id);
-        if (tagFile != null && tagFile.exists()) {
-            removeTagFromFile(tagFile, id);
+        if (Setting.MYSQL_TAGDATA.getBoolean()) {
+            this.rosePlugin.getManager(DataManager.class).deleteTagData(tag);
+        } else {
+            File tagFile = findFileForTag(id);
+            if (tagFile != null && tagFile.exists()) {
+                removeTagFromFile(tagFile, id);
+            }
         }
     }
 
@@ -352,23 +365,31 @@ public class TagsManager extends Manager {
     public void saveTags(Map<String, Tag> tags) {
         this.cachedTags.putAll(tags);
 
-        // If MySQL Tags is enabled, save the tags to the database instead of the tags.yml
         if (Setting.MYSQL_TAGDATA.getBoolean()) {
             this.rosePlugin.getManager(DataManager.class).saveTagData(tags);
-            return;
-        }
+        } else {
+            CompletableFuture.runAsync(() -> {
+                for (Map.Entry<String, Tag> entry : tags.entrySet()) {
+                    String id = entry.getKey();
+                    Tag tag = entry.getValue();
+                    File file = new File(this.tagsFolder, id + ".yml");
+                    CommentedFileConfiguration config = CommentedFileConfiguration.loadConfiguration(file);
 
-        // Save the tags to the tags.yml
-        CompletableFuture.runAsync(() -> tags.forEach((id, tag) -> {
-            this.tagConfig.set("tags." + id + ".name", tag.getName());
-            this.tagConfig.set("tags." + id + ".tag", tag.getTag());
-            this.tagConfig.set("tags." + id + ".description", tag.getDescription());
-            this.tagConfig.set("tags." + id + ".permission", tag.getPermission());
-            this.tagConfig.set("tags." + id + ".order", tag.getOrder());
-            this.tagConfig.set("tags." + id + ".hand-icon", tag.isHandIcon());
-            this.tagConfig.set("tags." + id + ".icon", TagsUtils.serializeItem(tag.getIcon()));
-            this.tagConfig.set("tags." + id + ".category", tag.getCategory());
-        })).thenRun(() -> this.tagConfig.save(this.tagsFile));
+                    config.set("tags." + id + ".name", tag.getName());
+                    config.set("tags." + id + ".tag", tag.getTag());
+                    config.set("tags." + id + ".description", tag.getDescription());
+                    config.set("tags." + id + ".permission", tag.getPermission());
+                    config.set("tags." + id + ".order", tag.getOrder());
+                    config.set("tags." + id + ".category", tag.getCategory());
+
+                    if (tag.getIcon() != null) {
+                        config.set("tags." + id + ".icon", TagsUtils.serializeItem(tag.getIcon()));
+                    }
+
+                    config.save(file);
+                }
+            });
+        }
     }
 
 
