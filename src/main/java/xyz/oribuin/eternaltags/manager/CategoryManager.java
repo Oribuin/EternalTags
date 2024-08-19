@@ -18,6 +18,7 @@ public class CategoryManager extends Manager {
     private final Map<String, Category> cachedCategories = new HashMap<>();
     private File categoryFile;
     private CommentedFileConfiguration categoryConfig;
+    private Category globalCategory;
 
     public CategoryManager(RosePlugin rosePlugin) {
         super(rosePlugin);
@@ -28,6 +29,7 @@ public class CategoryManager extends Manager {
         this.categoryFile = TagsUtils.createFile(this.rosePlugin, "categories.yml");
         this.categoryConfig = CommentedFileConfiguration.loadConfiguration(this.categoryFile);
         this.cachedCategories.clear();
+        this.globalCategory = null;
 
         CommentedConfigurationSection section = this.categoryConfig.getConfigurationSection("categories");
         if (section == null) return;
@@ -39,6 +41,8 @@ public class CategoryManager extends Manager {
         List<Category> global = this.getByType(CategoryType.GLOBAL);
         if (global.size() > 1) {
             this.rosePlugin.getLogger().severe("You have more than one global category, this is not allowed. Please remove the extra global categories.");
+        } else if (global.size() == 1) {
+            this.globalCategory = global.get(0);
         }
 
         List<Category> defaults = this.getByType(CategoryType.DEFAULT);
@@ -58,18 +62,22 @@ public class CategoryManager extends Manager {
 
         boolean global = section.getBoolean(newKey + ".global", false);
         boolean defaultCategory = section.getBoolean(newKey + ".default", false);
-        CategoryType categoryType = TagsUtils.getEnum(CategoryType.class, section.getString(newKey + ".type", "CUSTOM"));
-        if (global) categoryType = CategoryType.GLOBAL;
-        if (defaultCategory) categoryType = CategoryType.DEFAULT;
+        CategoryType categoryType = global ? CategoryType.GLOBAL :
+                defaultCategory ? CategoryType.DEFAULT :
+                        CategoryType.CUSTOM;
 
         Category category = new Category(key.toLowerCase());
-        category.setDisplayName(section.getString(newKey + ".display-name", newKey));
+        category.setDisplayName(section.getString(newKey + ".display-name", key));
         category.setType(categoryType);
         category.setOrder(section.getInt(newKey + ".order", -1));
         category.setPermission(section.getString(newKey + ".permission", null));
         category.setBypassPermission(section.getBoolean(newKey + ".unlocks-all-tags", false));
 
         this.cachedCategories.put(key.toLowerCase(), category);
+
+        if (global) {
+            this.globalCategory = category;
+        }
     }
 
     /**
@@ -105,17 +113,24 @@ public class CategoryManager extends Manager {
      *
      * @param category The category to save
      */
+
     public void save(Category category) {
         if (category == null || this.categoryConfig == null) return;
 
-        this.categoryConfig.set("categories.display-name", category.getDisplayName());
-        this.categoryConfig.set("categories.type", category.getType().name());
-        this.categoryConfig.set("categories.order", category.getOrder());
-        this.categoryConfig.set("categories.permission", category.getPermission());
-        this.categoryConfig.set("categories.unlocks-all-tags", category.isBypassPermission());
+        String key = "categories." + category.getId().toLowerCase();
+        this.categoryConfig.set(key + ".display-name", category.getDisplayName());
+        this.categoryConfig.set(key + ".global", category.getType() == CategoryType.GLOBAL);
+        this.categoryConfig.set(key + ".default", category.getType() == CategoryType.DEFAULT);
+        this.categoryConfig.set(key + ".order", category.getOrder());
+        this.categoryConfig.set(key + ".permission", category.getPermission());
+        this.categoryConfig.set(key + ".unlocks-all-tags", category.isBypassPermission());
 
         this.categoryConfig.save(this.categoryFile);
         this.cachedCategories.put(category.getId().toLowerCase(), category);
+
+        if (category.getType() == CategoryType.GLOBAL) {
+            this.globalCategory = category;
+        }
     }
 
     /**
@@ -149,6 +164,10 @@ public class CategoryManager extends Manager {
      */
     public boolean isEnabled() {
         return !this.cachedCategories.isEmpty();
+    }
+
+    public Category getGlobalCategory() {
+        return this.globalCategory;
     }
 
     @Override

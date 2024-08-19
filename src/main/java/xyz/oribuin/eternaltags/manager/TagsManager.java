@@ -613,11 +613,19 @@ public class TagsManager extends Manager {
      * @return The tags in the category
      */
     public List<Tag> getTagsInCategory(Category category) {
+        CategoryManager categoryManager = this.rosePlugin.getManager(CategoryManager.class);
 
-        // Check the default values if the category is global or disabled
-        if (category.getType() == CategoryType.GLOBAL) return new ArrayList<>(this.cachedTags.values());
-        if (!this.rosePlugin.getManager(CategoryManager.class).isEnabled())
+        if (category == categoryManager.getGlobalCategory()) {
             return new ArrayList<>(this.cachedTags.values());
+        }
+
+        if (category.getType() == CategoryType.GLOBAL) {
+            return new ArrayList<>(this.cachedTags.values());
+        }
+
+        if (!categoryManager.isEnabled()) {
+            return new ArrayList<>(this.cachedTags.values());
+        }
 
         return this.cachedTags.values().stream()
                 .filter(tag -> tag.getCategory() != null && tag.getCategory().equalsIgnoreCase(category.getId()))
