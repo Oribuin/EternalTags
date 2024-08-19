@@ -8,6 +8,7 @@
 # scrolling-type - The type of scrolling for the GUI [HORIZONTAL, VERTICAL]
 # update-title - Whether to update the title of the GUI on load, If this is set to false, the title will be the "pre-title" option until the page is changed.
 # add-pages-asynchronously - Whether to add pages asynchronously (This will improve performance, however, it may take a few seconds for the GUI to load)
+# allocated-slots - Specifies slots for categories to appear in the GUI
 #
 # The general options for the customising itemstacks.
 #  
@@ -35,6 +36,11 @@ gui-settings:
   scrolling-type: HORIZONTAL
   update-title: true
   add-pages-asynchronously: true
+  allocated-slots:
+    - 1-7
+    - 10-16
+    - 19-25
+    - 28-34
 
 # Categories - These are all the categories that will be shown in the GUI
 # Default: [animated, static, placeholders, symbols, all-tags]
@@ -42,9 +48,11 @@ gui-settings:
 #   <category-id>:
 #     hidden: Whether the category should be shown in the GUI
 #     display-item: The item to display in the GUI
+#     slot-fill: how many slots the category should take up
 categories:
   animated:
     hidden: false
+    slot-fill: 7
     display-item:
       material: PLAYER_HEAD
       name: '&#FF416C&lAnimated Tags'
@@ -59,6 +67,7 @@ categories:
 
   static:
     hidden: false
+    slot-fill: 7
     display-item:
       material: PLAYER_HEAD
       name: '&#f12711&lStatic Tags'
@@ -73,6 +82,7 @@ categories:
 
   placeholders:
     hidden: false
+    slot-fill: 7
     display-item:
       material: PLAYER_HEAD
       name: '&#FFE000&lPlaceholder Tags'
@@ -86,6 +96,7 @@ categories:
 
   undefined:
     hidden: false
+    slot-fill: 7
     display-item:
       material: PLAYER_HEAD
       name: '&#a8ff78&lUncategorized Tags'
@@ -99,6 +110,7 @@ categories:
 
   all-tags:
     hidden: false
+    slot-fill: 7
     display-item:
       material: PLAYER_HEAD
       name: '&#2193b0&lAll Tags'

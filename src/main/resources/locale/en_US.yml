@@ -33,7 +33,7 @@ command-create-tag-missing: Please provide a display tag.
 
 # Delete Command
 command-delete-description: Deletes a tag from the config.
-command-delete-deleted: You have successfully deleted the tag, %tag%&f!
+command-delete-deleted: "You have successfully deleted the tag, %tag%&f!"
 
 # Favorite Command
 command-favorite-description: Toggles a tag as a favourite.
@@ -79,6 +79,7 @@ command-edit-invalid-item: Please hold a valid item in your hand.
 # Plugin Error Messages
 no-tags: You currently do not own any tags.
 tag-doesnt-exist: The tag you have provided doesn't exist.
+tag-already-exists: "&cWarning: A tag with ID '%id%' already exists. Skipping tag in file: %file%"
 
 # Argument Handler Error Messages
 argument-handler-player: Please provide an online username.

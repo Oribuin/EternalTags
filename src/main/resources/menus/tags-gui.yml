@@ -23,7 +23,8 @@
 # owner - The uuid of the player for the reward item (Only for skulls)
 # flags - The item flags for the reward item.
 # enchants - The enchantments for the reward item.
-#  
+# slots - the location for the item to appear in the gui
+#
 # Icon Actions
 #  
 # Actions is an optional configuration option that can replace an item's functionality with a new one.
@@ -67,6 +68,10 @@ tag-item:
     - '&f| &7this tag to your favorites'
     - ''
   glow: true
+  slots:
+    - 10-16
+    - 29
+    - 33
 
 # Next Page Item - Changes the current page to the next page 
 next-page:

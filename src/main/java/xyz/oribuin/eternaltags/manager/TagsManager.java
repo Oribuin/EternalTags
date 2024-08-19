@@ -40,6 +40,7 @@ public class TagsManager extends Manager {
     private CommentedFileConfiguration tagConfig;
 
     // Other Values.
+    private File tagsFolder;
     private Map<String, String> defaultTagGroups;
     private boolean isDefaultTagEnabled;
 
@@ -59,22 +60,20 @@ public class TagsManager extends Manager {
         // Check if we're using default tags
         this.isDefaultTagEnabled = this.usingGroupDefaults() || !Setting.DEFAULT_TAG.getString().equalsIgnoreCase("none");
 
-        // Load all tags from mysql instead of tags.yml
-        if (Setting.MYSQL_TAGDATA.getBoolean()) {
-            dataManager.loadTagData(this.cachedTags);
-            return;
+        // Create and load from the tags folder
+        this.tagsFolder = new File(this.rosePlugin.getDataFolder(), "tags");
+        if (!this.tagsFolder.exists()) {
+            this.tagsFolder.mkdirs();
         }
-        // Create the tags.yml
-        this.tagsFile = TagsUtils.createFile(this.rosePlugin, "tags.yml");
-        this.tagConfig = CommentedFileConfiguration.loadConfiguration(this.tagsFile);
-        this.loadTags();
+
+        this.cachedTags.clear();
+        this.loadTagsFromFolder(this.tagsFolder);
 
         // Load all the users from the database
         List<Player> users = Bukkit.getOnlinePlayers().stream()
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
-        // Load all the users from the database
         dataManager.loadUsers(users.stream()
                 .map(Player::getUniqueId)
                 .collect(Collectors.toList())
@@ -89,17 +88,66 @@ public class TagsManager extends Manager {
         this.cachedTags.clear();
     }
 
-    public void loadTags() {
-        CommentedConfigurationSection tagSection = this.tagConfig.getConfigurationSection("tags");
-        if (tagSection == null) {
-            this.rosePlugin.getLogger().severe("WARNING: We could not find any tags in the tags.yml file. Please make sure you have at least one tag saved.");
+    private void loadTagsFromFolder(File folder) {
+        File[] files = folder.listFiles();
+        if (files == null) return;
+
+        for (File file : files) {
+            if (file.isDirectory()) {
+                loadTagsFromFolder(file);
+            } else if (file.getName().endsWith(".yml")) {
+                loadTagsFromFile(file);
+            }
+        }
+    }
+
+    private void loadTagsFromFile(File file) {
+        CommentedFileConfiguration config = CommentedFileConfiguration.loadConfiguration(file);
+        CommentedConfigurationSection tagsSection = config.getConfigurationSection("tags");
+        if (tagsSection == null) return;
+
+        for (String key : tagsSection.getKeys(false)) {
+            loadTag(tagsSection, key, file.getPath());
+        }
+    }
+
+    private void loadTag(CommentedConfigurationSection section, String key, String filePath) {
+        String id = key.toLowerCase();
+        if (this.cachedTags.containsKey(id)) {
+            this.rosePlugin.getLogger().warning(this.rosePlugin.getManager(LocaleManager.class).getLocaleMessage("tag-already-exists",
+                    StringPlaceholders.builder()
+                            .add("id", id)
+                            .add("file", filePath)
+                            .build()));
             return;
         }
 
-        this.cachedTags.clear();
-        for (String key : tagSection.getKeys(false)) {
-            this.loadTag(tagSection, key);
+        String name = section.getString(key + ".name", key);
+        String text = section.getString(key + ".tag");
+
+        if (text == null) return;
+        Tag tag = new Tag(id, name, text);
+        tag.setDescription(section.getStringList(key + ".description"));
+        tag.setPermission(section.getString(key + ".permission"));
+        tag.setOrder(section.getInt(key + ".order", -1));
+
+        CategoryManager categoryManager = this.rosePlugin.getManager(CategoryManager.class);
+        String categoryId = section.getString(key + ".category");
+        if (categoryId != null) {
+            tag.setCategory(categoryId);
+        } else {
+            Category defaultCategory = categoryManager.getFirst(CategoryType.DEFAULT);
+            if (defaultCategory != null) {
+                tag.setCategory(defaultCategory.getId());
+            }
         }
+
+        Object icon = section.get(key + ".icon");
+        if (icon != null) {
+            tag.setIcon(TagsUtils.getMultiDeserializedItem(section, key));
+        }
+
+        this.cachedTags.put(id, tag);
     }
 
     /**
@@ -141,18 +189,21 @@ public class TagsManager extends Manager {
      * @param tag The tag being saved.
      */
     public void saveTag(Tag tag) {
-        Category defaultCategory = this.rosePlugin.getManager(CategoryManager.class)
-                .getFirst(CategoryType.DEFAULT);
+        File file = new File(this.tagsFolder, tag.getId() + ".yml");
+        CommentedFileConfiguration config = CommentedFileConfiguration.loadConfiguration(file);
 
-        if (tag.getCategory() == null && defaultCategory != null)
-            tag.setCategory(defaultCategory.getId());
+        config.set("tags." + tag.getId() + ".name", tag.getName());
+        config.set("tags." + tag.getId() + ".tag", tag.getTag());
+        config.set("tags." + tag.getId() + ".description", tag.getDescription());
+        config.set("tags." + tag.getId() + ".permission", tag.getPermission());
+        config.set("tags." + tag.getId() + ".order", tag.getOrder());
+        config.set("tags." + tag.getId() + ".category", tag.getCategory());
 
-        if (Setting.MYSQL_TAGDATA.getBoolean()) {
-            this.rosePlugin.getManager(DataManager.class).saveTagData(tag);
-        } else {
-            this.saveToConfig(tag);
+        if (tag.getIcon() != null) {
+            config.set("tags." + tag.getId() + ".icon", TagsUtils.serializeItem(tag.getIcon()));
         }
 
+        config.save(file);
         this.cachedTags.put(tag.getId(), tag);
     }
 
@@ -194,13 +245,58 @@ public class TagsManager extends Manager {
         });
     }
 
-    /**
-     * Delete a tag from the config & cache by object.
-     *
-     * @param tag The tag being deleted.
-     */
-    public void deleteTag(Tag tag) {
-        this.deleteTag(tag.getId().toLowerCase());
+    public void deleteTag(String id) {
+        Tag tag = this.getTagFromId(id);
+        if (tag == null) return;
+
+        this.cachedTags.remove(id);
+        this.rosePlugin.getManager(DataManager.class).clearTagForAll(id);
+
+        // Find the file containing this tag
+        File tagFile = findFileForTag(id);
+        if (tagFile != null && tagFile.exists()) {
+            removeTagFromFile(tagFile, id);
+        }
+    }
+
+    private File findFileForTag(String tagId) {
+        for (File file : getAllTagFiles(this.tagsFolder)) {
+            CommentedFileConfiguration config = CommentedFileConfiguration.loadConfiguration(file);
+            if (config.contains("tags." + tagId)) {
+                return file;
+            }
+        }
+        return null;
+    }
+
+    private void removeTagFromFile(File file, String tagId) {
+        CommentedFileConfiguration config = CommentedFileConfiguration.loadConfiguration(file);
+        config.set("tags." + tagId, null);
+        config.save(file);
+
+        // If the file is empty after removing the tag, delete it
+        if (config.getConfigurationSection("tags").getKeys(false).isEmpty()) {
+            file.delete();
+        }
+    }
+
+    private List<File> getAllTagFiles(File folder) {
+        List<File> tagFiles = new ArrayList<>();
+        File[] files = folder.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    tagFiles.addAll(getAllTagFiles(file));
+                } else if (file.getName().endsWith(".yml")) {
+                    tagFiles.add(file);
+                }
+            }
+        }
+        return tagFiles;
+    }
+
+    public File getTagsFolder() {
+        return this.tagsFolder;
     }
 
     /**
@@ -230,36 +326,12 @@ public class TagsManager extends Manager {
         })).thenRun(() -> this.tagConfig.save(this.tagsFile));
     }
 
-    /**
-     * Delete a tag from the config & cache by id.
-     *
-     * @param id The id of the tag.
-     */
-    public void deleteTag(String id) {
-        Tag tag = this.getTagFromId(id);
-        if (tag == null) return;
-
-        this.cachedTags.remove(id);
-        this.rosePlugin.getManager(DataManager.class).clearTagForAll(id);
-
-        // Delete the tag from the database if MySQL TagData is enabled.
-        if (Setting.MYSQL_TAGDATA.getBoolean()) {
-            this.rosePlugin.getManager(DataManager.class).deleteTagData(tag);
-            return;
-        }
-
-        // Delete the tag from the tags.yml
-        this.tagConfig.set("tags." + id, null);
-        this.tagConfig.save(this.tagsFile);
-    }
 
     /**
      * Get a tag by the UUID, load the user if they aren't cached.
      *
      * @param uuid The UUID of the player.
-     *
      * @return The active tag if present
-     *
      * @deprecated Use {@link TagsManager#getUserTag(UUID)} instead.
      */
     @Nullable
@@ -272,7 +344,6 @@ public class TagsManager extends Manager {
      * Get a tag by the UUID, If the user isn't cached, return null.
      *
      * @param uuid The UUID of the player.
-     *
      * @return The active tag if present
      */
     @Nullable
@@ -287,7 +358,6 @@ public class TagsManager extends Manager {
      * if a player needs to have their tag updated. (Remove Inactive Tags or Default Tags)
      *
      * @param player The player object.
-     *
      * @return The active tag if present
      */
     @Nullable
@@ -323,9 +393,7 @@ public class TagsManager extends Manager {
      * Get a tag by the offline player object, If the user isn't cached, return null.
      *
      * @param player The offline player object.
-     *
      * @return The active tag if present
-     *
      * @since 1.1.6
      */
     @Nullable
@@ -366,7 +434,6 @@ public class TagsManager extends Manager {
      * Get a user's favourite tags.
      *
      * @param uuid The UUID of the player.
-     *
      * @return The map of favourite tags.
      */
     @NotNull
@@ -385,7 +452,6 @@ public class TagsManager extends Manager {
      * Get all the tags a player has permission to use.
      *
      * @param player The player
-     *
      * @return The tags the player has.
      */
     @NotNull
@@ -402,7 +468,6 @@ public class TagsManager extends Manager {
      * Check if a tag exists from the id.
      *
      * @param id The id of the tag.
-     *
      * @return true if the tag exists.
      */
     public boolean checkTagExists(String id) {
@@ -413,7 +478,6 @@ public class TagsManager extends Manager {
      * Match a tag based on the id.
      *
      * @param id The id of the tag.
-     *
      * @return An optional tag.
      */
     @Nullable
@@ -467,7 +531,6 @@ public class TagsManager extends Manager {
      *
      * @param player The player
      * @param tag    The tag
-     *
      * @return If the tag is favourited.
      */
     public boolean isFavourite(UUID player, Tag tag) {
@@ -492,7 +555,6 @@ public class TagsManager extends Manager {
      * Get a randomized tag from a user's available tags.
      *
      * @param offlinePlayer The offlinePlayer
-     *
      * @return The random tag.
      */
     public Tag getRandomTag(@Nullable OfflinePlayer offlinePlayer) {
@@ -513,7 +575,6 @@ public class TagsManager extends Manager {
      * @param tag         The tag.
      * @param player      The player.
      * @param placeholder The placeholder.
-     *
      * @return The display tag.
      */
     public String getDisplayTag(@Nullable Tag tag, OfflinePlayer player, @NotNull String placeholder) {
@@ -530,7 +591,6 @@ public class TagsManager extends Manager {
      *
      * @param tag    The tag.
      * @param player The player.
-     *
      * @return The display tag.
      */
     public String getDisplayTag(@Nullable Tag tag, OfflinePlayer player) {
@@ -550,14 +610,14 @@ public class TagsManager extends Manager {
      * Get the tags in a category
      *
      * @param category The category
-     *
      * @return The tags in the category
      */
     public List<Tag> getTagsInCategory(Category category) {
 
         // Check the default values if the category is global or disabled
         if (category.getType() == CategoryType.GLOBAL) return new ArrayList<>(this.cachedTags.values());
-        if (!this.rosePlugin.getManager(CategoryManager.class).isEnabled()) return new ArrayList<>(this.cachedTags.values());
+        if (!this.rosePlugin.getManager(CategoryManager.class).isEnabled())
+            return new ArrayList<>(this.cachedTags.values());
 
         return this.cachedTags.values().stream()
                 .filter(tag -> tag.getCategory() != null && tag.getCategory().equalsIgnoreCase(category.getId()))
@@ -568,7 +628,6 @@ public class TagsManager extends Manager {
      * Get all the tags in a category
      *
      * @param category The category
-     *
      * @return The tags in the category
      */
     public List<Tag> getCategoryTags(Category category) {
@@ -580,7 +639,6 @@ public class TagsManager extends Manager {
      *
      * @param category The category
      * @param player   The player
-     *
      * @return The tags in the category that the player has access to
      */
     public List<Tag> getCategoryTags(Category category, Player player) {
@@ -605,7 +663,6 @@ public class TagsManager extends Manager {
      *
      * @param player The player
      * @param tag    The tag
-     *
      * @return If the player has access to the tag
      */
     public boolean canUseTag(@NotNull Player player, @NotNull Tag tag) {
@@ -630,7 +687,6 @@ public class TagsManager extends Manager {
      * Get the tag placeholders for the given player
      *
      * @param tag The tag
-     *
      * @return The tag placeholders
      */
     private StringPlaceholders getTagPlaceholders(Tag tag) {
