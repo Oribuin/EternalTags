@@ -7,12 +7,14 @@ import dev.triumphteam.gui.components.ScrollType;
 import dev.triumphteam.gui.guis.BaseGui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
+import dev.triumphteam.gui.guis.ScrollingGui;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.action.Action;
 import xyz.oribuin.eternaltags.gui.MenuItem;
@@ -29,23 +31,21 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 public class FavouritesGUI extends PluginMenu {
 
-    private final TagsManager manager;
-    private final LocaleManager locale;
-    private final Map<String, ItemStack> tagItems;
-    private final List<Integer> tagSlots;
+    private final TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
+    private final LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
+
+    private final Map<String, ItemStack> tagItems = new LinkedHashMap<>(); // Cache the tag items, so we don't have to create them every time.
+    private final List<Integer> tagSlots = new ArrayList<>();
 
     /**
      * Constructor for FavouritesGUI
      */
     public FavouritesGUI() {
         super(EternalTags.getInstance());
-        this.manager = this.rosePlugin.getManager(TagsManager.class);
-        this.locale = this.rosePlugin.getManager(LocaleManager.class);
-        this.tagItems = new LinkedHashMap<>();
-        this.tagSlots = new ArrayList<>();
     }
 
     /**
@@ -54,6 +54,7 @@ public class FavouritesGUI extends PluginMenu {
     @Override
     public void load() {
         super.load();
+
         this.tagItems.clear();
         this.loadTagSlots();
     }
@@ -62,7 +63,8 @@ public class FavouritesGUI extends PluginMenu {
      * Load the tag slots from the configuration
      */
     private void loadTagSlots() {
-        this.tagSlots.clear();
+        this.tagSlots.clear(); // clear the cache
+
         List<String> slotsConfig = this.config.getStringList("tag-item.slots");
         if (slotsConfig.isEmpty()) {
             int rows = this.config.getInt("gui-settings.rows", 6);
@@ -86,12 +88,15 @@ public class FavouritesGUI extends PluginMenu {
     }
 
     /**
-     * Open the GUI for a player
+     * Open the GUI for a player with an optional filter
      *
      * @param player The player to open the GUI for
      */
     public void open(@NotNull Player player) {
-        String finalMenuTitle = this.config.getString("gui-settings.title", "EternalTags | %page%/%total%");
+        String menuTitle = this.config.getString("gui-settings.title");
+        if (menuTitle == null)
+            menuTitle = "EternalTags | %page%/%total%";
+        String finalMenuTitle = menuTitle;
 
         boolean scrollingGui = this.config.getBoolean("gui-settings.scrolling-gui", false);
         ScrollType scrollingType = TagsUtils.getEnum(
@@ -106,22 +111,22 @@ public class FavouritesGUI extends PluginMenu {
         this.addExtraItems(gui, player);
         this.addFunctionalItems(gui, player);
 
-        gui.setPageSize(this.tagSlots.size());
-
-        gui.open(player);
+        this.sync(() -> gui.open(player));
 
         Runnable task = () -> {
-            this.addTagsToGui(gui, player);
+            gui.setPageSize(this.tagSlots.size());
+            this.addTags(gui, player);
 
-            if (this.reloadTitle()) {
+            if (this.reloadTitle())
                 this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
-            }
         };
 
         if (this.addPagesAsynchronously())
             this.async(task);
         else
             task.run();
+
+        this.addNavigationIcons(gui, player, finalMenuTitle);
     }
 
     /**
@@ -153,6 +158,7 @@ public class FavouritesGUI extends PluginMenu {
                 MenuItem.create(this.config)
                         .path("extra-items." + key)
                         .player(player)
+                        .action((item, event) -> item.sound((Player) event.getWhoClicked()))
                         .place(gui);
             }
         }
@@ -165,50 +171,44 @@ public class FavouritesGUI extends PluginMenu {
      * @param player The player viewing the GUI
      */
     private void addFunctionalItems(PaginatedGui gui, Player player) {
-        String finalMenuTitle = this.config.getString("gui-settings.title", "EternalTags | %page%/%total%");
-
-        MenuItem.create(this.config)
-                .path("next-page")
-                .player(player)
-                .action(event -> {
-                    if (gui.next()) {
-                        this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
-                    }
-                })
-                .place(gui);
-
-        MenuItem.create(this.config)
-                .path("previous-page")
-                .player(player)
-                .action(event -> {
-                    if (gui.previous()) {
-                        this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
-                    }
-                })
-                .place(gui);
-
         MenuItem.create(this.config)
                 .path("clear-tag")
                 .player(player)
-                .action(event -> this.clearTag(player))
-                .place(gui);
-
-        MenuItem.create(this.config)
-                .path("main-menu")
-                .player(player)
-                .action(event -> {
-                    if (Setting.OPEN_CATEGORY_GUI_FIRST.getBoolean()) {
-                        MenuProvider.get(CategoryGUI.class).open(player);
-                    } else {
-                        MenuProvider.get(TagsGUI.class).open(player, null);
-                    }
+                .action((item, event) -> {
+                    item.sound((Player) event.getWhoClicked());
+                    this.clearTag(player);
                 })
                 .place(gui);
 
         MenuItem.create(this.config)
                 .path("categories")
                 .player(player)
-                .action(event -> MenuProvider.get(CategoryGUI.class).open(player))
+                .action((item, event) -> {
+                    item.sound((Player) event.getWhoClicked());
+                    MenuProvider.get(CategoryGUI.class).open(player);
+                })
+                .place(gui);
+
+        MenuItem.create(this.config)
+                .path("search")
+                .player(player)
+                .action((item, event) -> {
+                    item.sound((Player) event.getWhoClicked());
+                    this.searchTags(player, gui);
+                })
+                .place(gui);
+
+        MenuItem.create(this.config)
+                .path("main-menu")
+                .player(player)
+                .action((item, event) -> {
+                    item.sound((Player) event.getWhoClicked());
+                    if (Setting.OPEN_CATEGORY_GUI_FIRST.getBoolean()) {
+                        MenuProvider.get(CategoryGUI.class).open(player);
+                    } else {
+                        MenuProvider.get(TagsGUI.class).open(player, null);
+                    }
+                })
                 .place(gui);
 
         MenuItem.create(this.config)
@@ -219,12 +219,42 @@ public class FavouritesGUI extends PluginMenu {
                         this.clearFavourites(player, gui);
                 })
                 .place(gui);
+    }
+
+    /**
+     * Add navigation icons to the GUI
+     *
+     * @param gui            The GUI to add navigation icons to
+     * @param player         The player viewing the GUI
+     * @param finalMenuTitle The title of the GUI
+     */
+    private void addNavigationIcons(PaginatedGui gui, Player player, String finalMenuTitle) {
 
         MenuItem.create(this.config)
-                .path("search")
+                .path("next-page")
                 .player(player)
-                .action(event -> this.searchTags(player, gui))
+                .action((item, event) -> {
+                    if (gui.next()) {
+                        item.sound((Player) event.getWhoClicked());
+                        this.addNavigationIcons(gui, player, finalMenuTitle);
+                        this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                    }
+                })
                 .place(gui);
+
+        MenuItem.create(this.config)
+                .path("previous-page")
+                .player(player)
+                .action((item, event) -> {
+                    if (gui.previous()) {
+                        item.sound((Player) event.getWhoClicked());
+                        this.addNavigationIcons(gui, player, finalMenuTitle);
+                        this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                    }
+                })
+                .place(gui);
+
+        gui.update(); // Update the GUI to apply the changes.
     }
 
     /**
@@ -233,71 +263,71 @@ public class FavouritesGUI extends PluginMenu {
      * @param gui    The GUI to add tags to
      * @param player The player viewing the GUI
      */
-    private void addTagsToGui(PaginatedGui gui, Player player) {
-        List<Tag> tags = this.getTags(player);
+    private void addTags(@NotNull BaseGui gui, @NotNull Player player) {
+        if (gui instanceof PaginatedGui paginatedGui) // Remove all items from the GUI
+            paginatedGui.clearPageItems();
+
+        if (gui instanceof ScrollingGui scrollingGui) // Remove all items from the GUI
+            scrollingGui.clearPageItems();
+
+
         Map<ClickType, List<Action>> tagActions = this.getTagActions();
+        for (Tag tag : this.getTags(player)) {
+            GuiAction<InventoryClickEvent> action = event -> {
 
-        for (Tag tag : tags) {
-            GuiAction<InventoryClickEvent> action = createTagAction(player, gui, tag, tagActions);
+                // Make sure the player has permission to use the tag
+                if (!this.manager.canUseTag(player, tag)) {
+                    this.locale.sendMessage(player, "no-permission");
+                    gui.close(player);
+                    return;
+                }
 
-            GuiItem item;
+                // Run the tag actions
+                if (!tagActions.isEmpty()) {
+                    this.runActions(tagActions, event, this.getTagPlaceholders(tag, player));
+                    gui.close(player);
+                    return;
+                }
+
+                // If the player is shift clicking, toggle the favourite
+                if (event.isShiftClick()) {
+                    this.toggleFavourite(player, tag);
+                    this.addTags(gui, player);
+                    return;
+                }
+
+                // Set the tag
+                this.setTag(player, tag);
+                gui.close(player);
+            };
+
+            // If the tag is already in the cache, use that instead of creating a new one.
             if (Setting.CACHE_GUI_TAGS.getBoolean() && this.tagItems.containsKey(tag.getId())) {
-                item = new GuiItem(this.tagItems.get(tag.getId()));
+                GuiItem item = new GuiItem(this.tagItems.get(tag.getId()));
                 item.setAction(action);
-            } else {
-                ItemStack tagItem = this.getTagItem(player, tag);
-                item = new GuiItem(tagItem, action);
-                if (Setting.CACHE_GUI_TAGS.getBoolean())
-                    this.tagItems.put(tag.getId(), tagItem);
+                gui.addItem(item);
+                continue;
             }
 
+            GuiItem item = new GuiItem(this.getTagItem(player, tag), action);
+
+            // Add the tag to the cache
+            if (Setting.CACHE_GUI_TAGS.getBoolean())
+                this.tagItems.put(tag.getId(), item.getItemStack());
+
             gui.addItem(item);
+
         }
 
         gui.update();
     }
 
-    /**
-     * Create an action for a tag item
-     *
-     * @param player     The player viewing the GUI
-     * @param gui        The GUI containing the tag
-     * @param tag        The tag
-     * @param tagActions The actions for the tag
-     * @return The action for the tag item
-     */
-    private GuiAction<InventoryClickEvent> createTagAction(Player player, BaseGui gui, Tag tag, Map<ClickType, List<Action>> tagActions) {
-        return event -> {
-            if (!this.manager.canUseTag(player, tag)) {
-                this.locale.sendMessage(player, "no-permission");
-                gui.close(player);
-                return;
-            }
-
-            if (!tagActions.isEmpty()) {
-                this.runActions(tagActions, event, this.getTagPlaceholders(tag, player));
-                gui.close(player);
-                return;
-            }
-
-            if (event.isShiftClick()) {
-                this.toggleFavourite(player, tag);
-                if (gui instanceof PaginatedGui paginatedGui) {
-                    this.addTagsToGui(paginatedGui, player);
-                }
-                return;
-            }
-
-            this.setTag(player, tag);
-            gui.close(player);
-        };
-    }
 
     /**
-     * Get the list of favourite tags for a player
+     * Get all the tags that should be displayed in the GUI
      *
-     * @param player The player to get tags for
-     * @return The list of favourite tags
+     * @param player The player to get the tags for
+     * @return A list of tags
      */
     @NotNull
     private List<Tag> getTags(@NotNull Player player) {
@@ -312,10 +342,10 @@ public class FavouritesGUI extends PluginMenu {
     }
 
     /**
-     * Set a tag for a player
+     * Change a player's active tag, and send the message to the player.
      *
-     * @param player The player to set the tag for
-     * @param tag    The tag to set
+     * @param player The player
+     * @param tag    The tag
      */
     private void setTag(Player player, Tag tag) {
         Tag activeTag = this.manager.getUserTag(player);
@@ -329,10 +359,10 @@ public class FavouritesGUI extends PluginMenu {
     }
 
     /**
-     * Toggle a tag as a favourite for a player
+     * Toggle a player's favourite tag
      *
-     * @param player The player to toggle the favourite for
-     * @param tag    The tag to toggle
+     * @param player The player
+     * @param tag    The tag
      */
     private void toggleFavourite(Player player, Tag tag) {
         boolean isFavourite = this.manager.isFavourite(player.getUniqueId(), tag);
@@ -342,18 +372,13 @@ public class FavouritesGUI extends PluginMenu {
         else
             this.manager.addFavourite(player.getUniqueId(), tag);
 
+
         String message = locale.getLocaleMessage(isFavourite ? "command-favorite-off" : "command-favorite-on");
         this.locale.sendMessage(player, "command-favorite-toggled", StringPlaceholders.builder("tag", this.manager.getDisplayTag(tag, player))
                 .add("toggled", message)
                 .build());
     }
 
-    /**
-     * Clear all favourites for a player
-     *
-     * @param player The player to clear favourites for
-     * @param gui    The GUI to close after clearing
-     */
     private void clearFavourites(Player player, BaseGui gui) {
         this.manager.clearFavourites(player.getUniqueId());
         this.locale.sendMessage(player, "command-favorite-cleared");

@@ -1,44 +1,109 @@
-# EternalTags Favorites GUI Configuration
-# This file controls the appearance and behavior of the favorites selection GUI.
+# EternalTags Tags GUI Configuration
+# This file controls the appearance and behavior of the tags selection GUI.
 
 # =============================================
 # GUI Settings
 # =============================================
 gui-settings:
+
+  # The title shown while the GUI is loading
+  # OPTIONAL: If not set, will use the main title
   pre-title: EternalTags Loading...
-  title: Favourite Tags | %page%/%total%
+
+  # The main title of the GUI. Use %page% and %total% for pagination info
+  title: EternalTags | %page%/%total%
+
+  # Total number of rows in the GUI (Max: 6)
   rows: 6
+
+  # Sorting options for tags
+  # Options: ALPHABETICAL, CUSTOM, NONE, RANDOM
+  # CUSTOM uses the 'order' value defined in tags.yml
   sort-type: CUSTOM
+
+  # Show favorite tags first in the GUI
+  # OPTIONAL: Defaults to false
+  favourite-first: true
+
+  # Include all tags in the GUI, even if the player doesn't have permission
+  # OPTIONAL: Defaults to false
+  add-all-tags: false
+
+  # Format for tag descriptions in lore
+  # OPTIONAL: Defaults to ' &f| &7'
   description-format: ' &f| &7'
+
+  # GUI type settings
+  # OPTIONAL: Defaults to false
   scrolling-gui: false
+
+  # OPTIONAL: Only used if scrolling-gui is true
+  # Options: HORIZONTAL, VERTICAL
   scrolling-type: HORIZONTAL
+
+  # Update the title on GUI load (false uses pre-title until page change)
+  # OPTIONAL: Defaults to true
   update-title: true
+
+  # Add pages asynchronously (improves performance, longer initial load)
+  # OPTIONAL: Defaults to false
   add-pages-asynchronously: true
 
 # =============================================
-# Tag Item
+# Tag Item | Represents each tag in GUI |
 # =============================================
-# Represents each favorite tag in the GUI
+
 tag-item:
+
+  # Material of the item (Minecraft item ID)
   material: NAME_TAG
+
+  # OPTIONAL: Amount of items in the stack (default: 1)
   amount: 1
+
+  # Name of the item. Use %tag% for the tag's name
   name: '%tag%'
+
+  # OPTIONAL: Lore of the item. Supports color codes and placeholders
   lore:
     - ''
     - '&f| #00B4DBLeft-Click &7on this'
     - '&f| &7icon to change your'
     - '&f| &7active tag!'
     - '&f| '
-    - '&f| #00B4DBShift-Click &7to remove'
-    - '&f| &7this tag from your favorites'
+    - '&f| #00B4DBShift-Click &7to add'
+    - '&f| &7this tag to your favorites'
     - ''
+
+  # OPTIONAL: Whether the item should have an enchantment glow
   glow: true
+
+  # OPTIONAL: Specific slots for tag items. If not set, will use all available slots
   slots:
     - 10-16
     - 28
     - 30
     - 32
     - 34
+
+# =============================================
+# General Item Property Options
+# =============================================
+# These options can be used for any item in the GUI
+#
+# material: The material of the item (e.g., DIAMOND_SWORD)
+# amount: The stack size of the item
+# name: The display name of the item
+# lore: The item's lore. Use %description% to add the tag's description
+# glow: Whether the item should have an enchantment glow (true/false)
+# texture: Base64 texture for player heads. Use 'hdb:<id>' for HeadDatabase
+# potion-color: Color for potion items (e.g., RED, #FF0000)
+# model-data: Custom model data for resource packs
+# owner: UUID or player name for player heads
+# flags: Item flags to apply (e.g., HIDE_ATTRIBUTES)
+# enchants: Enchantments to apply to the item (e.g., DAMAGE_ALL:1)
+# slots: Specific slots where the item should appear in the GUI
+# sound: Sound to play when the item is clicked (e.g., ENTITY_EXPERIENCE_ORB_PICKUP)
 
 # =============================================
 # Navigation Items
@@ -107,36 +172,6 @@ main-menu:
   slot: 4
 
 # =============================================
-# Extra Items
-# =============================================
-extra-items:
-  border-item:
-    enabled: false
-    material: GRAY_STAINED_GLASS_PANE
-    name: ' '
-    slots:
-      - 0-8
-      - 45-53
-
-# =============================================
-# General Item Property Options
-# =============================================
-# These options can be used for any item in the GUI
-#
-# material: The material of the item (e.g., DIAMOND_SWORD)
-# amount: The stack size of the item
-# name: The display name of the item
-# lore: The item's lore. Use %description% to add the tag's description
-# glow: Whether the item should have an enchantment glow (true/false)
-# texture: Base64 texture for player heads
-# potion-color: Color for potion items
-# model-data: Custom model data for resource packs
-# owner: UUID or player name for player heads
-# flags: Item flags to apply (e.g., HIDE_ATTRIBUTES)
-# enchants: Enchantments to apply to the item
-# slots: Specific slots where the item should appear in the GUI
-
-# =============================================
 # Icon Actions
 # =============================================
 # Actions can replace an item's functionality with a new one.
@@ -155,3 +190,22 @@ extra-items:
 
 #   MIDDLE:
 #     - '[console] ban %player_name%'
+
+#
+# Placeholders:
+# You can use various placeholders in the commands, such as:
+# %player_name% - The name of the player
+# %tag% - The name of the clicked tag
+# %eternaltags_tag_formatted% - The formatted name of the player's current tag
+
+# =============================================
+# Extra Items
+# =============================================
+extra-items:
+  border-item:
+    enabled: false
+    material: GRAY_STAINED_GLASS_PANE
+    name: ' '
+    slots:
+      - 0-8
+      - 45-53

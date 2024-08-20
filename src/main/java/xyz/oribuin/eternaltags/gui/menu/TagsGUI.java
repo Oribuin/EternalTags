@@ -193,6 +193,7 @@ public class TagsGUI extends PluginMenu {
                 .player(player)
                 .action((item, event) -> {
                     item.sound((Player) event.getWhoClicked());
+
                     MenuProvider.get(FavouritesGUI.class).open(player);
                 })
                 .place(gui);
@@ -270,7 +271,6 @@ public class TagsGUI extends PluginMenu {
      *
      * @param gui    The GUI to add tags to
      * @param player The player viewing the GUI
-     * @param filter An optional filter for the tags
      */
     private void addTags(@NotNull BaseGui gui, @NotNull Player player, @Nullable Predicate<Tag> filter) {
         if (gui instanceof PaginatedGui paginatedGui) // Remove all items from the GUI
@@ -367,10 +367,10 @@ public class TagsGUI extends PluginMenu {
     }
 
     /**
-     * Change a player's active tag, and send the message to the player.
+     * Set a tag for a player
      *
-     * @param player The player
-     * @param tag    The tag
+     * @param player The player to set the tag for
+     * @param tag    The tag to set
      */
     private void setTag(Player player, Tag tag) {
         Tag activeTag = this.manager.getUserTag(player);
@@ -384,10 +384,10 @@ public class TagsGUI extends PluginMenu {
     }
 
     /**
-     * Toggle a player's favourite tag
+     * Toggle a tag as a favourite for a player
      *
-     * @param player The player
-     * @param tag    The tag
+     * @param player The player to toggle the favourite for
+     * @param tag    The tag to toggle
      */
     private void toggleFavourite(Player player, Tag tag) {
         boolean isFavourite = this.manager.isFavourite(player.getUniqueId(), tag);
