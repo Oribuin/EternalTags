@@ -32,20 +32,17 @@ import java.util.function.Predicate;
 
 public class TagsGUI extends PluginMenu {
 
-    private final TagsManager manager;
-    private final LocaleManager locale;
-    private final Map<String, ItemStack> tagItems;
-    private final List<Integer> tagSlots;
+    private final TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
+    private final LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
+
+    private final Map<String, ItemStack> tagItems = new LinkedHashMap<>(); // Cache the tag items, so we don't have to create them every time.
+    private final List<Integer> tagSlots = new ArrayList<>();
 
     /**
      * Constructor for TagsGUI
      */
     public TagsGUI() {
         super(EternalTags.getInstance());
-        this.manager = this.rosePlugin.getManager(TagsManager.class);
-        this.locale = this.rosePlugin.getManager(LocaleManager.class);
-        this.tagItems = new LinkedHashMap<>();
-        this.tagSlots = new ArrayList<>();
     }
 
     /**
@@ -54,15 +51,17 @@ public class TagsGUI extends PluginMenu {
     @Override
     public void load() {
         super.load();
-        this.tagItems.clear();
-        this.loadTagSlots();
+
+        this.tagItems.clear(); // Clear the cache, so we don't have any old items.
+        this.loadTagSlots(); // load specified slots from configuration
     }
 
     /**
      * Load the tag slots from the configuration
      */
     private void loadTagSlots() {
-        this.tagSlots.clear();
+        this.tagSlots.clear(); // clear the cache
+
         List<String> slotsConfig = this.config.getStringList("tag-item.slots");
         if (slotsConfig.isEmpty()) {
             int rows = this.config.getInt("gui-settings.rows", 6);
@@ -101,7 +100,11 @@ public class TagsGUI extends PluginMenu {
      * @param filter An optional filter for the tags
      */
     public void open(@NotNull Player player, @Nullable Predicate<Tag> filter) {
-        String finalMenuTitle = this.config.getString("gui-settings.title", "EternalTags | %page%/%total%");
+
+        String menuTitle = this.config.getString("gui-settings.title");
+        if (menuTitle == null)
+            menuTitle = "EternalTags | %page%/%total%";
+        String finalMenuTitle = menuTitle;
 
         boolean scrollingGui = this.config.getBoolean("gui-settings.scrolling-gui", false);
         ScrollType scrollingType = TagsUtils.getEnum(
@@ -116,14 +119,20 @@ public class TagsGUI extends PluginMenu {
         this.addExtraItems(gui, player);
         this.addFunctionalItems(gui, player);
 
-        gui.setPageSize(this.tagSlots.size());
-        this.addTagsToGui(gui, player, filter);
-
         this.sync(() -> gui.open(player));
 
-        if (this.reloadTitle()) {
-            this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
-        }
+        Runnable task = () -> {
+            gui.setPageSize(this.tagSlots.size());
+            this.addTags(gui, player, filter);
+
+            if (this.reloadTitle())
+                this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+        };
+
+        if (this.addPagesAsynchronously())
+            this.async(task);
+        else
+            task.run();
 
         this.addNavigationIcons(gui, player, finalMenuTitle);
     }
@@ -221,38 +230,6 @@ public class TagsGUI extends PluginMenu {
     }
 
     /**
-     * Add tags to the GUI
-     *
-     * @param gui    The GUI to add tags to
-     * @param player The player viewing the GUI
-     * @param filter An optional filter for the tags
-     */
-    private void addTagsToGui(PaginatedGui gui, Player player, Predicate<Tag> filter) {
-        List<Tag> tags = this.getTags(player, filter);
-        Map<ClickType, List<Action>> tagActions = this.getTagActions();
-        Sound tagSound = TagsUtils.getEnum(Sound.class, this.config.getString("tag-item.sound", ""));
-
-        for (Tag tag : tags) {
-            GuiAction<InventoryClickEvent> action = createTagAction(player, gui, tag, tagActions, tagSound, filter);
-
-            GuiItem item;
-            if (Setting.CACHE_GUI_TAGS.getBoolean() && this.tagItems.containsKey(tag.getId())) {
-                item = new GuiItem(this.tagItems.get(tag.getId()));
-                item.setAction(action);
-            } else {
-                ItemStack tagItem = this.getTagItem(player, tag);
-                item = new GuiItem(tagItem, action);
-                if (Setting.CACHE_GUI_TAGS.getBoolean())
-                    this.tagItems.put(tag.getId(), tagItem);
-            }
-
-            gui.addItem(item);
-        }
-
-        gui.update();
-    }
-
-    /**
      * Add navigation icons to the GUI
      *
      * @param gui            The GUI to add navigation icons to
@@ -260,6 +237,7 @@ public class TagsGUI extends PluginMenu {
      * @param finalMenuTitle The title of the GUI
      */
     private void addNavigationIcons(PaginatedGui gui, Player player, String finalMenuTitle) {
+
         MenuItem.create(this.config)
                 .path("next-page")
                 .player(player)
@@ -284,49 +262,72 @@ public class TagsGUI extends PluginMenu {
                 })
                 .place(gui);
 
-        gui.update();
+        gui.update(); // Update the GUI to apply the changes.
     }
 
     /**
-     * Create an action for a tag item
+     * Add tags to the GUI
      *
-     * @param player     The player viewing the GUI
-     * @param gui        The GUI containing the tag
-     * @param tag        The tag
-     * @param tagActions The actions for the tag
-     * @param tagSound   The sound to play when clicking the tag
-     * @param filter     The filter applied to the tags
-     * @return The action for the tag item
+     * @param gui    The GUI to add tags to
+     * @param player The player viewing the GUI
+     * @param filter An optional filter for the tags
      */
-    private GuiAction<InventoryClickEvent> createTagAction(Player player, BaseGui gui, Tag tag, Map<ClickType, List<Action>> tagActions, Sound tagSound, Predicate<Tag> filter) {
-        return event -> {
-            if (!this.manager.canUseTag(player, tag)) {
-                this.locale.sendMessage(player, "no-permission");
-                gui.close(player);
-                return;
-            }
+    private void addTags(@NotNull BaseGui gui, @NotNull Player player, @Nullable Predicate<Tag> filter) {
+        if (gui instanceof PaginatedGui paginatedGui) // Remove all items from the GUI
+            paginatedGui.clearPageItems();
 
-            if (!tagActions.isEmpty()) {
-                this.runActions(tagActions, event, this.getTagPlaceholders(tag, player));
-                return;
-            }
+        Map<ClickType, List<Action>> tagActions = this.getTagActions();
+        Sound tagSound = TagsUtils.getEnum(Sound.class, this.config.getString("tag-item.sound", ""));
 
-            if (tagSound != null) {
-                player.playSound(player.getLocation(), tagSound, 75, 1);
-            }
-
-            if (event.isShiftClick()) {
-                this.toggleFavourite(player, tag);
-                if (gui instanceof PaginatedGui paginatedGui) {
-                    this.addTagsToGui(paginatedGui, player, filter);
+        this.getTags(player, filter).forEach(tag -> {
+            GuiAction<InventoryClickEvent> action = event -> {
+                // Check if the player has permission to use the tag
+                if (!this.manager.canUseTag(player, tag)) {
+                    this.locale.sendMessage(player, "no-permission");
+                    gui.close(player);
+                    return;
                 }
-                return;
+
+                // Run the actions for the tag
+                if (!tagActions.isEmpty()) {
+                    this.runActions(tagActions, event, this.getTagPlaceholders(tag, player));
+                    return;
+                }
+
+                // Play the sound if it's not null
+                if (tagSound != null) {
+                    player.playSound(player.getLocation(), tagSound, 75, 1);
+                }
+
+                // If the player is shift clicking, toggle the favourite status of the tag
+                if (event.isShiftClick()) {
+                    this.toggleFavourite(player, tag);
+                    this.addTags(gui, player, filter);
+                    return;
+                }
+
+                // Set the tag if the player is not shift clicking
+                this.setTag(player, tag);
+                gui.close(player);
+            };
+
+            GuiItem item;
+            if (Setting.CACHE_GUI_TAGS.getBoolean() && this.tagItems.containsKey(tag.getId())) {
+                item = new GuiItem(this.tagItems.get(tag.getId()));
+                item.setAction(action);
+            } else {
+                ItemStack tagItem = this.getTagItem(player, tag);
+                item = new GuiItem(tagItem, action);
+                if (Setting.CACHE_GUI_TAGS.getBoolean())
+                    this.tagItems.put(tag.getId(), tagItem);
             }
 
-            this.setTag(player, tag);
-            gui.close(player);
-        };
+            gui.addItem(item);
+        });
+
+        gui.update();
     }
+
 
     /**
      * Get the list of tags for a player
@@ -347,16 +348,18 @@ public class TagsGUI extends PluginMenu {
             sortType.sort(tags);
         }
 
-        List<Tag> playerTags = new ArrayList<>(this.manager.getPlayerTags(player));
-        sortType.sort(playerTags);
-        tags.addAll(playerTags);
+        List<Tag> playerTags = new ArrayList<>(this.manager.getPlayerTags(player)); // Get the player's tags
+        sortType.sort(playerTags); // Individually sort the player's tags
+        tags.addAll(playerTags); // Add all the list of tags
 
+        // We're adding all the remaining tags to the list if the option is enabled
         if (this.config.getBoolean("gui-settings.add-all-tags")) {
             List<Tag> allTags = new ArrayList<>(this.manager.getCachedTags().values());
             sortType.sort(allTags);
             tags.addAll(allTags);
         }
 
+        // If the keyword is not null, filter the list of tags
         if (filter != null)
             tags = tags.stream().filter(filter).toList();
 
@@ -364,10 +367,10 @@ public class TagsGUI extends PluginMenu {
     }
 
     /**
-     * Set a tag for a player
+     * Change a player's active tag, and send the message to the player.
      *
-     * @param player The player to set the tag for
-     * @param tag    The tag to set
+     * @param player The player
+     * @param tag    The tag
      */
     private void setTag(Player player, Tag tag) {
         Tag activeTag = this.manager.getUserTag(player);
@@ -381,18 +384,19 @@ public class TagsGUI extends PluginMenu {
     }
 
     /**
-     * Toggle a tag as a favourite for a player
+     * Toggle a player's favourite tag
      *
-     * @param player The player to toggle the favourite for
-     * @param tag    The tag to toggle
+     * @param player The player
+     * @param tag    The tag
      */
-    private void toggleFavourite(@NotNull Player player, Tag tag) {
+    private void toggleFavourite(Player player, Tag tag) {
         boolean isFavourite = this.manager.isFavourite(player.getUniqueId(), tag);
 
         if (isFavourite)
             this.manager.removeFavourite(player.getUniqueId(), tag);
         else
             this.manager.addFavourite(player.getUniqueId(), tag);
+
 
         String message = locale.getLocaleMessage(isFavourite ? "command-favorite-off" : "command-favorite-on");
         this.locale.sendMessage(player, "command-favorite-toggled", StringPlaceholders.builder("tag", this.manager.getDisplayTag(tag, player))
