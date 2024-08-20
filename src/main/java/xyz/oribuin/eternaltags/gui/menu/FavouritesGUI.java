@@ -14,7 +14,6 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.action.Action;
 import xyz.oribuin.eternaltags.gui.MenuItem;
@@ -31,7 +30,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 
 public class FavouritesGUI extends PluginMenu {
 
@@ -233,24 +231,19 @@ public class FavouritesGUI extends PluginMenu {
         MenuItem.create(this.config)
                 .path("next-page")
                 .player(player)
-                .action((item, event) -> {
-                    if (gui.next()) {
-                        item.sound((Player) event.getWhoClicked());
-                        this.addNavigationIcons(gui, player, finalMenuTitle);
-                        this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
-                    }
+                .action(event -> {
+                    gui.next();
+                    this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
                 })
+                .player(player)
                 .place(gui);
 
         MenuItem.create(this.config)
                 .path("previous-page")
                 .player(player)
-                .action((item, event) -> {
-                    if (gui.previous()) {
-                        item.sound((Player) event.getWhoClicked());
-                        this.addNavigationIcons(gui, player, finalMenuTitle);
-                        this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
-                    }
+                .action(event -> {
+                    gui.previous();
+                    this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
                 })
                 .place(gui);
 

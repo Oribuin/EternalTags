@@ -2,11 +2,14 @@ package xyz.oribuin.eternaltags.gui.menu;
 
 import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
+import dev.triumphteam.gui.components.GuiAction;
 import dev.triumphteam.gui.components.ScrollType;
+import dev.triumphteam.gui.guis.BaseGui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.EternalTags;
@@ -26,20 +29,17 @@ import java.util.*;
 
 public class CategoryGUI extends PluginMenu {
 
-    private final TagsManager manager;
-    private final CategoryManager categoryManager;
-    private final Map<Category, GuiItem> categoryIcons;
-    private List<Integer> allocatedSlots;
+
+    private final TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
+    private final CategoryManager categoryManager = this.rosePlugin.getManager(CategoryManager.class);
+    private final Map<Category, GuiItem> categoryIcons = new LinkedHashMap<>(); // Cache the tag items, so we don't have to create them every time.
+    private List<Integer> allocatedSlots = new ArrayList<>();
 
     /**
      * Constructor for CategoryGUI
      */
     public CategoryGUI() {
         super(EternalTags.getInstance());
-        this.manager = this.rosePlugin.getManager(TagsManager.class);
-        this.categoryManager = this.rosePlugin.getManager(CategoryManager.class);
-        this.categoryIcons = new LinkedHashMap<>();
-        this.allocatedSlots = new ArrayList<>();
     }
 
     /**
@@ -48,6 +48,7 @@ public class CategoryGUI extends PluginMenu {
     @Override
     public void load() {
         super.load();
+
         this.categoryIcons.clear();
         this.loadAllocatedSlots();
     }
@@ -91,7 +92,12 @@ public class CategoryGUI extends PluginMenu {
             return;
         }
 
-        String finalMenuTitle = this.config.getString("gui-settings.title", "Category Menu | %page%/%total%");
+        String menuTitle = this.config.getString("gui-settings.title");
+        if (menuTitle == null)
+            menuTitle = "Category Menu";
+
+        String finalMenuTitle = menuTitle;
+
 
         boolean scrollingGui = this.config.getBoolean("gui-settings.scrolling-gui", false);
         ScrollType scrollingType = TagsUtils.getEnum(
@@ -108,13 +114,17 @@ public class CategoryGUI extends PluginMenu {
 
         gui.setPageSize(this.allocatedSlots.size());
 
-        this.addCategoriesToGui(gui, player);
-
         gui.open(player);
 
-        if (this.reloadTitle()) {
-            this.updateTitle(gui, player, finalMenuTitle);
-        }
+        Runnable task = () -> {
+            this.addCategories(gui, player);
+
+            if (this.reloadTitle())
+                this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+        };
+
+        if (this.addPagesAsynchronously()) this.async(task);
+        else task.run();
     }
 
     /**
@@ -164,19 +174,18 @@ public class CategoryGUI extends PluginMenu {
                 .path("next-page")
                 .player(player)
                 .action(event -> {
-                    if (gui.next()) {
-                        this.updateTitle(gui, player, finalMenuTitle);
-                    }
+                    gui.next();
+                    this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
                 })
+                .player(player)
                 .place(gui);
 
         MenuItem.create(this.config)
                 .path("previous-page")
                 .player(player)
                 .action(event -> {
-                    if (gui.previous()) {
-                        this.updateTitle(gui, player, finalMenuTitle);
-                    }
+                    gui.previous();
+                    this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
                 })
                 .place(gui);
 
@@ -223,63 +232,65 @@ public class CategoryGUI extends PluginMenu {
      * @param gui    The GUI to add categories to
      * @param player The player viewing the GUI
      */
-    private void addCategoriesToGui(@NotNull PaginatedGui gui, @NotNull Player player) {
-        List<Category> categories = this.getCategories(player);
-        TagsGUI tagsGUI = MenuProvider.get(TagsGUI.class);
-        if (tagsGUI == null) return;
+    private void addCategories(@NotNull BaseGui gui, @NotNull Player player) {
+        if (gui instanceof PaginatedGui paginated)
+            paginated.clearPageItems();
 
-        for (Category category : categories) {
+        TagsGUI tagsGUI = MenuProvider.get(TagsGUI.class);
+        if (tagsGUI == null) // This should never happen, but just in case.
+            return;
+
+        this.getCategories(player).forEach(category -> {
             String categoryPath = "categories." + category.getId();
-            if (!this.config.contains(categoryPath) || this.config.getBoolean(categoryPath + ".hidden", false)) {
-                continue;
+            if (this.config.getBoolean(categoryPath + ".hidden", false)) {
+                return;
             }
 
-            GuiItem guiItem = createCategoryItem(player, category, tagsGUI);
-            int slotFill = this.config.getInt(categoryPath + ".slot-fill", 1); // Default to 1 if not specified
+            GuiAction<InventoryClickEvent> action = event -> {
+                if (category.getType() == CategoryType.GLOBAL) {
+                    tagsGUI.open(player);
+                } else {
+                    tagsGUI.open(player, tag -> tag.getCategory() != null && tag.getCategory().equalsIgnoreCase(category.getId()));
+                }
+            };
 
+            if (Setting.CACHE_GUI_CATEGORIES.getBoolean() && this.categoryIcons.containsKey(category)) {
+                GuiItem item = this.categoryIcons.get(category);
+                item.setAction(action);
+
+                int slotFill = this.config.getInt(categoryPath + ".slot-fill", 1);
+                for (int i = 0; i < slotFill; i++) {
+                    gui.addItem(item);
+                }
+                return;
+            }
+
+            StringPlaceholders.Builder placeholders = StringPlaceholders.builder()
+                    .add("category", category.getDisplayName())
+                    .add("total", this.manager.getTagsInCategory(category).size());
+
+            if (this.config.getBoolean("gui-settings.only-unlocked-categories"))
+                placeholders.add("unlocked", this.manager.getCategoryTags(category, player).size());
+
+            ItemStack item = TagsUtils.deserialize(this.config, player, categoryPath + ".display-item", placeholders.build());
+            if (item == null) {
+                item = new ItemBuilder(Material.OAK_SIGN)
+                        .name(formatString(player, "#00B4DB" + category.getDisplayName()))
+                        .build();
+            }
+
+            GuiItem guiItem = new GuiItem(item, action);
+
+            int slotFill = this.config.getInt(categoryPath + ".slot-fill", 1);
             for (int i = 0; i < slotFill; i++) {
                 gui.addItem(guiItem);
             }
 
             if (Setting.CACHE_GUI_CATEGORIES.getBoolean())
                 this.categoryIcons.put(category, guiItem);
-        }
+        });
 
         gui.update();
-    }
-
-    /**
-     * Create a GUI item for a category
-     *
-     * @param player   The player viewing the GUI
-     * @param category The category
-     * @param tagsGUI  The TagsGUI instance
-     * @return The created GUI item
-     */
-    private GuiItem createCategoryItem(Player player, Category category, TagsGUI tagsGUI) {
-        String categoryPath = "categories." + category.getId();
-
-        StringPlaceholders.Builder placeholders = StringPlaceholders.builder()
-                .add("category", category.getDisplayName())
-                .add("total", this.manager.getTagsInCategory(category).size());
-
-        if (this.config.getBoolean("gui-settings.only-unlocked-categories"))
-            placeholders.add("unlocked", this.manager.getCategoryTags(category, player).size());
-
-        ItemStack item = TagsUtils.deserialize(this.config, player, categoryPath + ".display-item", placeholders.build());
-        if (item == null) {
-            item = new ItemBuilder(Material.OAK_SIGN)
-                    .name(formatString(player, "#00B4DB" + category.getDisplayName()))
-                    .build();
-        }
-
-        return new GuiItem(item, event -> {
-            if (category.getType() == CategoryType.GLOBAL) {
-                tagsGUI.open(player);
-            } else {
-                tagsGUI.open(player, tag -> tag.getCategory() != null && tag.getCategory().equalsIgnoreCase(category.getId()));
-            }
-        });
     }
 
     /**
@@ -314,21 +325,6 @@ public class CategoryGUI extends PluginMenu {
         return categories;
     }
 
-    /**
-     * Update the title of the GUI
-     *
-     * @param gui         The GUI to update
-     * @param player      The player viewing the GUI
-     * @param titleFormat The format of the title
-     */
-    private void updateTitle(PaginatedGui gui, Player player, String titleFormat) {
-        StringPlaceholders placeholders = StringPlaceholders.builder()
-                .add("page", gui.getCurrentPageNum())
-                .add("total", gui.getPagesNum())
-                .build();
-        String title = this.formatString(player, titleFormat, placeholders);
-        this.sync(() -> gui.updateTitle(title));
-    }
 
     /**
      * Get the name of the menu
