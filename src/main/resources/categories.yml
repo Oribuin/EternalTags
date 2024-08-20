@@ -16,40 +16,40 @@ categories:
     order: 2
     permission: 'eternaltags.category.quest'
 
-  donation:
-    display-name: 'Donation Tags'
-    order: 3
-    permission: 'eternaltags.category.donation'
-
-  staff:
-    display-name: 'Staff Tags'
-    order: 4
-    permission: 'eternaltags.category.staff'
-
   event:
     display-name: 'Event Tags'
-    order: 5
+    order: 3
     permission: 'eternaltags.category.event'
 
   achievement:
     display-name: 'Achievement Tags'
-    order: 6
+    order: 4
     permission: 'eternaltags.category.achievement'
-
-  seasonal:
-    display-name: 'Seasonal Tags'
-    order: 7
-    permission: 'eternaltags.category.seasonal'
 
   rank:
     display-name: 'Rank Tags'
-    order: 8
+    order: 5
     permission: 'eternaltags.category.rank'
 
   minigame:
     display-name: 'Minigame Tags'
-    order: 9
+    order: 6
     permission: 'eternaltags.category.minigame'
+
+  donation:
+    display-name: 'Donation Tags'
+    order: 7
+    permission: 'eternaltags.category.donation'
+
+  staff:
+    display-name: 'Staff Tags'
+    order: 8
+    permission: 'eternaltags.category.staff'
+
+  seasonal:
+    display-name: 'Seasonal Tags'
+    order: 9
+    permission: 'eternaltags.category.seasonal'
 
   custom:
     display-name: 'Custom Tags'

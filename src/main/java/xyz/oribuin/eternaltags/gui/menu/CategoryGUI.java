@@ -29,7 +29,7 @@ public class CategoryGUI extends PluginMenu {
     private final TagsManager manager;
     private final CategoryManager categoryManager;
     private final Map<Category, GuiItem> categoryIcons;
-    private final List<Integer> allocatedSlots;
+    private List<Integer> allocatedSlots;
 
     /**
      * Constructor for CategoryGUI
@@ -56,18 +56,26 @@ public class CategoryGUI extends PluginMenu {
      * Load the allocated slots from the configuration
      */
     private void loadAllocatedSlots() {
-        this.allocatedSlots.clear();
-        List<String> slotsConfig = this.config.getStringList("gui-settings.allocated-slots");
-        for (String slotConfig : slotsConfig) {
-            if (slotConfig.contains("-")) {
-                String[] range = slotConfig.split("-");
-                int start = Integer.parseInt(range[0]);
-                int end = Integer.parseInt(range[1]);
-                for (int i = start; i <= end; i++) {
-                    this.allocatedSlots.add(i);
+        this.allocatedSlots = new ArrayList<>();
+        if (this.config.contains("gui-settings.allocated-slots")) {
+            List<String> slotsConfig = this.config.getStringList("gui-settings.allocated-slots");
+            for (String slotConfig : slotsConfig) {
+                if (slotConfig.contains("-")) {
+                    String[] range = slotConfig.split("-");
+                    int start = Integer.parseInt(range[0]);
+                    int end = Integer.parseInt(range[1]);
+                    for (int i = start; i <= end; i++) {
+                        this.allocatedSlots.add(i);
+                    }
+                } else {
+                    this.allocatedSlots.add(Integer.parseInt(slotConfig));
                 }
-            } else {
-                this.allocatedSlots.add(Integer.parseInt(slotConfig));
+            }
+        } else {
+            // If allocated-slots is not defined, use all available slots
+            int rows = this.config.getInt("gui-settings.rows", 6);
+            for (int i = 0; i < rows * 9; i++) {
+                this.allocatedSlots.add(i);
             }
         }
     }
@@ -227,7 +235,7 @@ public class CategoryGUI extends PluginMenu {
             }
 
             GuiItem guiItem = createCategoryItem(player, category, tagsGUI);
-            int slotFill = this.config.getInt(categoryPath + ".slot-fill", 1);
+            int slotFill = this.config.getInt(categoryPath + ".slot-fill", 1); // Default to 1 if not specified
 
             for (int i = 0; i < slotFill; i++) {
                 gui.addItem(guiItem);
