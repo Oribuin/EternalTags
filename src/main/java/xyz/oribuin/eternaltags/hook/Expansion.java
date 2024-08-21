@@ -70,10 +70,10 @@ public class Expansion extends PlaceholderExpansion {
      * @return The result of the placeholder
      */
     public String result(String param, OfflinePlayer offlinePlayer, Tag tag) {
-        if (offlinePlayer == null) return "Error: Player is null"; // Require a player for these placeholders
+        if (offlinePlayer == null) return ""; // Require a player for these placeholders
         Player player = offlinePlayer.getPlayer();
 
-        if (player == null) return "Error: Player is null"; // Require a player for these placeholders
+        if (player == null) return ""; // Require a player for these placeholders
 
         // These tags are different and dont always want formattedPlaceholder
         if (param.equalsIgnoreCase("active")) return String.valueOf(tag != null); // Return true if the tag is not null

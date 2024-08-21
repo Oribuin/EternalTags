@@ -329,6 +329,8 @@ public class TagsManager extends Manager {
      */
     @Nullable
     public Tag getUserTag(Player player) {
+        if (player == null) return null;
+        
         DataManager data = this.rosePlugin.getManager(DataManager.class);
         TagUser user = data.getCachedUsers().getOrDefault(player.getUniqueId(), new TagUser(player.getUniqueId()));
         Tag tag = this.getTagFromId(user.getActiveTag());
