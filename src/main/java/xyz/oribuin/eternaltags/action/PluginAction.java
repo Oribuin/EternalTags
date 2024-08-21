@@ -1,6 +1,5 @@
 package xyz.oribuin.eternaltags.action;
 
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -56,9 +55,10 @@ public final class PluginAction {
      * Parse the action from text
      *
      * @param text Text to parse
+     *
      * @return Action associated with the text
      */
-    public static @Nullable Action parse(String text) {
+    public static Action parse(String text) {
         // Check if the text matches the pattern ("[<action>] <message>") and get the action and message
         Matcher matcher = ACTION_PATTERN.matcher(text);
         if (!matcher.find()) {
@@ -87,7 +87,7 @@ public final class PluginAction {
         return null;
     }
 
-    public static @NotNull String serialize(Action action) {
+    public static String serialize(Action action) {
         return "[" + action.getName() + "] " + action.getMessage();
     }
 

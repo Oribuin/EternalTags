@@ -3,28 +3,57 @@ package xyz.oribuin.eternaltags.obj;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
 import xyz.oribuin.eternaltags.manager.DataManager;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Tag {
 
-    private final @NotNull String id; // The id of the tag
-    private @NotNull String name; // The name of the tag
-    private @NotNull String tag; // The tag to be added to the player
-    private @Nullable String permission;   // The permission required to use the tag
-    private @NotNull List<String> description; // The description of the tag
+    private final String id; // The id of the tag
+    private String name; // The name of the tag
+    private String tag; // The tag to be added to the player
+    private String permission;   // The permission required to use the tag
+    private List<String> description; // The description of the tag
     private int order; // The order of the tag
-    private @Nullable ItemStack icon; // The icon of the tag
-    private @Nullable String category; // The category the tag is in
+    private ItemStack icon; // The icon of the tag
+    private String category; // The category the tag is in
     private boolean handIcon; // Whether the icon is from the player's hand or not, internal method for tag saving
+    private File file; // The file the tag is saved in
 
-    public Tag(@NotNull String id, @NotNull String name, @NotNull String tag) {
+    /**
+     * The tag instance for the plugin
+     *
+     * @param id   The id of the tag
+     * @param name The name of the tag
+     * @param tag  The tag to be added to the player
+     */
+    public Tag(String id, String name, String tag) {
+        this.file = null;
+        this.id = id;
+        this.name = name;
+        this.tag = tag;
+        this.description = new ArrayList<>();
+        this.permission = "eternaltags.tag." + id.toLowerCase();
+        this.order = -1;
+        this.icon = null;
+        this.category = null;
+        this.handIcon = false;
+    }
+
+    /**
+     * The tag instance for the plugin
+     *
+     * @param file The file the tag is saved in
+     * @param id   The id of the tag
+     * @param name The name of the tag
+     * @param tag  The tag to be added to the player
+     */
+    public Tag(File file, String id, String name, String tag) {
+        this.file = file;
         this.id = id;
         this.name = name;
         this.tag = tag;
@@ -64,39 +93,39 @@ public class Tag {
         dataManager.removeUser(player.getUniqueId());
     }
 
-    public @NotNull String getId() {
+    public String getId() {
         return id;
     }
 
-    public @NotNull String getName() {
+    public String getName() {
         return name;
     }
 
-    public void setName(@NotNull String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
-    public @NotNull String getTag() {
+    public String getTag() {
         return tag;
     }
 
-    public void setTag(@NotNull String tag) {
+    public void setTag(String tag) {
         this.tag = tag;
     }
 
-    public @Nullable String getPermission() {
+    public String getPermission() {
         return permission;
     }
 
-    public void setPermission(@Nullable String permission) {
+    public void setPermission(String permission) {
         this.permission = permission;
     }
 
-    public @NotNull List<String> getDescription() {
+    public List<String> getDescription() {
         return description;
     }
 
-    public void setDescription(@NotNull List<String> description) {
+    public void setDescription(List<String> description) {
         this.description = description;
     }
 
@@ -108,15 +137,15 @@ public class Tag {
         this.order = order;
     }
 
-    public @Nullable ItemStack getIcon() {
+    public ItemStack getIcon() {
         return icon;
     }
 
-    public void setIcon(@Nullable ItemStack icon) {
+    public void setIcon(ItemStack icon) {
         this.icon = icon;
     }
 
-    public void setIcon(@Nullable Material material) {
+    public void setIcon(Material material) {
         if (material == null) {
             this.icon = null;
             return;
@@ -125,11 +154,11 @@ public class Tag {
         this.icon = new ItemStack(material);
     }
 
-    public @Nullable String getCategory() {
+    public String getCategory() {
         return category;
     }
 
-    public void setCategory(@Nullable String category) {
+    public void setCategory(String category) {
         this.category = category;
     }
 
@@ -140,4 +169,13 @@ public class Tag {
     public void setHandIcon(boolean handIcon) {
         this.handIcon = handIcon;
     }
+
+    public File getFile() {
+        return file;
+    }
+
+    public void setFile(File file) {
+        this.file = file;
+    }
+
 }

@@ -7,17 +7,18 @@ import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.triumphteam.gui.components.ScrollType;
 import dev.triumphteam.gui.guis.BaseGui;
 import dev.triumphteam.gui.guis.Gui;
+import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
 import dev.triumphteam.gui.guis.ScrollingGui;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.action.Action;
 import xyz.oribuin.eternaltags.action.PluginAction;
@@ -42,6 +43,8 @@ public abstract class PluginMenu {
 
     protected final RosePlugin rosePlugin;
     protected CommentedFileConfiguration config;
+    protected List<Integer> allocatedSlots = new ArrayList<>();
+    protected List<Integer> tagSlots = new ArrayList<>();
 
     public PluginMenu(RosePlugin rosePlugin) {
         this.rosePlugin = rosePlugin;
@@ -56,7 +59,6 @@ public abstract class PluginMenu {
      * Create the menu file if it doesn't exist and add the default values
      */
     public void load() {
-
         File menuFile = TagsUtils.createFile(this.rosePlugin, "menus", this.getMenuName() + ".yml");
         this.config = CommentedFileConfiguration.loadConfiguration(menuFile);
 
@@ -77,12 +79,115 @@ public abstract class PluginMenu {
     }
 
     /**
+     * Load the allocated slots for the GUI
+     */
+    protected void loadAllocatedSlots() {
+        this.allocatedSlots = new ArrayList<>();
+
+        if (!this.config.contains("gui-settings.allocated-slots")) {
+            // If allocated-slots is not defined, use all available slots
+            int rows = this.config.getInt("gui-settings.rows", 6);
+            for (int i = 0; i < rows * 9; i++) {
+                this.allocatedSlots.add(i);
+            }
+            return;
+        }
+
+        List<String> slotsConfig = this.config.getStringList("gui-settings.allocated-slots");
+        for (String slotConfig : slotsConfig) {
+            if (!slotConfig.contains("-")) {
+                this.allocatedSlots.add(Integer.parseInt(slotConfig));
+                continue;
+            }
+
+            String[] range = slotConfig.split("-");
+            int start = Integer.parseInt(range[0]);
+            int end = Integer.parseInt(range[1]);
+            for (int i = start; i <= end; i++) {
+                this.allocatedSlots.add(i);
+            }
+
+            return;
+        }
+    }
+
+    /**
+     * Load the tag slots from the configuration
+     */
+    protected void loadTagSlots() {
+        this.tagSlots.clear(); // clear the cache
+
+        List<String> slotsConfig = this.config.getStringList("tag-item.slots");
+        if (slotsConfig.isEmpty()) {
+            int rows = this.config.getInt("gui-settings.rows", 6);
+            for (int i = 0; i < rows * 9; i++) {
+                this.tagSlots.add(i);
+            }
+
+            return;
+        }
+
+        for (String slotConfig : slotsConfig) {
+            if (!slotConfig.contains("-")) {
+                this.tagSlots.add(Integer.parseInt(slotConfig));
+                continue;
+            }
+
+            String[] range = slotConfig.split("-");
+            int start = Integer.parseInt(range[0]);
+            int end = Integer.parseInt(range[1]);
+            for (int i = start; i <= end; i++) {
+                this.tagSlots.add(i);
+            }
+        }
+    }
+
+    /**
+     * Set up the initial layout of the GUI
+     *
+     * @param gui The GUI to set up
+     */
+    protected void setupGuiLayout(PaginatedGui gui) {
+        int rows = this.config.getInt("gui-settings.rows", 6);
+        int totalSlots = rows * 9;
+
+        GuiItem empty = new GuiItem(new ItemStack(Material.AIR));
+        for (int i = 0; i < totalSlots; i++) {
+            if (this.allocatedSlots.contains(i)) {
+                return;
+            }
+
+            gui.setItem(i, empty);
+        }
+    }
+
+
+    /**
+     * Add extra items to the GUI
+     *
+     * @param gui    The GUI to add items to
+     * @param player The player viewing the GUI
+     */
+    protected void addExtraItems(PaginatedGui gui, Player player) {
+        CommentedConfigurationSection extraItems = this.config.getConfigurationSection("extra-items");
+        if (extraItems == null) return;
+
+        for (String key : extraItems.getKeys(false)) {
+            MenuItem.create(this.config)
+                    .path("extra-items." + key)
+                    .player(player)
+                    .place(gui);
+        }
+    }
+
+    /**
      * Create a paged GUI for the given player
      *
      * @param player The player to create the GUI for
+     *
      * @return The created GUI
      */
-    protected final @NotNull PaginatedGui createPagedGUI(Player player) {
+    protected final PaginatedGui createPagedGUI(Player player) {
         int rows = this.config.getInt("gui-settings.rows", 6);
         String preTitle = this.config.getString("gui-settings.pre-title", "EternalTags");
 
@@ -101,9 +206,10 @@ public abstract class PluginMenu {
      * Create a GUI for the given player without pages
      *
      * @param player The player to create the GUI for
+     *
      * @return The created GUI
      */
-    protected final @NotNull Gui createGUI(Player player) {
+    protected final Gui createGUI(Player player) {
         int rows = this.config.getInt("gui-settings.rows");
         String preTitle = this.config.getString("gui-settings.pre-title", "EternalTags");
 
@@ -118,9 +224,10 @@ public abstract class PluginMenu {
      * Scrolling gui for the given player
      *
      * @param player The player to create the GUI for
+     *
      * @return The created GUI
      */
-    protected final @NotNull ScrollingGui createScrollingGui(Player player, ScrollType scrollType) {
+    protected final ScrollingGui createScrollingGui(Player player, ScrollType scrollType) {
 
         int rows = this.config.getInt("gui-settings.rows");
         String preTitle = this.config.getString("gui-settings.pre-title", "EternalTags");
@@ -135,10 +242,38 @@ public abstract class PluginMenu {
     }
 
     /**
+     * Add navigation icons to the GUI
+     *
+     * @param gui            The GUI to add navigation icons to
+     * @param player         The player viewing the GUI
+     * @param finalMenuTitle The title of the GUI
+     */
+    protected void addNavigationIcons(PaginatedGui gui, Player player, String finalMenuTitle) {
+        MenuItem.create(this.config).path("next-page")
+                .player(player)
+                .action(event -> {
+                    gui.next();
+                    this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                }).player(player).place(gui);
+
+        MenuItem.create(this.config)
+                .path("previous-page")
+                .player(player)
+                .action(event -> {
+                    gui.previous();
+                    this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                }).place(gui);
+
+        gui.update(); // Update the GUI to apply the changes.
+    }
+
+
+    /**
      * Create a GUI item for a player, using tag placeholders, Requires different method for the %description% placeholder
      *
      * @param player The player to create the item for
      * @param tag    The tag to create the item for
+     *
      * @return The created item
      */
     public ItemStack getTagItem(Player player, Tag tag) {
@@ -154,7 +289,7 @@ public abstract class PluginMenu {
         List<String> lore = new ArrayList<>();
 
         // im not happy about this but it works
-        for (final String line : configLore) {
+        for (String line : configLore) {
             if (!line.contains("%description%")) {
                 lore.add(TagsUtils.format(player, line, tagPlaceholders));
                 continue;
@@ -192,9 +327,10 @@ public abstract class PluginMenu {
      * Get all the tag icon actions.
      *
      * @return The tag icon actions
+     *
      * @since 1.1.7
      */
-    protected final @NotNull Map<ClickType, List<Action>> getTagActions() {
+    protected final Map<ClickType, List<Action>> getTagActions() {
         CommentedConfigurationSection customActions = this.config.getConfigurationSection("tag-item.commands");
         if (customActions == null)
             return new HashMap<>();
@@ -231,7 +367,7 @@ public abstract class PluginMenu {
      * @param event        The event to run the actions for
      * @param placeholders The placeholders to use
      */
-    public void runActions(@NotNull Map<ClickType, List<Action>> actions, @NotNull InventoryClickEvent event, @NotNull StringPlaceholders placeholders) {
+    public void runActions(Map<ClickType, List<Action>> actions, InventoryClickEvent event, StringPlaceholders placeholders) {
         if (actions.isEmpty())
             return;
 
@@ -249,6 +385,7 @@ public abstract class PluginMenu {
      *
      * @param player The player to format the string for
      * @param text   The string to format
+     *
      * @return The formatted string
      */
     protected final Component format(Player player, String text) {
@@ -261,6 +398,7 @@ public abstract class PluginMenu {
      * @param player       The player to format the string for
      * @param text         The text to format
      * @param placeholders The placeholders to replace
+     *
      * @return The formatted string
      */
     protected final Component format(Player player, String text, StringPlaceholders placeholders) {
@@ -272,6 +410,7 @@ public abstract class PluginMenu {
      *
      * @param player The player to format the string for
      * @param text   The text to format
+     *
      * @return The formatted string
      */
     protected final String formatString(Player player, String text) {
@@ -284,6 +423,7 @@ public abstract class PluginMenu {
      * @param player       The player to format the string for
      * @param text         The text to format
      * @param placeholders The placeholders to replace
+     *
      * @return The formatted string
      */
     protected final String formatString(Player player, String text, StringPlaceholders placeholders) {
@@ -294,6 +434,7 @@ public abstract class PluginMenu {
      * Get the page placeholders for the gui
      *
      * @param gui The gui
+     *
      * @return The page placeholders
      */
     protected StringPlaceholders getPagePlaceholders(PaginatedGui gui) {
@@ -311,6 +452,7 @@ public abstract class PluginMenu {
      *
      * @param tag    The tag
      * @param player The player
+     *
      * @return The tag placeholders
      */
     protected StringPlaceholders getTagPlaceholders(Tag tag, OfflinePlayer player) {

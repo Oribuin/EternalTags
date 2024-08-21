@@ -1,83 +1,7 @@
 # EternalTags Tags GUI Configuration
-# This file controls the appearance and behavior of the tags selection GUI.
-
-# =============================================
-# GUI Settings
-# =============================================
-gui-settings:
-  # The title shown while the GUI is loading
-  # OPTIONAL: If not set, will use the main title
-  pre-title: EternalTags Loading...
-
-  # The main title of the GUI. Use %page% and %total% for pagination info
-  title: EternalTags | %page%/%total%
-
-  # Total number of rows in the GUI (Max: 6)
-  rows: 6
-
-  # Sorting options for tags
-  # Options: ALPHABETICAL, CUSTOM, NONE, RANDOM
-  # CUSTOM uses the 'order' value defined in tags.yml
-  sort-type: CUSTOM
-
-  # Show favorite tags first in the GUI
-  # OPTIONAL: Defaults to false
-  favourite-first: true
-
-  # Include all tags in the GUI, even if the player doesn't have permission
-  # OPTIONAL: Defaults to false
-  add-all-tags: false
-
-  # Format for tag descriptions in lore
-  # OPTIONAL: Defaults to ' &f| &7'
-  description-format: ' &f| &7'
-
-  # GUI type settings
-  # OPTIONAL: Defaults to false
-  scrolling-gui: false
-  # OPTIONAL: Only used if scrolling-gui is true
-  # Options: HORIZONTAL, VERTICAL
-  scrolling-type: HORIZONTAL
-
-  # Update the title on GUI load (false uses pre-title until page change)
-  # OPTIONAL: Defaults to true
-  update-title: true
-
-  # Add pages asynchronously (improves performance, longer initial load)
-  # OPTIONAL: Defaults to false
-  add-pages-asynchronously: true
-
-# =============================================
-# Tag Item | Represents each tag in GUI |
-# =============================================
-
-tag-item:
-  # Material of the item (Minecraft item ID)
-  material: NAME_TAG
-  # OPTIONAL: Amount of items in the stack (default: 1)
-  amount: 1
-  # Name of the item. Use %tag% for the tag's name
-  name: '%tag%'
-  # OPTIONAL: Lore of the item. Supports color codes and placeholders
-  lore:
-    - ''
-    - '&f| #00B4DBLeft-Click &7on this'
-    - '&f| &7icon to change your'
-    - '&f| &7active tag!'
-    - '&f| '
-    - '&f| #00B4DBShift-Click &7to add'
-    - '&f| &7this tag to your favorites'
-    - ''
-  # OPTIONAL: Whether the item should have an enchantment glow
-  glow: true
-  # OPTIONAL: Specific slots for tag items. If not set, will use all available slots
-  slots:
-    - 19-25
-    - 28-34
-
-# =============================================
+# This file controls the appearance and behavior of the tags selection GUI
+#
 # General Item Property Options
-# =============================================
 # These options can be used for any item in the GUI
 #
 # material: The material of the item (e.g., DIAMOND_SWORD)
@@ -94,9 +18,66 @@ tag-item:
 # slots: Specific slots where the item should appear in the GUI
 # sound: Sound to play when the item is clicked (e.g., ENTITY_EXPERIENCE_ORB_PICKUP)
 
-# =============================================
+# Actions can replace an item's functionality with a new one.
+# Available Actions: [BROADCAST, CLOSE, CONSOLE, MESSAGE, PLAYER, SOUND]
+# These actions can be defined in the `commands` section of the item.
+# They require a ClickType to be defined.
+# Available ClickTypes: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/event/inventory/ClickType.html
+#
+# Example:
+# commands:
+#   LEFT:
+#     - '[message] You clicked the left button!'
+#   RIGHT:
+#     - '[message] You clicked the right button!'
+#   MIDDLE:
+#     - '[console] ban %player_name%'
+#
+gui-settings:
+  # The title shown while the GUI is loading
+  pre-title: EternalTags Loading...
+  # The main title of the GUI. Use %page% and %total% for pagination info
+  title: EternalTags | %page%/%total%'
+  # Total number of rows in the GUI (Max: 6)
+  rows: 6
+  # Sorting options for tags
+  # Options: ALPHABETICAL, CUSTOM, NONE, RANDOM
+  # CUSTOM uses the 'order' value defined in tags.yml
+  sort-type: CUSTOM
+  # Show favorite tags first in the GUI
+  favourite-first: true
+  # Include all tags in the GUI, even if the player doesn't have permission
+  add-all-tags: false
+  # Format for tag descriptions in lore
+  description-format: ' &f| &7'
+  # GUI type settings
+  scrolling-gui: false
+  # Options: HORIZONTAL, VERTICAL
+  scrolling-type: HORIZONTAL
+  # Update the title on GUI load (false uses pre-title until page change)
+  update-title: true
+  # Add pages asynchronously (improves performance, longer initial load)
+  add-pages-asynchronously: true
+
+
+# This is the item that will be displayed in the GUI for each tag
+tag-item:
+  # This uses the display tag by default
+  name: '%tag%'
+  material: NAME_TAG
+  amount: 1
+  lore:
+    - ''
+    - '&f| #00B4DBLeft-Click &7on this'
+    - '&f| &7icon to change your'
+    - '&f| &7active tag!'
+    - '&f| '
+    - '&f| #00B4DBShift-Click &7to add'
+    - '&f| &7this tag to your favorites'
+    - ''
+  glow: true
+
 # Navigation Items
-# =============================================
 next-page:
   material: PAPER
   name: '#00B4DB&lNext Page'
@@ -117,9 +98,7 @@ previous-page:
     - ''
   slot: 45
 
-# =============================================
 # Functional Items
-# =============================================
 clear-tag:
   material: PLAYER_HEAD
   name: '#00B4DB&lClear Tag'
@@ -171,33 +150,7 @@ main-menu:
   slots:
     - 47-51
 
-# =============================================
-# Icon Actions
-# =============================================
-# Actions can replace an item's functionality with a new one.
-# Available Actions: [BROADCAST, CLOSE, CONSOLE, MESSAGE, PLAYER, SOUND]
-# These actions can be defined in the `commands` section of the item.
-# They require a ClickType to be defined.
-# Available ClickTypes: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/event/inventory/ClickType.html
-#
-# Example:
-# commands:
-#   LEFT:
-#     - '[message] You clicked the left button!'
-#   RIGHT:
-#     - '[message] You clicked the right button!'
-#   MIDDLE:
-#     - '[console] ban %player_name%'
-#
-# Placeholders:
-# You can use various placeholders in the commands, such as:
-# %player_name% - The name of the player
-# %tag% - The name of the clicked tag
-# %eternaltags_tag_formatted% - The formatted name of the player's current tag
-
-# =============================================
-# Extra Items
-# =============================================
+# Additional Items
 extra-items:
   border-item:
     enabled: false
@@ -206,4 +159,3 @@ extra-items:
     slots:
       - 0-8
       - 45-53
-

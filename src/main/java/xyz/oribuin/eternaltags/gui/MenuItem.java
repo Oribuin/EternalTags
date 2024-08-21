@@ -60,6 +60,7 @@ public class MenuItem {
      * Create a new MenuItem instance
      *
      * @param config The config file for the menu
+     *
      * @return A new MenuItem instance
      */
     public static MenuItem create(CommentedFileConfiguration config) {
@@ -80,7 +81,7 @@ public class MenuItem {
 
         // Check if the item path is null
         if (this.config.get(this.itemPath) == null && this.customItem == null) {
-//            throw new IllegalArgumentException(this.itemPath + ": Item path in config is null and custom item is null");
+            //            throw new IllegalArgumentException(this.itemPath + ": Item path in config is null and custom item is null");
             return;
         }
 
@@ -183,6 +184,7 @@ public class MenuItem {
      * Set the path to the item in the config
      *
      * @param path The path
+     *
      * @return The MenuItem
      */
     public final MenuItem path(String path) {

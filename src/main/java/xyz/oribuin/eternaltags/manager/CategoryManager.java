@@ -84,6 +84,7 @@ public class CategoryManager extends Manager {
      * Get the first category of a specific type
      *
      * @param categoryType The type of category
+     *
      * @return The first category
      */
     public Category getFirst(CategoryType categoryType) {
@@ -100,6 +101,7 @@ public class CategoryManager extends Manager {
      * Get a category from the cache.
      *
      * @param id The id of the category
+     *
      * @return The category
      */
     public Category getCategory(String id) {
@@ -137,6 +139,7 @@ public class CategoryManager extends Manager {
      * Get a list of categories associated with a specific type
      *
      * @param type The type of category
+     *
      * @return A list of categories
      */
     public List<Category> getByType(CategoryType type) {

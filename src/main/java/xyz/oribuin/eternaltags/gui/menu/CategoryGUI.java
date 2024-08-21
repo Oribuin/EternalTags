@@ -1,17 +1,14 @@
 package xyz.oribuin.eternaltags.gui.menu;
 
-import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.triumphteam.gui.components.GuiAction;
 import dev.triumphteam.gui.components.ScrollType;
-import dev.triumphteam.gui.guis.BaseGui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.gui.MenuItem;
 import xyz.oribuin.eternaltags.gui.MenuProvider;
@@ -25,15 +22,16 @@ import xyz.oribuin.eternaltags.obj.CategoryType;
 import xyz.oribuin.eternaltags.util.ItemBuilder;
 import xyz.oribuin.eternaltags.util.TagsUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class CategoryGUI extends PluginMenu {
-
 
     private final TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
     private final CategoryManager categoryManager = this.rosePlugin.getManager(CategoryManager.class);
     private final Map<Category, GuiItem> categoryIcons = new LinkedHashMap<>(); // Cache the tag items, so we don't have to create them every time.
-    private List<Integer> allocatedSlots = new ArrayList<>();
 
     /**
      * Constructor for CategoryGUI
@@ -54,39 +52,11 @@ public class CategoryGUI extends PluginMenu {
     }
 
     /**
-     * Load the allocated slots from the configuration
-     */
-    private void loadAllocatedSlots() {
-        this.allocatedSlots = new ArrayList<>();
-        if (this.config.contains("gui-settings.allocated-slots")) {
-            List<String> slotsConfig = this.config.getStringList("gui-settings.allocated-slots");
-            for (String slotConfig : slotsConfig) {
-                if (slotConfig.contains("-")) {
-                    String[] range = slotConfig.split("-");
-                    int start = Integer.parseInt(range[0]);
-                    int end = Integer.parseInt(range[1]);
-                    for (int i = start; i <= end; i++) {
-                        this.allocatedSlots.add(i);
-                    }
-                } else {
-                    this.allocatedSlots.add(Integer.parseInt(slotConfig));
-                }
-            }
-        } else {
-            // If allocated-slots is not defined, use all available slots
-            int rows = this.config.getInt("gui-settings.rows", 6);
-            for (int i = 0; i < rows * 9; i++) {
-                this.allocatedSlots.add(i);
-            }
-        }
-    }
-
-    /**
      * Open the GUI for a player
      *
      * @param player The player to open the GUI for
      */
-    public void open(@NotNull Player player) {
+    public void open(Player player) {
         if (!categoryManager.isEnabled()) {
             MenuProvider.get(TagsGUI.class).open(player);
             return;
@@ -113,7 +83,6 @@ public class CategoryGUI extends PluginMenu {
         this.addFunctionalItems(gui, player);
 
         gui.setPageSize(this.allocatedSlots.size());
-
         gui.open(player);
 
         Runnable task = () -> {
@@ -125,40 +94,6 @@ public class CategoryGUI extends PluginMenu {
 
         if (this.addPagesAsynchronously()) this.async(task);
         else task.run();
-    }
-
-    /**
-     * Set up the initial layout of the GUI
-     *
-     * @param gui The GUI to set up
-     */
-    private void setupGuiLayout(PaginatedGui gui) {
-        int rows = this.config.getInt("gui-settings.rows", 6);
-        int totalSlots = rows * 9;
-
-        for (int i = 0; i < totalSlots; i++) {
-            if (!this.allocatedSlots.contains(i)) {
-                gui.setItem(i, new GuiItem(new ItemStack(Material.AIR)));
-            }
-        }
-    }
-
-    /**
-     * Add extra items to the GUI
-     *
-     * @param gui    The GUI to add items to
-     * @param player The player viewing the GUI
-     */
-    private void addExtraItems(PaginatedGui gui, Player player) {
-        CommentedConfigurationSection extraItems = this.config.getConfigurationSection("extra-items");
-        if (extraItems != null) {
-            for (String key : extraItems.getKeys(false)) {
-                MenuItem.create(this.config)
-                        .path("extra-items." + key)
-                        .player(player)
-                        .place(gui);
-            }
-        }
     }
 
     /**
@@ -232,9 +167,8 @@ public class CategoryGUI extends PluginMenu {
      * @param gui    The GUI to add categories to
      * @param player The player viewing the GUI
      */
-    private void addCategories(@NotNull BaseGui gui, @NotNull Player player) {
-        if (gui instanceof PaginatedGui paginated)
-            paginated.clearPageItems();
+    private void addCategories(PaginatedGui gui, Player player) {
+        gui.clearPageItems();
 
         TagsGUI tagsGUI = MenuProvider.get(TagsGUI.class);
         if (tagsGUI == null) // This should never happen, but just in case.
@@ -258,7 +192,7 @@ public class CategoryGUI extends PluginMenu {
                 GuiItem item = this.categoryIcons.get(category);
                 item.setAction(action);
 
-                int slotFill = this.config.getInt(categoryPath + ".slot-fill", 1);
+                int slotFill = this.config.getInt(categoryPath + ".slot", 1);
                 for (int i = 0; i < slotFill; i++) {
                     gui.addItem(item);
                 }
@@ -281,7 +215,7 @@ public class CategoryGUI extends PluginMenu {
 
             GuiItem guiItem = new GuiItem(item, action);
 
-            int slotFill = this.config.getInt(categoryPath + ".slot-fill", 1);
+            int slotFill = this.config.getInt(categoryPath + ".slot", 1);
             for (int i = 0; i < slotFill; i++) {
                 gui.addItem(guiItem);
             }
@@ -297,9 +231,10 @@ public class CategoryGUI extends PluginMenu {
      * Get a list of categories for a player
      *
      * @param player The player to get categories for
+     *
      * @return A list of categories
      */
-    private List<Category> getCategories(@NotNull Player player) {
+    private List<Category> getCategories(Player player) {
         List<Category> categories = new ArrayList<>(this.categoryManager.getCategories());
         SortType sortType = TagsUtils.getEnum(
                 SortType.class,
@@ -335,4 +270,5 @@ public class CategoryGUI extends PluginMenu {
     public String getMenuName() {
         return "category-gui";
     }
+
 }

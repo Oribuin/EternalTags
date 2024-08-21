@@ -36,6 +36,7 @@ public class VaultHook {
      * Get the highest group of a player
      *
      * @param player The player to get the group of
+     *
      * @return The highest group of the player
      */
     public static String getPrimaryGroup(Player player) {

@@ -12,14 +12,13 @@ import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.jetbrains.annotations.Nullable;
 import xyz.oribuin.eternaltags.util.nms.SkullUtils;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-@SuppressWarnings({"unused", "deprecation"})
+@SuppressWarnings({ "unused", "deprecation" })
 public class ItemBuilder {
 
     private final ItemStack item;
@@ -49,6 +48,7 @@ public class ItemBuilder {
      * Set the ItemStack's Material.
      *
      * @param material The Material.
+     *
      * @return Item.Builder.
      */
     public ItemBuilder material(Material material) {
@@ -60,9 +60,10 @@ public class ItemBuilder {
      * Set the ItemStack's Display Name.
      *
      * @param text The text.
+     *
      * @return Item.Builder.
      */
-    public ItemBuilder name(@Nullable String text) {
+    public ItemBuilder name(String text) {
         this.meta.setDisplayName(text);
         return this;
     }
@@ -71,9 +72,10 @@ public class ItemBuilder {
      * Set the ItemStack's Lore
      *
      * @param lore The lore
+     *
      * @return Item.Builder.
      */
-    public ItemBuilder lore(@Nullable List<String> lore) {
+    public ItemBuilder lore(List<String> lore) {
         this.meta.setLore(lore);
         return this;
     }
@@ -82,9 +84,10 @@ public class ItemBuilder {
      * Set the ItemStack's Lore
      *
      * @param lore The lore
+     *
      * @return Item.Builder.
      */
-    public ItemBuilder lore(@Nullable String... lore) {
+    public ItemBuilder lore(String... lore) {
         return this.lore(Arrays.asList(lore));
     }
 
@@ -92,6 +95,7 @@ public class ItemBuilder {
      * Set the ItemStack amount.
      *
      * @param amount The amount of items.
+     *
      * @return Item.Builder
      */
     public ItemBuilder amount(int amount) {
@@ -104,6 +108,7 @@ public class ItemBuilder {
      *
      * @param ench  The enchantment.
      * @param level The level of the enchantment
+     *
      * @return Item.Builder
      */
     public ItemBuilder enchant(Enchantment ench, int level) {
@@ -115,6 +120,7 @@ public class ItemBuilder {
      * Add multiple enchantments to an item.
      *
      * @param enchantments The enchantments.
+     *
      * @return Item.Builder
      */
 
@@ -127,6 +133,7 @@ public class ItemBuilder {
      * Remove an enchantment from an Item
      *
      * @param ench The enchantment.
+     *
      * @return Item.Builder
      */
     public ItemBuilder remove(Enchantment ench) {
@@ -138,6 +145,7 @@ public class ItemBuilder {
      * Remove and reset the ItemStack's Flags
      *
      * @param flags The ItemFlags.
+     *
      * @return Item.Builder
      */
     public ItemBuilder flags(ItemFlag[] flags) {
@@ -150,6 +158,7 @@ public class ItemBuilder {
      * Change the item's unbreakable status.
      *
      * @param unbreakable true if unbreakable
+     *
      * @return Item.Builder
      */
     public ItemBuilder unbreakable(boolean unbreakable) {
@@ -174,9 +183,10 @@ public class ItemBuilder {
      * Apply a texture to a skull.
      *
      * @param texture The texture.
+     *
      * @return Item.Builder
      */
-    public ItemBuilder texture(@Nullable String texture) {
+    public ItemBuilder texture(String texture) {
         if (item.getType() != Material.PLAYER_HEAD || texture == null)
             return this;
 
@@ -190,6 +200,7 @@ public class ItemBuilder {
      * Set the owner of a skull.
      *
      * @param owner The owner.
+     *
      * @return Item.Builder
      */
     public ItemBuilder owner(OfflinePlayer owner) {

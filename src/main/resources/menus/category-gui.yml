@@ -1,151 +1,7 @@
-# EternalTags Category GUI Configuration
-# This file controls the appearance and behavior of the category selection GUI.
-
-# =============================================
-# GUI Settings
-# =============================================
-gui-settings:
-
-  # The title shown while the GUI is loading
-  pre-title: EternalTags Loading...
-
-  # The main title of the GUI. Use %page% and %total% for pagination info
-  title: EternalTags Categories | %page%/%total%
-
-  # Total number of rows in the GUI (Max: 6)
-  rows: 6
-
-  # Sorting options for categories
-  # Options: ALPHABETICAL, CUSTOM, NONE, RANDOM
-  # CUSTOM uses the 'order' value defined in categories.yml
-  sort-type: CUSTOM
-
-  # Only show categories with unlocked tags (may impact performance)
-  only-unlocked-categories: false
-
-  # Require category permissions to open
-  use-category-permissions: true
-
-  # GUI type settings
-  scrolling-gui: false
-  scrolling-type: HORIZONTAL # Options: HORIZONTAL, VERTICAL
-
-  # Update the title on GUI load (false uses pre-title until page change)
-  update-title: true
-
-  # Add pages asynchronously (improves performance, longer initial load)
-  add-pages-asynchronously: true
-
-  # OPTIONAL: Specify exact slots for category items
-  # If not set, all available slots will be used
-  # Format: List of slot numbers or ranges (e.g., 10-16 for second row)
-  # Recommended to use CUSTOM sort-type
-  allocated-slots:
-    - 9-17
-    - 28
-    - 31
-    - 34
-
-# =============================================
-# Category Definitions
-# =============================================
-# Define how each category appears in the GUI
+# EternalTags Tags GUI Configuration
+# This file controls the appearance and behavior of the tags selection GUI
 #
-# Structure:
-#   <category-id>:
-#     hidden: true/false (OPTIONAL, defaults to false)
-#     slot-fill: <number of slots to occupy> (OPTIONAL, defaults to 1)
-#     display-item:
-#       <item properties>
-
-categories:
-  all_tags:
-    slot-fill: 9
-    display-item:
-      material: BEACON
-      name: '&fAll Tags'
-      lore:
-        - '&7View all available tags'
-        - '&7Total: %total%'
-
-  quest:
-    hidden: false
-    display-item:
-      material: BOOK
-      name: '&6Quest Tags'
-      lore:
-        - '&7Tags related to quests and missions'
-        - '&7Total: %total%'
-
-  event:
-    display-item:
-      material: FIREWORK_ROCKET
-      name: '&dEvent Tags'
-      lore:
-        - '&7Special tags from server events'
-        - '&7Total: %total%'
-
-  achievement:
-    display-item:
-      material: GOLDEN_APPLE
-      name: '&eAchievement Tags'
-      lore:
-        - '&7Tags earned through achievements'
-        - '&7Total: %total%'
-
-  rank:
-    slot-fill: 9
-    display-item:
-      material: NETHER_STAR
-      name: '&bRank Tags'
-      lore:
-        - '&7Tags associated with server ranks'
-        - '&7Total: %total%'
-
-  minigame:
-    display-item:
-      material: ENDER_PEARL
-      name: '&5Minigame Tags'
-      lore:
-        - '&7Tags earned in server minigames'
-        - '&7Total: %total%'
-
-  donation:
-    display-item:
-      material: DIAMOND
-      name: '&bDonation Tags'
-      lore:
-        - '&7Special tags for our supporters'
-        - '&7Total: %total%'
-
-  staff:
-    display-item:
-      material: GOLDEN_AXE
-      name: '&cStaff Tags'
-      lore:
-        - '&7Tags for server staff members'
-        - '&7Total: %total%'
-
-  seasonal:
-    slot-fill: 9
-    display-item:
-      material: CLOCK
-      name: '&aSeasonal Tags'
-      lore:
-        - '&7Tags that change with the seasons'
-        - '&7Total: %total%'
-
-  custom:
-    display-item:
-      material: NAME_TAG
-      name: '&9Custom Tags'
-      lore:
-        - '&7Unique and custom-made tags'
-        - '&7Total: %total%'
-
-# =============================================
 # General Item Property Options
-# =============================================
 # These options can be used for any item in the GUI
 #
 # material: The material of the item (e.g., DIAMOND_SWORD)
@@ -154,17 +10,87 @@ categories:
 # lore: The item's lore. Use %description% to add the tag's description
 # glow: Whether the item should have an enchantment glow (true/false)
 # texture: Base64 texture for player heads. Use 'hdb:<id>' for HeadDatabase
-# potion-color: Color for potion items
+# potion-color: Color for potion items (e.g., RED, #FF0000)
 # model-data: Custom model data for resource packs
 # owner: UUID or player name for player heads
 # flags: Item flags to apply (e.g., HIDE_ATTRIBUTES)
-# enchants: Enchantments to apply to the item
+# enchants: Enchantments to apply to the item (e.g., DAMAGE_ALL:1)
 # slots: Specific slots where the item should appear in the GUI
+# sound: Sound to play when the item is clicked (e.g., ENTITY_EXPERIENCE_ORB_PICKUP)
 
-# =============================================
-# Special Items
-# =============================================
-# These items provide additional functionality in the GUI
+# Actions can replace an item's functionality with a new one.
+# Available Actions: [BROADCAST, CLOSE, CONSOLE, MESSAGE, PLAYER, SOUND]
+# These actions can be defined in the `commands` section of the item.
+# They require a ClickType to be defined.
+# Available ClickTypes: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/event/inventory/ClickType.html
+#
+# Example:
+# commands:
+#   LEFT:
+#     - '[message] You clicked the left button!'
+#   RIGHT:
+#     - '[message] You clicked the right button!'
+#   MIDDLE:
+#     - '[console] ban %player_name%'
+#
+gui-settings:
+  # The title shown while the GUI is loading
+  pre-title: EternalTags Loading...
+  # The main title of the GUI. Use %page% and %total% for pagination info
+  title: EternalTags Categories | %page%/%total%
+  # Total number of rows in the GUI (Max: 6)
+  rows: 6
+  # Sorting options for categories
+  # Options: ALPHABETICAL, CUSTOM, NONE, RANDOM
+  # CUSTOM uses the 'order' value defined in categories.yml
+  sort-type: CUSTOM
+  # Only show categories with unlocked tags (may impact performance)
+  only-unlocked-categories: false
+  # Require category permissions to open
+  use-category-permissions: true
+  # GUI type settings
+  scrolling-gui: false
+  # Options: HORIZONTAL, VERTICAL
+  scrolling-type: HORIZONTAL
+  # Update the title on GUI load (false uses pre-title until page change)
+  update-title: true
+  # Add pages asynchronously (improves performance, longer initial load)
+  add-pages-asynchronously: true
+  # Specify exact slots for category items, othwerwise they will be auto-assigned
+  allocated-slots:
+    - '9-17'
+    - '28'
+    - '31'
+    - '34'
+
+# Category Definitions
+# Define how each category appears in the GUI
+#
+# categories:
+#   category-id:
+#     hidden: false
+#     slot: <number of slots to occupy> (OPTIONAL, defaults to 1)
+#     display-item:
+#       <item properties>
+
+categories:
+  all:
+    order: 1
+    display-item:
+      material: BEACON
+      name: '&#00B4DB&lAll Tags'
+      lore:
+        - '&f| #00B4DBView all available tags'
+        - '&f| #00B4DBTotal: &f%total%'
+
+  placeholders:
+    order: 2
+    display-item:
+      material: NAME_TAG
+      name: '&#00B4DB&lQPlaceholder Tags'
+      lore:
+        - '&f| #00B4DBView all tags with placeholders'
+        - '&f| #00B4DBTotal: &f%total%'
 
 # Navigation Items
 next-page:

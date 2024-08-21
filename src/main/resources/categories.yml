@@ -3,12 +3,12 @@
 
 categories:
   # Global category containing all tags
-  all_tags:
+  all:
     display-name: 'All Tags'
     order: 1
     global: true
     default: false
-    permission: 'eternaltags.category.all_tags'
+    permission: 'eternaltags.category.all'
 
   # Categories for specific types of tags
   quest:

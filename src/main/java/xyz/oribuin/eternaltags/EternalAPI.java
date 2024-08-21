@@ -2,7 +2,6 @@ package xyz.oribuin.eternaltags;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.oribuin.eternaltags.manager.CategoryManager;
 import xyz.oribuin.eternaltags.manager.DataManager;
@@ -38,7 +37,9 @@ public class EternalAPI {
      * Get an offline player's active tag
      *
      * @param uuid The player's UUID
+     *
      * @return The [Tag] belonging to the player, This tag is nullable
+     *
      * @since v1.1.4
      */
     @Nullable
@@ -50,7 +51,9 @@ public class EternalAPI {
      * Get a player's active tag if they are online.
      *
      * @param player The player to get the tag of
+     *
      * @return The [Tag] belonging to the player, This tag is nullable
+     *
      * @since v1.1.4
      */
     @Nullable
@@ -64,7 +67,7 @@ public class EternalAPI {
      * @param player The player
      * @param tag    The tag, Set this to null to remove the tag.
      */
-    public void setTag(@NotNull OfflinePlayer player, @NotNull Tag tag) {
+    public void setTag(OfflinePlayer player, Tag tag) {
         if (player.isOnline()) {
             tag.equip((Player) player);
             return;
@@ -78,6 +81,7 @@ public class EternalAPI {
      * Get a category from the id
      *
      * @param id The id of the tag
+     *
      * @return The [Category] belonging to the id, This category is nullable
      */
     @Nullable
@@ -89,6 +93,7 @@ public class EternalAPI {
      * Get the category of a tag
      *
      * @param tag The tag
+     *
      * @return The [Category] belonging to the tag, This category is nullable
      */
     @Nullable

@@ -28,6 +28,7 @@ public enum MenuProvider {
      * Get the instance of the menu.
      *
      * @param <T> the type of the menu.
+     *
      * @return the instance of the menu.
      */
     @SuppressWarnings("unchecked")
