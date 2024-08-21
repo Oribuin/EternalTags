@@ -1,64 +1,48 @@
-# EternalTags Configuration
-# This file defines categories for organizing tags in the EternalTags plugin.
-
+# Here are all the categories you can use
+# categories:
+#  test: # The ID of the category (Must be unique)
+#    display-name: Test # The display name of the category
+#    order: 1 # The order of the category in the GUI
+#    default: false # Wether all tags with an undefined category should be in this category by default
+#    global: false # Whether this category will contain all tags
+#    permission: # The permission required to see this category (only applies with options in the category gui config)
+#    unlocks-all-tags: false # Will allow player to use all tags in this category (Overrides the tag's permission, requires the category permission)
+#    tags: # The tags in this category
+#      - test # The ID of the tag
+#      - test2 # The ID of the tag
 categories:
-  # Global category containing all tags
-  all:
-    display-name: 'All Tags'
+  animated:
+    display-name: 'Animated Tags'
     order: 1
-    global: true
     default: false
-    permission: 'eternaltags.category.all'
-
-  # Categories for specific types of tags
-  quest:
-    display-name: 'Quest Tags'
+    global: false
+    permission: 'eternaltags.category.animated'
+    unlocks-all-tags: false
+  static:
+    display-name: 'Static Tags'
     order: 2
-    permission: 'eternaltags.category.quest'
-
-  event:
-    display-name: 'Event Tags'
+    default: false
+    global: false
+    permission: 'eternaltags.category.static'
+    unlocks-all-tags: false
+  placeholders:
+    display-name: 'PlaceholderAPI Tags'
     order: 3
-    permission: 'eternaltags.category.event'
-
-  achievement:
-    display-name: 'Achievement Tags'
+    default: false
+    global: false
+    permission: 'eternaltags.category.placeholders'
+    unlocks-all-tags: false
+  undefined:
+    display-name: 'Uncategorized Tags'
     order: 4
-    permission: 'eternaltags.category.achievement'
-
-  rank:
-    display-name: 'Rank Tags'
+    default: true
+    global: false
+    permission: 'eternaltags.category.undefined'
+    unlocks-all-tags: false
+  all-tags:
+    display-name: 'All Tags'
     order: 5
-    permission: 'eternaltags.category.rank'
-
-  minigame:
-    display-name: 'Minigame Tags'
-    order: 6
-    permission: 'eternaltags.category.minigame'
-
-  donation:
-    display-name: 'Donation Tags'
-    order: 7
-    permission: 'eternaltags.category.donation'
-
-  staff:
-    display-name: 'Staff Tags'
-    order: 8
-    permission: 'eternaltags.category.staff'
-
-  seasonal:
-    display-name: 'Seasonal Tags'
-    order: 9
-    permission: 'eternaltags.category.seasonal'
-
-  custom:
-    display-name: 'Custom Tags'
-    order: 10
-    permission: 'eternaltags.category.custom'
-
-# Common properties for all categories:
-# - order: Determines the display order in the GUI (lower numbers appear first)
-# - permission: The permission required to see this category
-# - default: false (sets tags with an undefined category in this category)
-# - global: false (set to true only for the 'all_tags' category)
-# - unlocks-all-tags: false (can be set to true to allow access to all tags in a category)
+    default: false
+    global: true
+    permission: 'eternaltags.category.all-tags'
+    unlocks-all-tags: false

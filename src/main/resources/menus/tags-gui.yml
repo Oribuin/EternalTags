@@ -37,7 +37,7 @@ gui-settings:
   # The title shown while the GUI is loading
   pre-title: EternalTags Loading...
   # The main title of the GUI. Use %page% and %total% for pagination info
-  title: EternalTags | %page%/%total%'
+  title: EternalTags | %page%/%total%
   # Total number of rows in the GUI (Max: 6)
   rows: 6
   # Sorting options for tags
@@ -58,7 +58,6 @@ gui-settings:
   update-title: true
   # Add pages asynchronously (improves performance, longer initial load)
   add-pages-asynchronously: true
-
 
 # This is the item that will be displayed in the GUI for each tag
 tag-item:

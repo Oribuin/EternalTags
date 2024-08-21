@@ -17,7 +17,31 @@
 #      enchantments: # The enchantments of the icon
 #       DURABILITY: 1 # The enchantment and level
 #      flags: # The item flags of the icon
+#       - HIDE_ENCHANTS # The item flags
 tags:
+  static-rainbow:
+    name: 'Static Rainbow'
+    tag: '&f&l<<r:0.7>&lRainbow&f&l>'
+    description:
+      - ' &f| &7This tag is static!'
+      - ' &f| &7It will always be the same'
+      - ' &f| &7every time you send a message.'
+    permission: 'eternaltags.tag.static-rainbow'
+    order: 3
+    category: static
+
+  static-gradient:
+    name: 'Static Gradient'
+    tag: '&f&l<<g:#5433FF:#20BDFF:#A5FECB>&lGradient&f&l>'
+    description:
+      - ' '
+      - ' &f| &7This tag is static!'
+      - ' &f| &7It will always be the same'
+      - ' &f| &7every time you send a message.'
+    permission: 'eternaltags.tag.static-gradient'
+    order: 4
+    category: static
+
   smiley_face:
     name: 'Smiley Face'
     tag: '&f&l<#FFD700^-^&f&l>'
@@ -26,29 +50,5 @@ tags:
       - ' &f| &7This tag uses unicode characters'
       - ' &f| &7to display a smiley face in the tag.'
     permission: 'eternaltags.tag.smiley_face'
-    order: 0
-
-  heart:
-    name: '<3'
-    tag: '&f&l<&c&l<3&f&l>'
-    description:
-      - ' '
-      - ' &f| &7This tag uses unicode characters'
-      - ' &f| &7to display a heart in the tag.'
-      - ' '
-    permission: 'eternaltags.tag.heart'
-    order: 1
-    icon:
-      material: 'RED_DYE'
-      custom-model-data: 1
-
-  rainbow:
-    name: 'Rainbow'
-    tag: '&f&l<<r:0.7>&lRainbow&f&l>'
-    description:
-      - ' '
-      - ' &f| &7This tag uses the rainbow color'
-      - ' &f| &7to display a rainbow in the tag.'
-      - ' '
-    permission: 'eternaltags.tag.rainbow'
-    order: 2
+    order: 8
+    category: undefined

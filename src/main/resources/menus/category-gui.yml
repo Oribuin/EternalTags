@@ -56,7 +56,7 @@ gui-settings:
   update-title: true
   # Add pages asynchronously (improves performance, longer initial load)
   add-pages-asynchronously: true
-  # Specify exact slots for category items, othwerwise they will be auto-assigned
+  # Specify exact slots for category items, otherwise they will be auto-assigned
   allocated-slots:
     - '9-17'
     - '28'
@@ -74,23 +74,71 @@ gui-settings:
 #       <item properties>
 
 categories:
-  all:
-    order: 1
+  animated:
+    hidden: false
     display-item:
-      material: BEACON
-      name: '&#00B4DB&lAll Tags'
+      material: PLAYER_HEAD
+      name: '&#FF416C&lAnimated Tags'
       lore:
-        - '&f| #00B4DBView all available tags'
-        - '&f| #00B4DBTotal: &f%total%'
+        - ' &f| &7Animated tags that can be used'
+        - ' &f| &7in chat. These tags are'
+        - ' &f| &7will update every time'
+        - ' &f| &7you send a message.'
+        - ' &f| '
+        - ' &f| &7Total: %total%'
+      texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjE4NTZjN2IzNzhkMzUwMjYyMTQzODQzZDFmOWZiYjIxOTExYTcxOTgzYmE3YjM5YTRkNGJhNWI2NmJlZGM2In19fQ=='
+
+  static:
+    hidden: false
+    display-item:
+      material: PLAYER_HEAD
+      name: '&#f12711&lStatic Tags'
+      lore:
+        - ' &f| &7Static tags that can be used'
+        - ' &f| &7in chat. These tags will'
+        - ' &f| &7stay the same every time'
+        - ' &f| &7you send a message.'
+        - ' &f| '
+        - ' &f| &7Total: %total%'
+      texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjNmMTNlMjNlYzIzNDY3YWM1ZTZmNjVhODNmMjY4NmViZWNkOTk4NmRmNWY4Y2JjZDZmYWZjNDJlNjYyYjM4In19fQ=='
 
   placeholders:
-    order: 2
+    hidden: false
     display-item:
-      material: NAME_TAG
-      name: '&#00B4DB&lQPlaceholder Tags'
+      material: PLAYER_HEAD
+      name: '&#FFE000&lPlaceholder Tags'
       lore:
-        - '&f| #00B4DBView all tags with placeholders'
-        - '&f| #00B4DBTotal: &f%total%'
+        - ' &f| &7Placeholder tags that can be used'
+        - ' &f| &7in chat. These tags will'
+        - ' &f| &7show everyone your stats'
+        - ' &f| '
+        - ' &f| &7Total: %total%'
+      texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZmNhNWJmZjMyNWVkNzFkOTdhMmRkZmM4M2FjZjA1ZmU3ZmQ5Y2I3Y2JkYjE1ZWJiNGYwNTYyMTkwN2U5ZjJiIn19fQ=='
+
+  undefined:
+    hidden: false
+    display-item:
+      material: PLAYER_HEAD
+      name: '&#a8ff78&lUncategorized Tags'
+      lore:
+        - ' &f| &7Uncategorized tags that can be used'
+        - ' &f| &7in chat. These tags do not'
+        - ' &f| &7have a category set.'
+        - ' &f| '
+        - ' &f| &7Total: %total%'
+      texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGI1OTljNjE4ZTkxNGMyNWEzN2Q2OWY1NDFhMjJiZWJiZjc1MTYxNTI2Mzc1NmYyNTYxZmFiNGNmYTM5ZSJ9fX0='
+
+  all-tags:
+    hidden: false
+    display-item:
+      material: PLAYER_HEAD
+      name: '&#2193b0&lAll Tags'
+      lore:
+        - ' &f| &7Show all the tags'
+        - ' &f| &7that you have unlocked!'
+        - ' &f| '
+        - ' &f| &7Total: %total%'
+      texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZjQ3N2Y0NDM4OTM2MmM0Yzc2NGM4NDdhOTczOWJjNzhjMzI0NjdlYWI0ZTM4MzBhZTRjOGJlYWMzNDQyZWY5In19fQ=='
 
 # Navigation Items
 next-page:
