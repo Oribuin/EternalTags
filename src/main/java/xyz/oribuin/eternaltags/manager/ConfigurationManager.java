@@ -40,7 +40,7 @@ public class ConfigurationManager extends AbstractConfigurationManager {
         TAG_LOCKED_FORMAT("tag-locked-format", "&c&lLocked", "The format that will show when the player has the tag locked."),
         TAG_PREFIX("tag-prefix", "", "The prefix that will be added in front of the tag in the placeholder"),
         TAG_SUFFIX("tag-suffix", "", "The suffix that will be added after the tag in the placeholder"),
-//        TAG_FORMATTING("tag-formatting", "LEGACY", "The formatting that will be used when displaying tags by the plugin.", "Available options: LEGACY, MINI_MESSAGE"),
+        TAG_FORMATTING("tag-formatting", "LEGACY", "The formatting that will be used when displaying tags by the plugin.", "Available options: LEGACY, MINI_MESSAGE"),
         DESCRIPTION_DELIMITER("description-delimiter", "\n", "The delimiter that will be used for %eternaltags_tag_description%"),
 
         // Other Options

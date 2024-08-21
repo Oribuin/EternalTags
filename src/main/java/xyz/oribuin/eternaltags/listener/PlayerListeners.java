@@ -18,11 +18,9 @@ public class PlayerListeners implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void onPlayerJoin(PlayerJoinEvent event) {
-        // Load the user from the database
-        this.dataManager.loadUser(event.getPlayer().getUniqueId()).thenRun(() -> {
-            // Update the player's tag
-            this.manager.getUserTag(event.getPlayer());
-        });
+        this.dataManager.loadUser(event.getPlayer().getUniqueId()); // Load the user from the database
+        this.manager.getUserTag(event.getPlayer()); // Get the user's tag (This will detect default tags or the user's tag)
+
     }
 
     @EventHandler

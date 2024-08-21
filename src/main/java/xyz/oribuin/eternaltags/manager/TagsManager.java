@@ -262,27 +262,6 @@ public class TagsManager extends Manager {
         this.cachedTags.put(tag.getId(), tag);
     }
 
-    /**
-     * Save a tag to the tags.yml file.
-     *
-     * @param tag The tag being saved.
-     */
-    public void saveToConfig(Tag tag) {
-        if (this.tagConfig == null) return;
-
-        this.tagConfig.set("tags." + tag.getId() + ".name", tag.getName());
-        this.tagConfig.set("tags." + tag.getId() + ".tag", tag.getTag());
-        this.tagConfig.set("tags." + tag.getId() + ".description", tag.getDescription());
-        this.tagConfig.set("tags." + tag.getId() + ".permission", tag.getPermission());
-        this.tagConfig.set("tags." + tag.getId() + ".order", tag.getOrder());
-        this.tagConfig.set("tags." + tag.getId() + ".category", tag.getCategory());
-        this.tagConfig.set("tags." + tag.getId() + ".hand-icon", tag.isHandIcon());
-
-        if (tag.getIcon() != null && tag.isHandIcon()) // Only save the icon if it's a hand icon to prevent overwriting config defined items.
-            this.tagConfig.set("tags." + tag.getId() + ".icon", TagsUtils.serializeItem(tag.getIcon()));
-
-        this.tagConfig.save(this.tagsFile);
-    }
 
     /**
      * Update every player's with a specific tag with a new one
@@ -644,10 +623,12 @@ public class TagsManager extends Manager {
      * @return The display tag.
      */
     public String getDisplayTag(@Nullable Tag tag, OfflinePlayer player, @NotNull String placeholder) {
-        if (tag == null) return placeholder; // Return the placeholder if the tag is null
+        StringPlaceholders placeholders = StringPlaceholders.empty();
+        if (tag != null) placeholders = this.getTagPlaceholders(tag);
 
-        StringPlaceholders placeholders = this.getTagPlaceholders(tag);
-        return TagsUtils.colorAsString(PlaceholderAPI.setPlaceholders(player, placeholders.apply(
+        return TagsUtils.colorAsString(PlaceholderAPI.setPlaceholders(player, tag == null
+                ? placeholder
+                : placeholders.apply(
                 Setting.TAG_PREFIX.getString() + tag.getTag() + Setting.TAG_SUFFIX.getString())
         ));
     }
@@ -741,20 +722,19 @@ public class TagsManager extends Manager {
      */
     public boolean canUseTag(@NotNull Player player, @NotNull Tag tag) {
         CategoryManager manager = this.rosePlugin.getManager(CategoryManager.class);
-        boolean defaultResult = tag.hasPermission(player); // Check if the player has permission to use the tag
-        TagUser user = this.rosePlugin.getManager(DataManager.class).getCachedUser(player.getUniqueId());
-        if (user.isUsingDefaultTag()) return true; // Players can always use a default tag.
+
+        boolean defaultResult = tag.getPermission() == null || player.hasPermission(tag.getPermission());
 
         // If the tag has no category, then we can just return the tag unlocked status
+        if (tag.getCategory() == null) {
+            return defaultResult;
+        }
+
         Category category = manager.getCategory(tag.getCategory());
         if (category == null) return defaultResult;
         if (category.getPermission() == null) return defaultResult;
 
-        // If the category can bypass tag permissions and the category has a permission set
-        if (category.isBypassPermission() && category.getPermission() != null)
-            return player.hasPermission(category.getPermission()) || defaultResult;
-
-        return defaultResult;
+        return player.hasPermission(category.getPermission()) || defaultResult;
     }
 
     /**
