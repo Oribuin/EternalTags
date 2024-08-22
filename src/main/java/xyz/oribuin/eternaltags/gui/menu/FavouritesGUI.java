@@ -11,7 +11,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.action.Action;
 import xyz.oribuin.eternaltags.gui.MenuItem;
@@ -19,7 +18,6 @@ import xyz.oribuin.eternaltags.gui.MenuProvider;
 import xyz.oribuin.eternaltags.gui.PluginMenu;
 import xyz.oribuin.eternaltags.gui.enums.SortType;
 import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
-import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 import xyz.oribuin.eternaltags.util.TagsUtils;
@@ -31,9 +29,7 @@ import java.util.Map;
 
 public class FavouritesGUI extends PluginMenu {
 
-    private final TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
-    private final LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
-
+    protected final TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
     private final Map<String, ItemStack> tagItems = new LinkedHashMap<>(); // Cache the tag items, so we don't have to create them every time.
 
     /**
@@ -51,7 +47,7 @@ public class FavouritesGUI extends PluginMenu {
         super.load();
 
         this.tagItems.clear();
-        this.loadTagSlots();
+        loadSlots("tag-item.slots");
     }
 
     /**
@@ -60,84 +56,7 @@ public class FavouritesGUI extends PluginMenu {
      * @param player The player to open the GUI for
      */
     public void open(Player player) {
-        String menuTitle = this.config.getString("gui-settings.title");
-        if (menuTitle == null) menuTitle = "EternalTags | %page%/%total%";
-        String finalMenuTitle = menuTitle;
-
-        boolean scrollingGui = this.config.getBoolean("gui-settings.scrolling-gui", false);
-        ScrollType scrollingType = TagsUtils.getEnum(ScrollType.class, this.config.getString("gui-settings.scrolling-type"), ScrollType.VERTICAL);
-
-        PaginatedGui gui = (scrollingGui && scrollingType != null) ? this.createScrollingGui(player, scrollingType) : this.createPagedGUI(player);
-
-        this.setupGuiLayout(gui);
-        this.addExtraItems(gui, player);
-        this.addFunctionalItems(gui, player);
-
-        this.sync(() -> gui.open(player));
-
-        Runnable task = () -> {
-            gui.setPageSize(this.tagSlots.size());
-            this.addTags(gui, player);
-
-            if (this.reloadTitle()) this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
-        };
-
-        if (this.addPagesAsynchronously()) this.async(task);
-        else task.run();
-
-        this.addNavigationIcons(gui, player, finalMenuTitle);
-    }
-
-    /**
-     * Add functional items to the GUI
-     *
-     * @param gui    The GUI to add items to
-     * @param player The player viewing the GUI
-     */
-    private void addFunctionalItems(PaginatedGui gui, Player player) {
-        MenuItem.create(this.config)
-                .path("clear-tag")
-                .player(player)
-                .action((item, event) -> {
-                    item.sound((Player) event.getWhoClicked());
-                    this.clearTag(player);
-                }).place(gui);
-
-        MenuItem.create(this.config)
-                .path("categories")
-                .player(player)
-                .action((item, event) -> {
-                    item.sound((Player) event.getWhoClicked());
-                    MenuProvider.get(CategoryGUI.class).open(player);
-                }).place(gui);
-
-        MenuItem.create(this.config)
-                .path("search")
-                .player(player)
-                .action((item, event) -> {
-                    item.sound((Player) event.getWhoClicked());
-                    this.searchTags(player, gui);
-                }).place(gui);
-
-        MenuItem.create(this.config)
-                .path("main-menu")
-                .player(player)
-                .action((item, event) -> {
-                    item.sound((Player) event.getWhoClicked());
-                    if (Setting.OPEN_CATEGORY_GUI_FIRST.getBoolean()) {
-                        MenuProvider.get(CategoryGUI.class).open(player);
-                    } else {
-                        MenuProvider.get(TagsGUI.class).open(player, null);
-                    }
-                }).place(gui);
-
-        MenuItem.create(this.config)
-                .path("reset-favourites")
-                .player(player)
-                .action(event -> {
-                    if (event.getClick() == ClickType.DOUBLE_CLICK)
-                        this.clearFavourites(player, gui);
-                }).place(gui);
+        super.openGui(player, "EternalTags | %page%/%total%", this::addTags);
     }
 
     /**
@@ -174,7 +93,7 @@ public class FavouritesGUI extends PluginMenu {
 
                 // If the player is shift clicking, toggle the favourite
                 if (event.isShiftClick()) {
-                    this.toggleFavourite(player, tag);
+                    this.toggleFavourite(player, tag, manager);
                     this.addTags(gui, player);
                     return;
                 }
@@ -209,10 +128,8 @@ public class FavouritesGUI extends PluginMenu {
      * Get all the tags that should be displayed in the GUI
      *
      * @param player The player to get the tags for
-     *
      * @return A list of tags
      */
-    @NotNull
     private List<Tag> getTags(Player player) {
         SortType sortType = TagsUtils.getEnum(SortType.class, this.config.getString("gui-settings.sort-type"));
         if (sortType == null) sortType = SortType.ALPHABETICAL;
@@ -241,29 +158,6 @@ public class FavouritesGUI extends PluginMenu {
     }
 
     /**
-     * Toggle a player's favourite tag
-     *
-     * @param player The player
-     * @param tag    The tag
-     */
-    private void toggleFavourite(Player player, Tag tag) {
-        boolean isFavourite = this.manager.isFavourite(player.getUniqueId(), tag);
-
-        if (isFavourite) this.manager.removeFavourite(player.getUniqueId(), tag);
-        else this.manager.addFavourite(player.getUniqueId(), tag);
-
-
-        String message = locale.getLocaleMessage(isFavourite ? "command-favorite-off" : "command-favorite-on");
-        this.locale.sendMessage(player, "command-favorite-toggled", StringPlaceholders.builder("tag", this.manager.getDisplayTag(tag, player)).add("toggled", message).build());
-    }
-
-    private void clearFavourites(Player player, BaseGui gui) {
-        this.manager.clearFavourites(player.getUniqueId());
-        this.locale.sendMessage(player, "command-favorite-cleared");
-        this.close(gui, player);
-    }
-
-    /**
      * Get the name of the menu
      *
      * @return The name of the menu
@@ -272,4 +166,41 @@ public class FavouritesGUI extends PluginMenu {
     public String getMenuName() {
         return "favorites-gui";
     }
+
+
+    /**
+     * Add functional items to the GUI
+     *
+     * @param gui    The GUI to add items to
+     * @param player The player viewing the GUI
+     */
+    @Override
+    protected void addFunctionalItems(PaginatedGui gui, Player player) {
+        super.addFunctionalItems(gui, player);
+
+        MenuItem.create(this.config)
+                .path("categories")
+                .player(player)
+                .action((item, event) -> {
+                    item.sound((Player) event.getWhoClicked());
+                    MenuProvider.get(CategoryGUI.class).open(player);
+                })
+                .place(gui);
+
+        MenuItem.create(this.config)
+                .path("reset-favourites")
+                .player(player)
+                .action(event -> {
+                    if (event.getClick() == ClickType.DOUBLE_CLICK)
+                        this.clearFavourites(player, gui);
+                })
+                .place(gui);
+    }
+
+    private void clearFavourites(Player player, BaseGui gui) {
+        this.manager.clearFavourites(player.getUniqueId());
+        this.locale.sendMessage(player, "command-favorite-cleared");
+        this.close(gui, player);
+    }
+
 }

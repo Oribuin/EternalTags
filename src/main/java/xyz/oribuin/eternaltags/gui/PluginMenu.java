@@ -22,6 +22,8 @@ import org.bukkit.inventory.ItemStack;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.action.Action;
 import xyz.oribuin.eternaltags.action.PluginAction;
+import xyz.oribuin.eternaltags.gui.menu.CategoryGUI;
+import xyz.oribuin.eternaltags.gui.menu.FavouritesGUI;
 import xyz.oribuin.eternaltags.gui.menu.TagsGUI;
 import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
@@ -43,17 +45,60 @@ public abstract class PluginMenu {
 
     protected final RosePlugin rosePlugin;
     protected CommentedFileConfiguration config;
-    protected List<Integer> allocatedSlots = new ArrayList<>();
-    protected List<Integer> tagSlots = new ArrayList<>();
+
+    protected final LocaleManager locale;
+    protected final List<Integer> slots = new ArrayList<>();
 
     public PluginMenu(RosePlugin rosePlugin) {
         this.rosePlugin = rosePlugin;
+
+        locale = rosePlugin.getManager(LocaleManager.class);
     }
 
     /**
      * @return The name of the GUI
      */
     public abstract String getMenuName();
+
+    @FunctionalInterface
+    protected interface ItemAdder {
+        void addItems(PaginatedGui gui, Player player);
+    }
+
+    protected void openGui(Player player, String defaultTitle, ItemAdder itemAdder) {
+        String menuTitle = this.config.getString("gui-settings.title", defaultTitle);
+
+        boolean scrollingGui = this.config.getBoolean("gui-settings.scrolling-gui", false);
+        ScrollType scrollingType = TagsUtils.getEnum(
+                ScrollType.class,
+                this.config.getString("gui-settings.scrolling-type"),
+                ScrollType.VERTICAL
+        );
+
+        PaginatedGui gui = (scrollingGui && scrollingType != null)
+                ? this.createScrollingGui(player, scrollingType)
+                : this.createPagedGUI(player);
+
+        this.setupGuiLayout(gui);
+        this.addExtraItems(gui, player);
+        this.addFunctionalItems(gui, player);
+
+        gui.setPageSize(this.slots.size());
+
+        Runnable task = () -> {
+            itemAdder.addItems(gui, player);
+
+            if (this.reloadTitle())
+                this.sync(() -> gui.updateTitle(this.formatString(player, menuTitle, this.getPagePlaceholders(gui))));
+        };
+
+        if (this.addPagesAsynchronously()) this.async(task);
+        else task.run();
+
+        this.addNavigationIcons(gui, player, menuTitle);
+
+        gui.open(player);
+    }
 
     /**
      * Create the menu file if it doesn't exist and add the default values
@@ -78,66 +123,27 @@ public abstract class PluginMenu {
         this.config.save(menuFile);
     }
 
-    /**
-     * Load the allocated slots for the GUI
-     */
-    protected void loadAllocatedSlots() {
-        this.allocatedSlots = new ArrayList<>();
+    protected void loadSlots(String configPath) {
+        this.slots.clear();
 
-        if (!this.config.contains("gui-settings.allocated-slots")) {
-            // If allocated-slots is not defined, use all available slots
-            int rows = this.config.getInt("gui-settings.rows", 6);
-            for (int i = 0; i < rows * 9; i++) {
-                this.allocatedSlots.add(i);
-            }
-            return;
-        }
-
-        List<String> slotsConfig = this.config.getStringList("gui-settings.allocated-slots");
-        for (String slotConfig : slotsConfig) {
-            if (!slotConfig.contains("-")) {
-                this.allocatedSlots.add(Integer.parseInt(slotConfig));
-                continue;
-            }
-
-            String[] range = slotConfig.split("-");
-            int start = Integer.parseInt(range[0]);
-            int end = Integer.parseInt(range[1]);
-            for (int i = start; i <= end; i++) {
-                this.allocatedSlots.add(i);
-            }
-
-            return;
-        }
-    }
-
-    /**
-     * Load the tag slots from the configuration
-     */
-    protected void loadTagSlots() {
-        this.tagSlots.clear(); // clear the cache
-
-        List<String> slotsConfig = this.config.getStringList("tag-item.slots");
+        List<String> slotsConfig = this.config.getStringList(configPath);
         if (slotsConfig.isEmpty()) {
             int rows = this.config.getInt("gui-settings.rows", 6);
             for (int i = 0; i < rows * 9; i++) {
-                this.tagSlots.add(i);
+                slots.add(i);
             }
-
-            return;
-        }
-
-        for (String slotConfig : slotsConfig) {
-            if (!slotConfig.contains("-")) {
-                this.tagSlots.add(Integer.parseInt(slotConfig));
-                continue;
-            }
-
-            String[] range = slotConfig.split("-");
-            int start = Integer.parseInt(range[0]);
-            int end = Integer.parseInt(range[1]);
-            for (int i = start; i <= end; i++) {
-                this.tagSlots.add(i);
+        } else {
+            for (String slotConfig : slotsConfig) {
+                if (slotConfig.contains("-")) {
+                    String[] range = slotConfig.split("-");
+                    int start = Integer.parseInt(range[0]);
+                    int end = Integer.parseInt(range[1]);
+                    for (int i = start; i <= end; i++) {
+                        slots.add(i);
+                    }
+                } else {
+                    slots.add(Integer.parseInt(slotConfig));
+                }
             }
         }
     }
@@ -151,16 +157,12 @@ public abstract class PluginMenu {
         int rows = this.config.getInt("gui-settings.rows", 6);
         int totalSlots = rows * 9;
 
-        GuiItem empty = new GuiItem(new ItemStack(Material.AIR));
         for (int i = 0; i < totalSlots; i++) {
-            if (this.allocatedSlots.contains(i)) {
-                return;
+            if (!this.slots.contains(i)) {
+                gui.setItem(i, new GuiItem(new ItemStack(Material.AIR)));
             }
-
-            gui.setItem(i, empty);
         }
     }
-
 
     /**
      * Add extra items to the GUI
@@ -170,21 +172,116 @@ public abstract class PluginMenu {
      */
     protected void addExtraItems(PaginatedGui gui, Player player) {
         CommentedConfigurationSection extraItems = this.config.getConfigurationSection("extra-items");
-        if (extraItems == null) return;
-
-        for (String key : extraItems.getKeys(false)) {
-            MenuItem.create(this.config)
-                    .path("extra-items." + key)
-                    .player(player)
-                    .place(gui);
+        if (extraItems != null) {
+            for (String key : extraItems.getKeys(false)) {
+                MenuItem.create(this.config)
+                        .path("extra-items." + key)
+                        .player(player)
+                        .place(gui);
+            }
         }
+    }
+
+    /**
+     * Add navigation icons to the GUI
+     *
+     * @param gui            The GUI to add navigation icons to
+     * @param player         The player viewing the GUI
+     * @param finalMenuTitle The title of the GUI
+     */
+    protected void addNavigationIcons(PaginatedGui gui, Player player, String finalMenuTitle) {
+        MenuItem.create(this.config)
+                .path("next-page")
+                .player(player)
+                .action((item, event) -> {
+                    if (gui.next()) {
+                        item.sound((Player) event.getWhoClicked());
+                        this.addNavigationIcons(gui, player, finalMenuTitle);
+                        this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                    }
+                })
+                .place(gui);
+
+        MenuItem.create(this.config)
+                .path("previous-page")
+                .player(player)
+                .action((item, event) -> {
+                    if (gui.previous()) {
+                        item.sound((Player) event.getWhoClicked());
+                        this.addNavigationIcons(gui, player, finalMenuTitle);
+                        this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                    }
+                })
+                .place(gui);
+
+        gui.update(); // Update the GUI to apply the changes.
+    }
+
+    /**
+     * Add functional items to the GUI
+     *
+     * @param gui    The GUI to add items to
+     * @param player The player viewing the GUI
+     */
+    protected void addFunctionalItems(PaginatedGui gui, Player player) {
+        MenuItem.create(this.config)
+                .path("clear-tag")
+                .player(player)
+                .action(event -> this.clearTag(player))
+                .place(gui);
+
+        MenuItem.create(this.config)
+                .path("main-menu")
+                .player(player)
+                .action(event -> {
+                    if (Setting.OPEN_CATEGORY_GUI_FIRST.getBoolean()) {
+                        MenuProvider.get(CategoryGUI.class).open(player);
+                    } else {
+                        MenuProvider.get(TagsGUI.class).open(player, null);
+                    }
+                })
+                .place(gui);
+
+        MenuItem.create(this.config)
+                .path("search")
+                .player(player)
+                .action((item, event) -> {
+                    item.sound((Player) event.getWhoClicked());
+                    this.searchTags(player, gui);
+                })
+                .place(gui);
+
+        MenuItem.create(this.config)
+                .path("favorite-tags")
+                .player(player)
+                .action((item, event) -> {
+                    item.sound((Player) event.getWhoClicked());
+                    MenuProvider.get(FavouritesGUI.class).open(player);
+                })
+                .place(gui);
+    }
+
+    /**
+     * Toggle a player's favourite tag
+     *
+     * @param player The player
+     * @param tag    The tag
+     */
+    protected void toggleFavourite(Player player, Tag tag, TagsManager tagsManager) {
+        boolean isFavourite = tagsManager.isFavourite(player.getUniqueId(), tag);
+
+        if (isFavourite) tagsManager.removeFavourite(player.getUniqueId(), tag);
+        else tagsManager.addFavourite(player.getUniqueId(), tag);
+
+
+        String message = locale.getLocaleMessage(isFavourite ? "command-favorite-off" : "command-favorite-on");
+        this.locale.sendMessage(player, "command-favorite-toggled", StringPlaceholders.builder("tag", tagsManager.getDisplayTag(tag, player)).add("toggled", message).build());
     }
 
     /**
      * Create a paged GUI for the given player
      *
      * @param player The player to create the GUI for
-     *
      * @return The created GUI
      */
     protected final PaginatedGui createPagedGUI(Player player) {
@@ -206,7 +303,6 @@ public abstract class PluginMenu {
      * Create a GUI for the given player without pages
      *
      * @param player The player to create the GUI for
-     *
      * @return The created GUI
      */
     protected final Gui createGUI(Player player) {
@@ -224,7 +320,6 @@ public abstract class PluginMenu {
      * Scrolling gui for the given player
      *
      * @param player The player to create the GUI for
-     *
      * @return The created GUI
      */
     protected final ScrollingGui createScrollingGui(Player player, ScrollType scrollType) {
@@ -241,39 +336,12 @@ public abstract class PluginMenu {
                 .create();
     }
 
-    /**
-     * Add navigation icons to the GUI
-     *
-     * @param gui            The GUI to add navigation icons to
-     * @param player         The player viewing the GUI
-     * @param finalMenuTitle The title of the GUI
-     */
-    protected void addNavigationIcons(PaginatedGui gui, Player player, String finalMenuTitle) {
-        MenuItem.create(this.config).path("next-page")
-                .player(player)
-                .action(event -> {
-                    gui.next();
-                    this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
-                }).player(player).place(gui);
-
-        MenuItem.create(this.config)
-                .path("previous-page")
-                .player(player)
-                .action(event -> {
-                    gui.previous();
-                    this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
-                }).place(gui);
-
-        gui.update(); // Update the GUI to apply the changes.
-    }
-
 
     /**
      * Create a GUI item for a player, using tag placeholders, Requires different method for the %description% placeholder
      *
      * @param player The player to create the item for
      * @param tag    The tag to create the item for
-     *
      * @return The created item
      */
     public ItemStack getTagItem(Player player, Tag tag) {
@@ -327,7 +395,6 @@ public abstract class PluginMenu {
      * Get all the tag icon actions.
      *
      * @return The tag icon actions
-     *
      * @since 1.1.7
      */
     protected final Map<ClickType, List<Action>> getTagActions() {
@@ -385,7 +452,6 @@ public abstract class PluginMenu {
      *
      * @param player The player to format the string for
      * @param text   The string to format
-     *
      * @return The formatted string
      */
     protected final Component format(Player player, String text) {
@@ -398,7 +464,6 @@ public abstract class PluginMenu {
      * @param player       The player to format the string for
      * @param text         The text to format
      * @param placeholders The placeholders to replace
-     *
      * @return The formatted string
      */
     protected final Component format(Player player, String text, StringPlaceholders placeholders) {
@@ -410,7 +475,6 @@ public abstract class PluginMenu {
      *
      * @param player The player to format the string for
      * @param text   The text to format
-     *
      * @return The formatted string
      */
     protected final String formatString(Player player, String text) {
@@ -423,7 +487,6 @@ public abstract class PluginMenu {
      * @param player       The player to format the string for
      * @param text         The text to format
      * @param placeholders The placeholders to replace
-     *
      * @return The formatted string
      */
     protected final String formatString(Player player, String text, StringPlaceholders placeholders) {
@@ -434,7 +497,6 @@ public abstract class PluginMenu {
      * Get the page placeholders for the gui
      *
      * @param gui The gui
-     *
      * @return The page placeholders
      */
     protected StringPlaceholders getPagePlaceholders(PaginatedGui gui) {
@@ -452,7 +514,6 @@ public abstract class PluginMenu {
      *
      * @param tag    The tag
      * @param player The player
-     *
      * @return The tag placeholders
      */
     protected StringPlaceholders getTagPlaceholders(Tag tag, OfflinePlayer player) {

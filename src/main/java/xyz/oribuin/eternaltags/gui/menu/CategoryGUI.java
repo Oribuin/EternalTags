@@ -10,7 +10,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import xyz.oribuin.eternaltags.EternalTags;
-import xyz.oribuin.eternaltags.gui.MenuItem;
 import xyz.oribuin.eternaltags.gui.MenuProvider;
 import xyz.oribuin.eternaltags.gui.PluginMenu;
 import xyz.oribuin.eternaltags.gui.enums.SortType;
@@ -26,6 +25,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 
 public class CategoryGUI extends PluginMenu {
 
@@ -48,7 +48,7 @@ public class CategoryGUI extends PluginMenu {
         super.load();
 
         this.categoryIcons.clear();
-        this.loadAllocatedSlots();
+        loadSlots("gui-settings.allocated-slots");
     }
 
     /**
@@ -62,103 +62,7 @@ public class CategoryGUI extends PluginMenu {
             return;
         }
 
-        String menuTitle = this.config.getString("gui-settings.title");
-        if (menuTitle == null)
-            menuTitle = "Category Menu";
-
-        String finalMenuTitle = menuTitle;
-
-
-        boolean scrollingGui = this.config.getBoolean("gui-settings.scrolling-gui", false);
-        ScrollType scrollingType = TagsUtils.getEnum(
-                ScrollType.class,
-                this.config.getString("gui-settings.scrolling-type"),
-                ScrollType.VERTICAL
-        );
-
-        PaginatedGui gui = (scrollingGui && scrollingType != null) ? this.createScrollingGui(player, scrollingType) : this.createPagedGUI(player);
-
-        this.setupGuiLayout(gui);
-        this.addExtraItems(gui, player);
-        this.addFunctionalItems(gui, player);
-
-        gui.setPageSize(this.allocatedSlots.size());
-        gui.open(player);
-
-        Runnable task = () -> {
-            this.addCategories(gui, player);
-
-            if (this.reloadTitle())
-                this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
-        };
-
-        if (this.addPagesAsynchronously()) this.async(task);
-        else task.run();
-    }
-
-    /**
-     * Add functional items to the GUI
-     *
-     * @param gui    The GUI to add items to
-     * @param player The player viewing the GUI
-     */
-    private void addFunctionalItems(PaginatedGui gui, Player player) {
-        String finalMenuTitle = this.config.getString("gui-settings.title", "Category Menu | %page%/%total%");
-
-        MenuItem.create(this.config)
-                .path("next-page")
-                .player(player)
-                .action(event -> {
-                    gui.next();
-                    this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
-                })
-                .player(player)
-                .place(gui);
-
-        MenuItem.create(this.config)
-                .path("previous-page")
-                .player(player)
-                .action(event -> {
-                    gui.previous();
-                    this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
-                })
-                .place(gui);
-
-        MenuItem.create(this.config)
-                .path("clear-tag")
-                .player(player)
-                .action(event -> this.clearTag(player))
-                .place(gui);
-
-        MenuItem.create(this.config)
-                .path("main-menu")
-                .player(player)
-                .action(event -> {
-                    if (Setting.OPEN_CATEGORY_GUI_FIRST.getBoolean()) {
-                        MenuProvider.get(CategoryGUI.class).open(player);
-                    } else {
-                        MenuProvider.get(TagsGUI.class).open(player, null);
-                    }
-                })
-                .place(gui);
-
-        MenuItem.create(this.config)
-                .path("favorite-tags")
-                .player(player)
-                .action((item, event) -> {
-                    item.sound((Player) event.getWhoClicked());
-                    MenuProvider.get(FavouritesGUI.class).open(player);
-                })
-                .place(gui);
-
-        MenuItem.create(this.config)
-                .path("search")
-                .player(player)
-                .action((item, event) -> {
-                    item.sound((Player) event.getWhoClicked());
-                    this.searchTags(player, gui);
-                })
-                .place(gui);
+        super.openGui(player, "Category Menu", this::addCategories);
     }
 
     /**
@@ -227,11 +131,11 @@ public class CategoryGUI extends PluginMenu {
         gui.update();
     }
 
+
     /**
      * Get a list of categories for a player
      *
      * @param player The player to get categories for
-     *
      * @return A list of categories
      */
     private List<Category> getCategories(Player player) {
