@@ -4,7 +4,6 @@ import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 
 public class MessageAction extends Action {
 
@@ -13,7 +12,7 @@ public class MessageAction extends Action {
     }
 
     @Override
-    public void execute(@NotNull Player player, @NotNull StringPlaceholders placeholders) {
+    public void execute(Player player, StringPlaceholders placeholders) {
         if (this.getMessage().length() == 0)
             return;
 

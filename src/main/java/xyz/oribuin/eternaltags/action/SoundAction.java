@@ -3,7 +3,6 @@ package xyz.oribuin.eternaltags.action;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.util.TagsUtils;
 
 public class SoundAction extends Action {
@@ -13,7 +12,7 @@ public class SoundAction extends Action {
     }
 
     @Override
-    public void execute(@NotNull Player player, @NotNull StringPlaceholders placeholders) {
+    public void execute(Player player, StringPlaceholders placeholders) {
         if (this.getMessage().length() == 0)
             return;
 

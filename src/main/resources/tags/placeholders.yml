@@ -1,0 +1,46 @@
+# Configure all the tags you want to use in your server here.
+# This is an example file, filled with tags that use PlaceholderAPI Placeholders
+# Here are all the options you can use
+
+tags:
+  blocks-broken:
+    name: 'Blocks Broken'
+    tag: '&f&l<<#20BDFF>Mined %statistic_mine_block% Blocks&f&l>'
+    description:
+      - ' '
+      - ' &f| &7This will display the amount of'
+      - ' &f| &7blocks the player has broken'
+      - ' &f| &7in the tag.'
+      - ' '
+      - ' &f| &7This tag uses PlaceholderAPI'
+    permission: 'eternaltags.tag.blocks-broken'
+    order: 3
+    category: placeholders
+
+  mob-kills:
+    name: 'Mob Kills'
+    tag: '&f&l<<#20BDFF>Killed %statistic_mob_kills% Mobs&f&l>'
+    description:
+      - ' '
+      - ' &f| &7This will display the amount of'
+      - ' &f| &7mobs the player has killed'
+      - ' &f| &7in the tag.'
+      - ' '
+      - ' &f| &7This tag uses PlaceholderAPI'
+    permission: 'eternaltags.tag.mob-kills'
+    order: 4
+    category: placeholders
+
+  playtime:
+    name: 'Playtime'
+    tag: '&f&l<<#20BDFF>%statistic_hours_played%h Playtime&f&l>'
+    description:
+      - ' '
+      - ' &f| &7This will display the amount of'
+      - ' &f| &hours the player has played'
+      - ' &f| &7in the tag.'
+      - ' '
+      - ' &f| &7This tag uses PlaceholderAPI'
+    permission: 'eternaltags.tag.playtime'
+    order: 5
+    category: placeholders

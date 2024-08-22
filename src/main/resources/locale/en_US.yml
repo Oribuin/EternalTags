@@ -8,8 +8,12 @@ only-player: This command can only be executed by a player.
 only-console: This command can only be executed by console.
 unknown-command: 'Unknown command, use #00B4DB/%cmd%&f help for more info'
 
+# Main Tags Command
+command-tags-description: Displays the tags menu.
+
 # Categories Command
-command-categories-description: Displays the categories menu.
+command-categories-description: "Open the categories menu or a specific category"
+argument-handler-category-global: "&cYou cannot open the global category directly."
 
 # Clear Command
 command-clear-description: Clears your active tag.
@@ -29,7 +33,7 @@ command-create-tag-missing: Please provide a display tag.
 
 # Delete Command
 command-delete-description: Deletes a tag from the config.
-command-delete-deleted: You have successfully deleted the tag, %tag%&f!
+command-delete-deleted: "You have successfully deleted the tag, %tag%&f!"
 
 # Favorite Command
 command-favorite-description: Toggles a tag as a favourite.
@@ -38,11 +42,6 @@ command-favorite-toggled: You have toggled the tag %tag% &fas a favorite %toggle
 command-favorite-cleared: You have cleared all your favorite tags.
 command-favorite-on: 'on'
 command-favorite-off: 'off'
-
-# Migrate Command
-command-migrate-description: Migrates tags from one plugin to another.
-command-migrate-success: You have successfully migrated your tags from %from% to %to%.
-command-migrate-matching: Choose two different data storage types to migrate from and to.
 
 # Random Command
 command-random-description: Automatically equips a random tag you own.
@@ -80,6 +79,7 @@ command-edit-invalid-item: Please hold a valid item in your hand.
 # Plugin Error Messages
 no-tags: You currently do not own any tags.
 tag-doesnt-exist: The tag you have provided doesn't exist.
+tag-already-exists: "&cWarning: A tag with ID '%id%' already exists. Skipping tag in file: %file%"
 
 # Argument Handler Error Messages
 argument-handler-player: Please provide an online username.
@@ -88,4 +88,3 @@ argument-handler-tags: '%input% is not a valid tag id.'
 argument-handler-edit-option: Please provide a valid tag value option.
 argument-handler-category: Please provide a valid category.
 argument-handler-material: Please provide a valid material.
-argument-handler-data-storage-type: Please provide a valid data storage type.

@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.database.DataMigration;
 import dev.rosewood.rosegarden.manager.AbstractDataManager;
-import dev.rosewood.rosegarden.utils.NMSUtil;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.database.migration._1_CreateInitialTables;
@@ -45,7 +44,7 @@ public class DataManager extends AbstractDataManager {
      * @param uuid The player's uuid
      * @param tag  The tag
      */
-    public void saveUser(@NotNull UUID uuid, @NotNull String tag) {
+    public void saveUser(UUID uuid, String tag) {
         TagUser user = this.cachedUsers.getOrDefault(uuid, new TagUser(uuid));
         user.setActiveTag(tag);
         user.setUsingDefaultTag(false);
@@ -183,7 +182,7 @@ public class DataManager extends AbstractDataManager {
      *
      * @param uuid The player's uuid
      */
-    public void loadUser(@NotNull UUID uuid) {
+    public void loadUser(UUID uuid) {
         TagUser user = new TagUser(uuid);
 
         this.async(() -> this.databaseConnector.connect(connection -> {
@@ -283,10 +282,10 @@ public class DataManager extends AbstractDataManager {
      *
      * @param tag The tag to save.
      */
-    public void saveTagData(@NotNull Tag tag) {
+    public void saveTagData(Tag tag) {
         this.async(() -> this.databaseConnector.connect(connection -> {
             String query = "REPLACE INTO " + this.getTablePrefix() + "tag_data (`tagId`, `name`, " +
-                                 "`description`, `tag`, `permission`, `order`, `icon`, `category`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                           "`description`, `tag`, `permission`, `order`, `icon`, `category`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, tag.getId());
                 statement.setString(2, tag.getName());
@@ -309,7 +308,7 @@ public class DataManager extends AbstractDataManager {
     public void saveTagData(Map<String, Tag> tags) {
         this.async(() -> this.databaseConnector.connect(connection -> {
             String query = "REPLACE INTO " + this.getTablePrefix() + "tag_data (`tagId`, `name`, " +
-                                 "`description`, `tag`, `permission`, `order`, `icon`, `category`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                           "`description`, `tag`, `permission`, `order`, `icon`, `category`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 for (Tag tag : tags.values()) {
@@ -360,6 +359,7 @@ public class DataManager extends AbstractDataManager {
      * Get the user's cached data. If the user is not cached, it will create a new user.
      *
      * @param uuid The player's uuid
+     *
      * @return The user's data
      */
     @NotNull

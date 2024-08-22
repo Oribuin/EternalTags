@@ -7,26 +7,27 @@ import org.jetbrains.annotations.Nullable;
 
 public class Category {
 
-    private final @NotNull String id;  // The id of the category
-    private @NotNull String displayName;  // The display name of the category
+    private final String id;  // The id of the category
+    private String displayName;  // The display name of the category
     private CategoryType type;  // The type of the category
     private int order;  // The order of the category
     private boolean bypassPermission;  // If the category bypasses the permission check for tags.
-    private @Nullable String permission;  // The permission required to view the category
+    private String permission;  // The permission required to view the category
 
-    public Category(@NotNull String id) {
+    public Category(String id) {
         this.id = id;
         this.displayName = StringUtils.capitalize(id.toLowerCase());
         this.type = CategoryType.CUSTOM;
         this.order = -1;
         this.bypassPermission = false;
-        this.permission = null;
+        this.permission = "eternaltags.category." + id.toLowerCase();
     }
 
     /**
      * Check if a player has access to the category
      *
      * @param player The player
+     *
      * @return If the player has access to the category
      */
     public boolean canUse(Player player) {
@@ -45,7 +46,7 @@ public class Category {
         return displayName;
     }
 
-    public void setDisplayName(@NotNull String displayName) {
+    public void setDisplayName(String displayName) {
         this.displayName = displayName;
     }
 
@@ -78,7 +79,7 @@ public class Category {
         return this.permission;
     }
 
-    public void setPermission(@Nullable String permission) {
+    public void setPermission(String permission) {
         this.permission = permission;
     }
 

@@ -36,7 +36,6 @@ public class PluginConversionManager extends Manager {
         // Create a category for the plugin
         Category category = new Category(conversionPlugin.getPluginName().toLowerCase());
         category.setDisplayName(conversionPlugin.getPluginName());
-        category.setPermission("eternaltags.category." + category.getId());
         categoryManager.save(category);
 
         // Set the category for each tag

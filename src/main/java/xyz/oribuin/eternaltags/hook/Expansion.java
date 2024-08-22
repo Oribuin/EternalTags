@@ -5,7 +5,6 @@ import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
 import xyz.oribuin.eternaltags.manager.TagsManager;
@@ -27,76 +26,89 @@ public class Expansion extends PlaceholderExpansion {
     }
 
     @Override
-    public String onRequest(@Nullable OfflinePlayer offlineUser, @NotNull String params) {
+    public String onPlaceholderRequest(Player player, String params) {
 
-        // Require a player for these placeholders
-        if (offlineUser == null)
-            return "Error: Player is null";
+        // Regular placeholders :)
+        if (params.equalsIgnoreCase("total")) return String.valueOf(this.manager.getCachedTags().size());
+        if (params.equalsIgnoreCase("joined")) return this.joinTags(this.manager.getPlayerTags(player));
+        if (params.equalsIgnoreCase("unlocked")) return String.valueOf(this.manager.getPlayerTags(player).size());
+        if (params.equalsIgnoreCase("favorites")) return String.valueOf(this.manager.getUsersFavourites(player.getUniqueId()).size());
 
         // Allow the ability to get any tag from the id
         String[] args = params.split("_");
+        Tag activeTag = this.manager.getUserTag(player);
 
         // Add new specific tags here
         if (args.length >= 2) {
             String tagId = params.substring(args[0].length() + 1);
-            Tag tag = this.manager.getTagFromId(tagId);
-            // Can't use the switch statement here
+            Tag tag = this.manager.getTagFromId(tagId); // args[1]
+
             if (tag != null) {
                 return switch (args[0].toLowerCase()) {
-                    case "get" -> this.manager.getDisplayTag(tag, offlineUser, "");
-                    case "get-formatted" -> this.manager.getDisplayTag(tag, offlineUser, this.formattedPlaceholder);
-                    case "has" -> (offlineUser.getPlayer() == null ? "false" : this.manager.canUseTag(offlineUser.getPlayer(), tag) ? "true" : "false");
-                    case "has-unlocked" -> (offlineUser.getPlayer() == null ? "false" : this.manager.canUseTag(offlineUser.getPlayer(), tag) ? Setting.TAG_UNLOCKED_FORMAT.getString() : Setting.TAG_LOCKED_FORMAT.getString());
-                    case "active" -> String.valueOf(this.manager.getOfflineUserTag(offlineUser) == tag);
-                    default -> "Unknown Placeholder";
+                    case "get" -> this.manager.getDisplayTag(tag, player, "");
+                    case "get-formatted" -> this.manager.getDisplayTag(tag, player, this.formattedPlaceholder);
+                    case "has" -> String.valueOf(this.manager.canUseTag(player, tag));
+                    case "has-unlocked" -> this.manager.canUseTag(player, tag) ? Setting.TAG_UNLOCKED_FORMAT.getString() : Setting.TAG_LOCKED_FORMAT.getString();
+                    case "active" -> String.valueOf(activeTag != null && activeTag.getId().equalsIgnoreCase(tag.getId()));
+                    case "description" -> TagsUtils.formatList(tag.getDescription(), Setting.DESCRIPTION_DELIMITER.getString());
+                    default -> null;
                 };
             }
         }
 
-        // This is the only tag that doesn't require a player
-        if (params.equalsIgnoreCase("total"))
-            return String.valueOf(this.manager.getCachedTags().size());
+        // Return the result of the placeholder
+        return this.result(params, player, activeTag);
+    }
 
-        Player player = offlineUser.getPlayer();
-        if (player == null)
-            return "Error: Player is null";
+    /**
+     * Parse all the placeholders and return the result
+     *
+     * @param param         The placeholder to parse
+     * @param offlinePlayer The player to parse the placeholder for
+     * @param tag           The tag to parse the placeholder for
+     *
+     * @return The result of the placeholder
+     */
+    public String result(String param, OfflinePlayer offlinePlayer, Tag tag) {
+        if (offlinePlayer == null) return ""; // Require a player for these placeholders
+        Player player = offlinePlayer.getPlayer();
 
-        Tag activeTag = this.manager.getUserTag(player);
-        return switch (params.toLowerCase()) {
-            // Set bracket placeholders to allow \o/ Placeholder Inception \o/
-            case "tag" -> this.manager.getDisplayTag(activeTag, offlineUser, "");
-            case "tag_formatted" -> this.manager.getDisplayTag(activeTag, offlineUser, this.formattedPlaceholder);
+        if (player == null) return ""; // Require a player for these placeholders
 
-            // We're separating these tags from the other ones because of placeholder inception
-            case "tag_stripped" -> activeTag != null ? activeTag.getTag() : "";
-            case "tag_stripped_formatted" -> activeTag != null ? activeTag.getTag() : this.formattedPlaceholder;
+        // These tags are different and dont always want formattedPlaceholder
+        if (param.equalsIgnoreCase("active")) return String.valueOf(tag != null); // Return true if the tag is not null
+        if (param.equalsIgnoreCase("tag")) return this.manager.getDisplayTag(tag, player, ""); // Return the tag with the player's tag
+        if (param.equalsIgnoreCase("tag_stripped")) return tag != null ? tag.getTag() : ""; // Return nothing when the tag is null
 
-            // general tag placeholders, unlikely to be used often
-            case "tag_name" -> activeTag != null ? activeTag.getName() : this.formattedPlaceholder;
-            case "tag_id" -> activeTag != null ? activeTag.getId() : this.formattedPlaceholder;
-            case "tag_permission" -> activeTag != null ? activeTag.getPermission() : this.formattedPlaceholder;
-            case "tag_description" -> activeTag != null ? TagsUtils.formatList(activeTag.getDescription(), Setting.DESCRIPTION_DELIMITER.getString()) : this.formattedPlaceholder;
-            case "tag_order" -> activeTag != null ? String.valueOf(activeTag.getOrder()) : this.formattedPlaceholder;
-            case "active" -> String.valueOf(activeTag != null);
-            case "has-unlocked" -> {
-                if (activeTag == null)
-                    yield Setting.TAG_LOCKED_FORMAT.getString();
+        // Has unlocked is a double special case
+        if (param.equalsIgnoreCase("has-unlocked")) {
+            if (tag == null) return Setting.TAG_LOCKED_FORMAT.getString();
 
-                yield this.manager.canUseTag(player, activeTag) ? Setting.TAG_UNLOCKED_FORMAT.getString() : Setting.TAG_LOCKED_FORMAT.getString();
-            }
+            return this.manager.canUseTag(player, tag) ? Setting.TAG_UNLOCKED_FORMAT.getString() : Setting.TAG_LOCKED_FORMAT.getString();
+        }
 
-            // These are the tags that return a number.
-            case "joined" -> this.joinTags(this.manager.getPlayerTags(offlineUser.getPlayer()));
-            case "unlocked" -> offlineUser.getPlayer() != null ? String.valueOf(this.manager.getPlayerTags(offlineUser.getPlayer()).size()) : "0";
-            case "favorites" -> offlineUser.getPlayer() != null ? String.valueOf(this.manager.getUsersFavourites(offlineUser.getUniqueId()).size()) : "0";
+        if (tag == null) return this.formattedPlaceholder; // Return the formatted placeholder if the tag is null
+
+        // Regular tag placeholders
+        return switch (param) {
+            case "tag_formatted" -> this.manager.getDisplayTag(tag, player, this.formattedPlaceholder);
+            case "tag_stripped_formatted" -> tag.getTag();
+            case "tag_name" -> tag.getName();
+            case "tag_id" -> tag.getId();
+            case "tag_permission" -> tag.getPermission();
+            case "tag_description" -> TagsUtils.formatList(tag.getDescription(), Setting.DESCRIPTION_DELIMITER.getString());
+            case "tag_order" -> String.valueOf(tag.getOrder());
             default -> null;
         };
+
     }
+
 
     /**
      * Join all the tags in a single string
      *
      * @param tags The tags to join
+     *
      * @return The joined tags
      */
     public String joinTags(List<Tag> tags) {

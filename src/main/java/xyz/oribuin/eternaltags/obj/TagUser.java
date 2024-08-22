@@ -10,17 +10,17 @@ import java.util.UUID;
 
 public class TagUser {
 
-    private final @NotNull UUID player;
-    private @Nullable String activeTag;
+    private final UUID player;
+    private String activeTag;
     private boolean usingDefaultTag;
-    private @NotNull Set<String> favourites;
+    private Set<String> favourites;
 
     /**
      * Create a new TagUser object.
      *
      * @param player The player to create the object for.
      */
-    public TagUser(@NotNull UUID player) {
+    public TagUser(UUID player) {
         this.player = player;
         this.activeTag = null;
         this.usingDefaultTag = false;
@@ -32,7 +32,7 @@ public class TagUser {
      *
      * @param player The player to create the object for.
      */
-    public TagUser(@NotNull Player player) {
+    public TagUser(Player player) {
         this.player = player.getUniqueId();
         this.activeTag = null;
         this.usingDefaultTag = false;
@@ -59,7 +59,7 @@ public class TagUser {
     /**
      * @param activeTag Set the active tag of the player.
      */
-    public void setActiveTag(@Nullable String activeTag) {
+    public void setActiveTag(String activeTag) {
         this.activeTag = activeTag;
     }
 
@@ -80,14 +80,14 @@ public class TagUser {
     /**
      * @return The player's favourite tags.
      */
-    public @NotNull Set<String> getFavourites() {
+    public Set<String> getFavourites() {
         return this.favourites;
     }
 
     /**
      * @param favourites Set the player's favourite tags.
      */
-    public void setFavourites(@NotNull Set<String> favourites) {
+    public void setFavourites(Set<String> favourites) {
         this.favourites = favourites;
     }
 

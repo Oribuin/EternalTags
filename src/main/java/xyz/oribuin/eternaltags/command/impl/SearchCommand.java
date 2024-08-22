@@ -29,6 +29,7 @@ public class SearchCommand extends BaseRoseCommand {
      * Predicate to check if a tag contains a keyword
      *
      * @param keyword The keyword to check
+     *
      * @return The predicate
      */
     private Predicate<Tag> containsKeyword(String keyword) {

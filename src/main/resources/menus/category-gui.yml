@@ -1,47 +1,78 @@
-# pre-title: The title of the GUI before the page number is added
-# title - The title of the GUI
-# rows - The amount of rows in the GUI
-# sort-type - The type of sorting to use in the GUI [ALPHABETICAL, CUSTOM, NONE, RANDOM, TAG_COUNT]
-# only-unlocked-categories - Whether to only show categories that the player has unlocked tags in (This may have a performance impact)
-# use-category-permissions - Whether to use category permissions (Categories in the categories.yml must have a permission set)
-# scrolling-gui - Whether to use a scrolling GUI
-# scrolling-type - The type of scrolling for the GUI [HORIZONTAL, VERTICAL]
-# update-title - Whether to update the title of the GUI on load, If this is set to false, the title will be the "pre-title" option until the page is changed.
-# add-pages-asynchronously - Whether to add pages asynchronously (This will improve performance, however, it may take a few seconds for the GUI to load)
+# EternalTags Tags GUI Configuration
+# This file controls the appearance and behavior of the tags selection GUI
 #
-# The general options for the customising itemstacks.
-#  
-# material - The material of the reward.
-# amount - The amount of the reward.
-# name - The name of the reward.
-# lore - The lore of the reward.
-# glow - Whether the reward item should glow.
-# texture - The base64 texture of the reward item (Only for skulls), You can also use hdbLoader to load a texture if you have HeadDatabase installed.
-# potion-color - The color of the potion reward. (Only for potions)
-# model-data - The model data of the reward item. (Requires texture packs)
-# owner - The uuid of the player for the reward item (Only for skulls)
-# flags - The item flags for the reward item.
-# enchants - The enchantments for the reward item.
+# General Item Property Options
+# These options can be used for any item in the GUI
 #
-# GUI Settings
-gui-settings:
-  pre-title: 'EternalTags Loading...'
-  title: EternalTags Categories | %page%/%total%
-  rows: 4
-  sort-type: CUSTOM
-  only-unlocked-categories: false
-  use-category-permissions: true
-  scrolling-gui: false
-  scrolling-type: HORIZONTAL
-  update-title: true
-  add-pages-asynchronously: true
+# material: The material of the item (e.g., DIAMOND_SWORD)
+# amount: The stack size of the item
+# name: The display name of the item
+# lore: The item's lore. Use %description% to add the tag's description
+# glow: Whether the item should have an enchantment glow (true/false)
+# texture: Base64 texture for player heads. Use 'hdb:<id>' for HeadDatabase
+# potion-color: Color for potion items (e.g., RED, #FF0000)
+# model-data: Custom model data for resource packs
+# owner: UUID or player name for player heads
+# flags: Item flags to apply (e.g., HIDE_ATTRIBUTES)
+# enchants: Enchantments to apply to the item (e.g., DAMAGE_ALL:1)
+# slots: Specific slots where the item should appear in the GUI
+# sound: Sound to play when the item is clicked (e.g., ENTITY_EXPERIENCE_ORB_PICKUP)
 
-# Categories - These are all the categories that will be shown in the GUI
-# Default: [animated, static, placeholders, symbols, all-tags]
+# Actions can replace an item's functionality with a new one.
+# Available Actions: [BROADCAST, CLOSE, CONSOLE, MESSAGE, PLAYER, SOUND]
+# These actions can be defined in the `commands` section of the item.
+# They require a ClickType to be defined.
+# Available ClickTypes: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/event/inventory/ClickType.html
+#
+# Example:
+# commands:
+#   LEFT:
+#     - '[message] You clicked the left button!'
+#   RIGHT:
+#     - '[message] You clicked the right button!'
+#   MIDDLE:
+#     - '[console] ban %player_name%'
+#
+gui-settings:
+  # The title shown while the GUI is loading
+  pre-title: EternalTags Loading...
+  # The main title of the GUI. Use %page% and %total% for pagination info
+  title: EternalTags Categories | %page%/%total%
+  # Total number of rows in the GUI (Max: 6)
+  rows: 6
+  # Sorting options for categories
+  # Options: ALPHABETICAL, CUSTOM, NONE, RANDOM
+  # CUSTOM uses the 'order' value defined in categories.yml
+  sort-type: CUSTOM
+  # Only show categories with unlocked tags (may impact performance)
+  only-unlocked-categories: false
+  # Require category permissions to open
+  use-category-permissions: true
+  # GUI type settings
+  scrolling-gui: false
+  # Options: HORIZONTAL, VERTICAL
+  scrolling-type: HORIZONTAL
+  # Update the title on GUI load (false uses pre-title until page change)
+  update-title: true
+  # Add pages asynchronously (improves performance, longer initial load)
+  add-pages-asynchronously: true
+  # Specify exact slots for category items, otherwise they will be auto-assigned
+  allocated-slots:
+    - '9-17'
+    - '28'
+    - '31'
+    - '34'
+
+# Category Definitions
+# Define how each category appears in the GUI
+#
 # categories:
-#   <category-id>:
-#     hidden: Whether the category should be shown in the GUI
-#     display-item: The item to display in the GUI
+#   category-id:
+#     hidden: false
+#     slot: <number of slots to occupy> (OPTIONAL, defaults to 1)
+#     display-item:
+#       <item properties>
+
 categories:
   animated:
     hidden: false
@@ -109,69 +140,51 @@ categories:
         - ' &f| &7Total: %total%'
       texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZjQ3N2Y0NDM4OTM2MmM0Yzc2NGM4NDdhOTczOWJjNzhjMzI0NjdlYWI0ZTM4MzBhZTRjOGJlYWMzNDQyZWY5In19fQ=='
 
-# Next Page Item - Changes the current page to the next page 
+# Navigation Items
 next-page:
-  material: PAPER
-  name: '#00B4DB&lNext Page'
+  material: ARROW
+  name: '&a&lNext Page'
   lore:
-    - ''
-    - '&f| #00B4DBLeft-Click &7to change '
-    - '&f| &7to the next page'
-    - ''
-  slot: 7
+    - '&7Click to go to the next page'
+  slot: 53
 
-# Previous Page Item - Changes the current page to the previous page
 previous-page:
-  material: PAPER
-  name: '#00B4DB&lPrevious Page'
+  material: ARROW
+  name: '&c&lPrevious Page'
   lore:
-    - ''
-    - '&f| #00B4DBLeft-Click &7to change '
-    - '&f| &7to the previous page'
-    - ''
-  slot: 1
+    - '&7Click to go to the previous page'
+  slot: 45
 
-# Clear Tag Item - Clears the player's active tag
-clear-tag:
-  enabled: true
-  material: PLAYER_HEAD
-  name: '#00B4DB&lClear Tag'
-  lore:
-    - ''
-    - ' &f| #00B4DBLeft-Click &7to clear your'
-    - ' &f| &7current active tag.'
-    - ' &f| &7'
-    - ' &f| &7Current Tag: #00B4DB%eternaltags_tag_formatted%'
-    - ''
-  texture: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZTljZGI5YWYzOGNmNDFkYWE1M2JjOGNkYTc2NjVjNTA5NjMyZDE0ZTY3OGYwZjE5ZjI2M2Y0NmU1NDFkOGEzMCJ9fX0=
-  slot: 3
-
-# Search Item - Allows the player to search for tags
-search:
-  enabled: true
-  material: OAK_SIGN
-  name: '#00B4DB&lSearch'
-  lore:
-    - ''
-    - ' &f| #00B4DBLeft-Click &7to search'
-    - ' &f| &7for a new tag in the menu.'
-    - ''
-  slot: 4
-
-# Favourites Tag Item - Shows the player's favourite tags
+# Favorite Items
 favorite-tags:
-  enabled: true
-  material: PLAYER_HEAD
-  name: '#00B4DB&lFavourite Tags'
+  material: NETHER_STAR
+  name: '&6&lFavorite Tags'
   lore:
-    - ' '
-    - ' &f| &#00B4DBLeft-Click &7to view'
-    - ' &f| &7your #00B4DBfavourite tags&7.'
-    - ' '
-  texture: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZDVjNmRjMmJiZjUxYzM2Y2ZjNzcxNDU4NWE2YTU2ODNlZjJiMTRkNDdkOGZmNzE0NjU0YTg5M2Y1ZGE2MjIifX19
-  slot: 5
+    - '&7View your favorite tags'
+  slot: 47
 
-# Extra Items - Allows you to add extra items to the GUI [These are placed in the gui first] 
+# Clear Tag Item
+clear-tag:
+  material: BUCKET
+  name: '&7&lClear Tag'
+  lore:
+    - '&7Remove your current tag'
+  slot: 51
+
+# Search Tag Item
+search:
+  material: MAP
+  name: '&7&lSearch Tag'
+  lore:
+    - '&7Search for your tag'
+  slots:
+    - 48-50
+
+# =============================================
+# Extra Items
+# =============================================
+# Additional items to customize the GUI appearance
+
 extra-items:
   border-item:
     enabled: true
@@ -179,4 +192,4 @@ extra-items:
     name: ' '
     slots:
       - 0-8
-      - 27-35
+      - 45-53

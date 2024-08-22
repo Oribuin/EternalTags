@@ -28,6 +28,7 @@ public final class ValidPlugin {
      * Match a plugin name to a plugin converter
      *
      * @param name The name of the plugin.
+     *
      * @return The plugin converter.
      */
     public static Optional<ConversionPlugin> match(String name) {

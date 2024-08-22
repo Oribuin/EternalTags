@@ -3,25 +3,27 @@ package xyz.oribuin.eternaltags.gui;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
-import dev.rosewood.rosegarden.utils.NMSUtil;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.triumphteam.gui.components.ScrollType;
 import dev.triumphteam.gui.guis.BaseGui;
 import dev.triumphteam.gui.guis.Gui;
+import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
 import dev.triumphteam.gui.guis.ScrollingGui;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.action.Action;
 import xyz.oribuin.eternaltags.action.PluginAction;
+import xyz.oribuin.eternaltags.gui.menu.CategoryGUI;
+import xyz.oribuin.eternaltags.gui.menu.FavouritesGUI;
 import xyz.oribuin.eternaltags.gui.menu.TagsGUI;
 import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
@@ -44,8 +46,13 @@ public abstract class PluginMenu {
     protected final RosePlugin rosePlugin;
     protected CommentedFileConfiguration config;
 
+    protected final LocaleManager locale;
+    protected final List<Integer> slots = new ArrayList<>();
+
     public PluginMenu(RosePlugin rosePlugin) {
         this.rosePlugin = rosePlugin;
+
+        locale = rosePlugin.getManager(LocaleManager.class);
     }
 
     /**
@@ -53,11 +60,50 @@ public abstract class PluginMenu {
      */
     public abstract String getMenuName();
 
+    @FunctionalInterface
+    protected interface ItemAdder {
+        void addItems(PaginatedGui gui, Player player);
+    }
+
+    protected void openGui(Player player, String defaultTitle, ItemAdder itemAdder) {
+        String menuTitle = this.config.getString("gui-settings.title", defaultTitle);
+
+        boolean scrollingGui = this.config.getBoolean("gui-settings.scrolling-gui", false);
+        ScrollType scrollingType = TagsUtils.getEnum(
+                ScrollType.class,
+                this.config.getString("gui-settings.scrolling-type"),
+                ScrollType.VERTICAL
+        );
+
+        PaginatedGui gui = (scrollingGui && scrollingType != null)
+                ? this.createScrollingGui(player, scrollingType)
+                : this.createPagedGUI(player);
+
+        this.setupGuiLayout(gui);
+        this.addExtraItems(gui, player);
+        this.addFunctionalItems(gui, player);
+
+        gui.setPageSize(this.slots.size());
+
+        Runnable task = () -> {
+            itemAdder.addItems(gui, player);
+
+            if (this.reloadTitle())
+                this.sync(() -> gui.updateTitle(this.formatString(player, menuTitle, this.getPagePlaceholders(gui))));
+        };
+
+        if (this.addPagesAsynchronously()) this.async(task);
+        else task.run();
+
+        this.addNavigationIcons(gui, player, menuTitle);
+
+        gui.open(player);
+    }
+
     /**
      * Create the menu file if it doesn't exist and add the default values
      */
     public void load() {
-
         File menuFile = TagsUtils.createFile(this.rosePlugin, "menus", this.getMenuName() + ".yml");
         this.config = CommentedFileConfiguration.loadConfiguration(menuFile);
 
@@ -77,6 +123,160 @@ public abstract class PluginMenu {
         this.config.save(menuFile);
     }
 
+    protected void loadSlots(String configPath) {
+        this.slots.clear();
+
+        List<String> slotsConfig = this.config.getStringList(configPath);
+        if (slotsConfig.isEmpty()) {
+            int rows = this.config.getInt("gui-settings.rows", 6);
+            for (int i = 0; i < rows * 9; i++) {
+                slots.add(i);
+            }
+        } else {
+            for (String slotConfig : slotsConfig) {
+                if (slotConfig.contains("-")) {
+                    String[] range = slotConfig.split("-");
+                    int start = Integer.parseInt(range[0]);
+                    int end = Integer.parseInt(range[1]);
+                    for (int i = start; i <= end; i++) {
+                        slots.add(i);
+                    }
+                } else {
+                    slots.add(Integer.parseInt(slotConfig));
+                }
+            }
+        }
+    }
+
+    /**
+     * Set up the initial layout of the GUI
+     *
+     * @param gui The GUI to set up
+     */
+    protected void setupGuiLayout(PaginatedGui gui) {
+        int rows = this.config.getInt("gui-settings.rows", 6);
+        int totalSlots = rows * 9;
+
+        for (int i = 0; i < totalSlots; i++) {
+            if (!this.slots.contains(i)) {
+                gui.setItem(i, new GuiItem(new ItemStack(Material.AIR)));
+            }
+        }
+    }
+
+    /**
+     * Add extra items to the GUI
+     *
+     * @param gui    The GUI to add items to
+     * @param player The player viewing the GUI
+     */
+    protected void addExtraItems(PaginatedGui gui, Player player) {
+        CommentedConfigurationSection extraItems = this.config.getConfigurationSection("extra-items");
+        if (extraItems != null) {
+            for (String key : extraItems.getKeys(false)) {
+                MenuItem.create(this.config)
+                        .path("extra-items." + key)
+                        .player(player)
+                        .place(gui);
+            }
+        }
+    }
+
+    /**
+     * Add navigation icons to the GUI
+     *
+     * @param gui            The GUI to add navigation icons to
+     * @param player         The player viewing the GUI
+     * @param finalMenuTitle The title of the GUI
+     */
+    protected void addNavigationIcons(PaginatedGui gui, Player player, String finalMenuTitle) {
+        MenuItem.create(this.config)
+                .path("next-page")
+                .player(player)
+                .action((item, event) -> {
+                    if (gui.next()) {
+                        item.sound((Player) event.getWhoClicked());
+                        this.addNavigationIcons(gui, player, finalMenuTitle);
+                        this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                    }
+                })
+                .place(gui);
+
+        MenuItem.create(this.config)
+                .path("previous-page")
+                .player(player)
+                .action((item, event) -> {
+                    if (gui.previous()) {
+                        item.sound((Player) event.getWhoClicked());
+                        this.addNavigationIcons(gui, player, finalMenuTitle);
+                        this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                    }
+                })
+                .place(gui);
+
+        gui.update(); // Update the GUI to apply the changes.
+    }
+
+    /**
+     * Add functional items to the GUI
+     *
+     * @param gui    The GUI to add items to
+     * @param player The player viewing the GUI
+     */
+    protected void addFunctionalItems(PaginatedGui gui, Player player) {
+        MenuItem.create(this.config)
+                .path("clear-tag")
+                .player(player)
+                .action(event -> this.clearTag(player))
+                .place(gui);
+
+        MenuItem.create(this.config)
+                .path("main-menu")
+                .player(player)
+                .action(event -> {
+                    if (Setting.OPEN_CATEGORY_GUI_FIRST.getBoolean()) {
+                        MenuProvider.get(CategoryGUI.class).open(player);
+                    } else {
+                        MenuProvider.get(TagsGUI.class).open(player, null);
+                    }
+                })
+                .place(gui);
+
+        MenuItem.create(this.config)
+                .path("search")
+                .player(player)
+                .action((item, event) -> {
+                    item.sound((Player) event.getWhoClicked());
+                    this.searchTags(player, gui);
+                })
+                .place(gui);
+
+        MenuItem.create(this.config)
+                .path("favorite-tags")
+                .player(player)
+                .action((item, event) -> {
+                    item.sound((Player) event.getWhoClicked());
+                    MenuProvider.get(FavouritesGUI.class).open(player);
+                })
+                .place(gui);
+    }
+
+    /**
+     * Toggle a player's favourite tag
+     *
+     * @param player The player
+     * @param tag    The tag
+     */
+    protected void toggleFavourite(Player player, Tag tag, TagsManager tagsManager) {
+        boolean isFavourite = tagsManager.isFavourite(player.getUniqueId(), tag);
+
+        if (isFavourite) tagsManager.removeFavourite(player.getUniqueId(), tag);
+        else tagsManager.addFavourite(player.getUniqueId(), tag);
+
+
+        String message = locale.getLocaleMessage(isFavourite ? "command-favorite-off" : "command-favorite-on");
+        this.locale.sendMessage(player, "command-favorite-toggled", StringPlaceholders.builder("tag", tagsManager.getDisplayTag(tag, player)).add("toggled", message).build());
+    }
 
     /**
      * Create a paged GUI for the given player
@@ -84,16 +284,19 @@ public abstract class PluginMenu {
      * @param player The player to create the GUI for
      * @return The created GUI
      */
-    protected final @NotNull PaginatedGui createPagedGUI(Player player) {
-
-        int rows = this.config.getInt("gui-settings.rows");
+    protected final PaginatedGui createPagedGUI(Player player) {
+        int rows = this.config.getInt("gui-settings.rows", 6);
         String preTitle = this.config.getString("gui-settings.pre-title", "EternalTags");
 
         return Gui.paginated()
-                .rows(rows == 0 ? 6 : rows)
+                .rows(rows)
                 .title(this.format(player, preTitle))
                 .disableAllInteractions()
                 .create();
+    }
+
+    protected void setPageSize(PaginatedGui gui, int pageSize) {
+        gui.setPageSize(pageSize);
     }
 
     /**
@@ -102,7 +305,7 @@ public abstract class PluginMenu {
      * @param player The player to create the GUI for
      * @return The created GUI
      */
-    protected final @NotNull Gui createGUI(Player player) {
+    protected final Gui createGUI(Player player) {
         int rows = this.config.getInt("gui-settings.rows");
         String preTitle = this.config.getString("gui-settings.pre-title", "EternalTags");
 
@@ -119,7 +322,7 @@ public abstract class PluginMenu {
      * @param player The player to create the GUI for
      * @return The created GUI
      */
-    protected final @NotNull ScrollingGui createScrollingGui(Player player, ScrollType scrollType) {
+    protected final ScrollingGui createScrollingGui(Player player, ScrollType scrollType) {
 
         int rows = this.config.getInt("gui-settings.rows");
         String preTitle = this.config.getString("gui-settings.pre-title", "EternalTags");
@@ -132,6 +335,7 @@ public abstract class PluginMenu {
                 .disableAllInteractions()
                 .create();
     }
+
 
     /**
      * Create a GUI item for a player, using tag placeholders, Requires different method for the %description% placeholder
@@ -153,7 +357,7 @@ public abstract class PluginMenu {
         List<String> lore = new ArrayList<>();
 
         // im not happy about this but it works
-        for (final String line : configLore) {
+        for (String line : configLore) {
             if (!line.contains("%description%")) {
                 lore.add(TagsUtils.format(player, line, tagPlaceholders));
                 continue;
@@ -193,7 +397,7 @@ public abstract class PluginMenu {
      * @return The tag icon actions
      * @since 1.1.7
      */
-    protected final @NotNull Map<ClickType, List<Action>> getTagActions() {
+    protected final Map<ClickType, List<Action>> getTagActions() {
         CommentedConfigurationSection customActions = this.config.getConfigurationSection("tag-item.commands");
         if (customActions == null)
             return new HashMap<>();
@@ -230,7 +434,7 @@ public abstract class PluginMenu {
      * @param event        The event to run the actions for
      * @param placeholders The placeholders to use
      */
-    public void runActions(@NotNull Map<ClickType, List<Action>> actions, @NotNull InventoryClickEvent event, @NotNull StringPlaceholders placeholders) {
+    public void runActions(Map<ClickType, List<Action>> actions, InventoryClickEvent event, StringPlaceholders placeholders) {
         if (actions.isEmpty())
             return;
 

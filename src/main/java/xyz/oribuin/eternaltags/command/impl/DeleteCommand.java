@@ -30,8 +30,16 @@ public class DeleteCommand extends BaseRoseCommand {
             return;
         }
 
-        manager.deleteTag(tag);
-        locale.sendMessage(sender, "command-delete-deleted", StringPlaceholders.of("tag", manager.getDisplayTag(tag, null)));
+        String tagId = tag.getId();
+        String displayTag = manager.getDisplayTag(tag, null);
+
+        manager.deleteTag(tagId);
+
+        StringPlaceholders placeholders = StringPlaceholders.builder()
+                .add("tag", displayTag)
+                .build();
+
+        locale.sendMessage(sender, "command-delete-deleted", placeholders);
     }
 
     @Override
@@ -48,5 +56,4 @@ public class DeleteCommand extends BaseRoseCommand {
                 .required("tag", new TagsArgumentHandler())
                 .build();
     }
-
 }

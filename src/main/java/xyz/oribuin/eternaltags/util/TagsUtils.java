@@ -55,6 +55,7 @@ public final class TagsUtils {
      * Get the display name of a tag
      *
      * @param text The text to format
+     *
      * @return The formatted text
      */
     public static String colorAsString(String text) {
@@ -74,6 +75,7 @@ public final class TagsUtils {
      * Convert a location to the center of the block
      *
      * @param location The location to convert
+     *
      * @return The center of the block
      */
     public static Location center(Location location) {
@@ -88,6 +90,7 @@ public final class TagsUtils {
      * Get a bukkit color from a hex code
      *
      * @param hex The hex code
+     *
      * @return The bukkit color
      */
     public static Color fromHex(String hex) {
@@ -106,6 +109,7 @@ public final class TagsUtils {
      * Get the total number of spare slots in a player's inventory
      *
      * @param player The player
+     *
      * @return The amount of empty slots.
      */
     public static int getSpareSlots(Player player) {
@@ -122,7 +126,9 @@ public final class TagsUtils {
      * Gets a location as a string key
      *
      * @param location The location
+     *
      * @return the location as a string key
+     *
      * @author Esophose
      */
     public static String locationAsKey(Location location) {
@@ -133,6 +139,7 @@ public final class TagsUtils {
      * Get a location from a string key
      *
      * @param key The key
+     *
      * @return The location
      */
     public static Location locationFromKey(String key) {
@@ -151,6 +158,7 @@ public final class TagsUtils {
      * Format a material name through this long method
      *
      * @param material The material
+     *
      * @return The material name.
      */
     public static String format(Material material) {
@@ -164,14 +172,15 @@ public final class TagsUtils {
      * @param sender       The CommandSender to apply placeholders from
      * @param key          The key to deserialize from
      * @param placeholders The placeholders to apply
+     *
      * @return The deserialized ItemStack
      */
     @Nullable
     public static ItemStack deserialize(
-            @NotNull CommentedConfigurationSection section,
-            @Nullable CommandSender sender,
-            @NotNull String key,
-            @NotNull StringPlaceholders placeholders
+            CommentedConfigurationSection section,
+            CommandSender sender,
+            String key,
+            StringPlaceholders placeholders
     ) {
         LocaleManager locale = EternalTags.getInstance().getManager(LocaleManager.class);
         Material material = Material.getMaterial(locale.format(sender, section.getString(key + ".material"), placeholders), false);
@@ -227,10 +236,11 @@ public final class TagsUtils {
      *
      * @param section The section to deserialize from
      * @param key     The key to deserialize from
+     *
      * @return The deserialized ItemStack
      */
     @Nullable
-    public static ItemStack deserialize(@NotNull CommentedConfigurationSection section, @NotNull String key) {
+    public static ItemStack deserialize(CommentedConfigurationSection section, String key) {
         return deserialize(section, null, key, StringPlaceholders.empty());
     }
 
@@ -240,10 +250,11 @@ public final class TagsUtils {
      * @param section The section to deserialize from
      * @param sender  The CommandSender to apply placeholders from
      * @param key     The key to deserialize from
+     *
      * @return The deserialized ItemStack
      */
     @Nullable
-    public static ItemStack deserialize(@NotNull CommentedConfigurationSection section, @Nullable CommandSender sender, @NotNull String key) {
+    public static ItemStack deserialize(CommentedConfigurationSection section, CommandSender sender, String key) {
         return deserialize(section, sender, key, StringPlaceholders.empty());
     }
 
@@ -251,6 +262,7 @@ public final class TagsUtils {
      * Parse an integer from an object safely
      *
      * @param object The object
+     *
      * @return The integer
      */
     private static int toInt(String object) {
@@ -266,6 +278,7 @@ public final class TagsUtils {
      *
      * @param player The player to format the string for
      * @param text   The string to format
+     *
      * @return The formatted string
      */
     public static String format(Player player, String text) {
@@ -278,6 +291,7 @@ public final class TagsUtils {
      * @param player       The player to format the string for
      * @param text         The text to format
      * @param placeholders The placeholders to replace
+     *
      * @return The formatted string
      */
     public static String format(Player player, String text, StringPlaceholders placeholders) {
@@ -291,6 +305,7 @@ public final class TagsUtils {
      * Parse a list of strings from 1-1 to a stringlist
      *
      * @param list The list to parse
+     *
      * @return The parsed list
      */
     @SuppressWarnings("unchecked")
@@ -313,6 +328,7 @@ public final class TagsUtils {
      *
      * @param start The start of the range
      * @param end   The end of the range
+     *
      * @return A list of numbers
      */
     public static List<Integer> getNumberRange(int start, int end) {
@@ -333,6 +349,7 @@ public final class TagsUtils {
      *
      * @param list      The strings being converted
      * @param delimiter The delimiter between each string
+     *
      * @return the converted string.
      */
     public static String formatList(List<String> list, String delimiter) {
@@ -345,6 +362,7 @@ public final class TagsUtils {
      * @param enumClass The enum class
      * @param name      The name of the enum
      * @param <T>       The enum type
+     *
      * @return The enum
      */
     public static <T extends Enum<T>> T getEnum(Class<T> enumClass, String name) {
@@ -366,6 +384,7 @@ public final class TagsUtils {
      * @param name      The name of the enum
      * @param def       The default enum
      * @param <T>       The enum type
+     *
      * @return The enum
      */
     public static <T extends Enum<T>> T getEnum(Class<T> enumClass, String name, T def) {
@@ -380,7 +399,7 @@ public final class TagsUtils {
         return def;
     }
 
-    public static byte[] serializeItem(@Nullable ItemStack itemStack) {
+    public static byte[] serializeItem(ItemStack itemStack) {
         if (itemStack == null)
             return new byte[0];
 
@@ -415,6 +434,7 @@ public final class TagsUtils {
      *
      * @param section The configuration section
      * @param key     The key to the item
+     *
      * @return The item stack
      */
     public static ItemStack getMultiDeserializedItem(CommentedConfigurationSection section, String key) {
@@ -442,52 +462,25 @@ public final class TagsUtils {
     }
 
     /**
-     * Create a file from the plugin's resources
-     *
-     * @param rosePlugin The plugin
-     * @param fileName   The file name
-     * @return The file
-     */
-    @NotNull
-    public static File createFile(@NotNull RosePlugin rosePlugin, @NotNull String fileName) {
-        File file = new File(rosePlugin.getDataFolder(), fileName); // Create the file
-
-        if (file.exists())
-            return file;
-
-        try (InputStream inStream = rosePlugin.getResource(fileName)) {
-            if (inStream == null) {
-                file.createNewFile();
-                return file;
-            }
-
-            Files.copy(inStream, Paths.get(file.getAbsolutePath()));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return file;
-    }
-
-    /**
      * Create a file in a folder from the plugin's resources
      *
      * @param rosePlugin The plugin
-     * @param folderName The folder name
-     * @param fileName   The file name
+     * @param folders    The folders
+     *
      * @return The file
      */
     @NotNull
-    public static File createFile(@NotNull RosePlugin rosePlugin, @NotNull String folderName, @NotNull String fileName) {
-        File folder = new File(rosePlugin.getDataFolder(), folderName); // Create the folder
-        File file = new File(folder, fileName); // Create the file
-        if (!folder.exists())
-            folder.mkdirs();
-
+    public static File createFile(RosePlugin rosePlugin, String... folders) {
+        File file = new File(rosePlugin.getDataFolder(), String.join("/", folders)); // Create the file
         if (file.exists())
             return file;
 
-        try (InputStream stream = rosePlugin.getResource(folderName + "/" + fileName)) {
+        if (!file.getParentFile().exists()) {
+            file.getParentFile().mkdirs();
+        }
+
+        String path = String.join("/", folders);
+        try (InputStream stream = rosePlugin.getResource(path)) {
             if (stream == null) {
                 file.createNewFile();
                 return file;
@@ -499,6 +492,31 @@ public final class TagsUtils {
         }
 
         return file;
+    }
+
+    /**
+     * Relocate a file to a new folder and delete the original
+     *
+     * @param original  The original file
+     * @param newFolder The new folder
+     */
+    public static void relocateFile(File original, File newFolder) {
+        if (!newFolder.exists()) {
+            newFolder.mkdirs();
+        }
+
+        File newFile = new File(newFolder, original.getName());
+        if (newFile.exists()) {
+            newFile.delete();
+        }
+
+        try {
+            Files.copy(original.toPath(), newFile.toPath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        original.delete();
     }
 
     public static boolean isFolia() {

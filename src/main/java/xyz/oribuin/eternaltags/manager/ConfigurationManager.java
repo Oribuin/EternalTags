@@ -32,6 +32,9 @@ public class ConfigurationManager extends AbstractConfigurationManager {
         REMOVE_TAGS("remove-inaccessible-tags", false, "Should a tag be automatically removed if the player doesn't have permission to use it?"),
 
         // Formatting
+        CHAT_PLACEHOLDERS("chat-placeholders", false, "Should the plugin change the Chat Format to allow PlaceholderAPI placeholders to be used?",
+                "It is recommended to enable this if you are using EssentialsXChat or a chat plugin that does not support PlaceholderAPI.",
+                "It's not recommended for you to enable this if your chat plugin already supports PlaceholderAPI (Most do)."),
         FORMATTED_PLACEHOLDER("formatted-placeholder", "None", "The placeholder that will show when the player has no active tag."),
         TAG_UNLOCKED_FORMAT("tag-unlocked-format", "&a&lUnlocked", "The format that will show when the player has the tag unlocked."),
         TAG_LOCKED_FORMAT("tag-locked-format", "&c&lLocked", "The format that will show when the player has the tag locked."),

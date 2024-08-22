@@ -60,7 +60,7 @@ public class AlonsoConversion extends ConversionPlugin {
 
     @Override
     public File getTagsFile() {
-        return new File(this.getPluginsFolder(), "tags.yml");
+        return new File(this.getPluginsFolder(), "tags/alonso.yml");
     }
 
 }

@@ -2,14 +2,13 @@ package xyz.oribuin.eternaltags.action;
 
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 
 public abstract class Action {
 
-    private final @NotNull String name;
+    private final String name;
     private String message = "";
 
-    protected Action(@NotNull String name) {
+    protected Action(String name) {
         this.name = name;
     }
 
@@ -19,7 +18,7 @@ public abstract class Action {
      * @param player       The player
      * @param placeholders Message placeholders
      */
-    public abstract void execute(@NotNull Player player, @NotNull StringPlaceholders placeholders);
+    public abstract void execute(Player player, StringPlaceholders placeholders);
 
     public String getName() {
         return name;
