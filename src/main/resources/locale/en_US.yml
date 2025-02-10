@@ -84,5 +84,4 @@ argument-handler-player: Please provide an online username.
 argument-handler-plugins: Please provide a valid input for valid plugins.
 argument-handler-tags: '%input% is not a valid tag id.'
 argument-handler-edit-option: Please provide a valid tag value option.
-argument-handler-category: Please provide a valid category.
 argument-handler-material: Please provide a valid material.
