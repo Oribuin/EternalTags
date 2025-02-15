@@ -16,11 +16,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.action.Action;
+import xyz.oribuin.eternaltags.config.Setting;
 import xyz.oribuin.eternaltags.gui.MenuItem;
 import xyz.oribuin.eternaltags.gui.MenuProvider;
 import xyz.oribuin.eternaltags.gui.PluginMenu;
 import xyz.oribuin.eternaltags.gui.enums.SortType;
-import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
@@ -224,7 +224,7 @@ public class TagsGUI extends PluginMenu {
             };
 
             // If the tag is already in the cache, use that instead of creating a new one.
-            if (Setting.CACHE_GUI_TAGS.getBoolean() && this.tagItems.containsKey(tag.getId())) {
+            if (Setting.CACHE_GUI_TAGS.get() && this.tagItems.containsKey(tag.getId())) {
                 GuiItem item = new GuiItem(this.tagItems.get(tag.getId()));
                 item.setAction(action);
 
@@ -235,7 +235,7 @@ public class TagsGUI extends PluginMenu {
             // Create the item for the tag and add it to the cache.
             GuiItem item = new GuiItem(this.getTagItem(player, tag), action);
 
-            if (Setting.CACHE_GUI_TAGS.getBoolean())
+            if (Setting.CACHE_GUI_TAGS.get())
                 this.tagItems.put(tag.getId(), item.getItemStack());
 
             gui.addItem(item);
@@ -289,7 +289,7 @@ public class TagsGUI extends PluginMenu {
      */
     private void setTag(Player player, Tag tag) {
         Tag activeTag = this.manager.getUserTag(player);
-        if (activeTag != null && activeTag.equals(tag) && Setting.RE_EQUIP_CLEAR.getBoolean()) {
+        if (activeTag != null && activeTag.equals(tag) && Setting.RE_EQUIP_CLEAR.get()) {
             this.clearTag(player);
             return;
         }

@@ -13,12 +13,12 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.EternalTags;
+import xyz.oribuin.eternaltags.config.Setting;
 import xyz.oribuin.eternaltags.gui.MenuItem;
 import xyz.oribuin.eternaltags.gui.MenuProvider;
 import xyz.oribuin.eternaltags.gui.PluginMenu;
 import xyz.oribuin.eternaltags.gui.enums.SortType;
 import xyz.oribuin.eternaltags.manager.CategoryManager;
-import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Category;
 import xyz.oribuin.eternaltags.obj.CategoryType;
@@ -162,7 +162,7 @@ public class CategoryGUI extends PluginMenu {
                 tagsGUI.open(player, tag -> tag.getCategory() != null && tag.getCategory().equalsIgnoreCase(category.getId()));
             };
 
-            if (Setting.CACHE_GUI_CATEGORIES.getBoolean() && this.categoryIcons.containsKey(category)) {
+            if (Setting.CACHE_GUI_CATEGORIES.get() && this.categoryIcons.containsKey(category)) {
                 GuiItem item = this.categoryIcons.get(category);
                 item.setAction(action);
 
@@ -189,7 +189,7 @@ public class CategoryGUI extends PluginMenu {
             GuiItem guiItem = new GuiItem(item, action);
             gui.addItem(guiItem);
 
-            if (Setting.CACHE_GUI_CATEGORIES.getBoolean())
+            if (Setting.CACHE_GUI_CATEGORIES.get())
                 this.categoryIcons.put(category, guiItem);
         });
 

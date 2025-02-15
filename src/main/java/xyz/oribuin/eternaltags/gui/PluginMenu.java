@@ -3,7 +3,6 @@ package xyz.oribuin.eternaltags.gui;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
-import dev.rosewood.rosegarden.utils.NMSUtil;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.triumphteam.gui.components.ScrollType;
 import dev.triumphteam.gui.guis.BaseGui;
@@ -19,11 +18,12 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import xyz.oribuin.eternaltags.EternalAPI;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.action.Action;
 import xyz.oribuin.eternaltags.action.PluginAction;
+import xyz.oribuin.eternaltags.config.Setting;
 import xyz.oribuin.eternaltags.gui.menu.TagsGUI;
-import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
@@ -318,7 +318,7 @@ public abstract class PluginMenu {
                 .add("tag_stripped", tag.getTag())
                 .add("id", tag.getId())
                 .add("name", tag.getName())
-                .add("description", String.join(Setting.DESCRIPTION_DELIMITER.getString(), tag.getDescription()))
+                .add("description", String.join(Setting.DESCRIPTION_DELIMITER.get(), tag.getDescription()))
                 .add("permission", tag.getPermission())
                 .add("order", tag.getOrder())
                 .build();
@@ -371,13 +371,7 @@ public abstract class PluginMenu {
      * @param player The player to close the gui for
      */
     public void close(BaseGui gui, Player player) {
-        if (TagsUtils.isFolia()) {
-            // Recreate the close function since the original one uses BukkitScheduler
-            this.sync(player::closeInventory);
-            return;
-        }
-
-        gui.close(player);
+        EternalTags.getInstance().getScheduler().runTask(player::closeInventory);
     }
 
     /**
@@ -386,12 +380,7 @@ public abstract class PluginMenu {
      * @param runnable The task to run
      */
     public final void async(Runnable runnable) {
-        if (TagsUtils.isFolia()) {
-            Bukkit.getAsyncScheduler().runNow(this.rosePlugin, scheduledTask -> runnable.run());
-            return;
-        }
-
-        Bukkit.getScheduler().runTaskAsynchronously(this.rosePlugin, runnable);
+        EternalTags.getInstance().getScheduler().runTaskAsync(runnable);
     }
 
     /**
@@ -400,12 +389,7 @@ public abstract class PluginMenu {
      * @param runnable The task to run
      */
     public final void sync(Runnable runnable) {
-        if (TagsUtils.isFolia()) {
-            Bukkit.getGlobalRegionScheduler().execute(this.rosePlugin, runnable);
-            return;
-        }
-
-        Bukkit.getScheduler().runTask(this.rosePlugin, runnable);
+        EternalTags.getInstance().getScheduler().runTask(runnable);
     }
 
     /**

@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.oribuin.eternaltags.EternalTags;
-import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
+import xyz.oribuin.eternaltags.config.Setting;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
 import xyz.oribuin.eternaltags.util.TagsUtils;
@@ -23,7 +23,7 @@ public class Expansion extends PlaceholderExpansion {
     public Expansion(final EternalTags plugin) {
         this.plugin = plugin;
         this.manager = plugin.getManager(TagsManager.class);
-        this.formattedPlaceholder = Setting.FORMATTED_PLACEHOLDER.getString();
+        this.formattedPlaceholder = Setting.FORMATTED_PLACEHOLDER.get();
     }
 
     @Override
@@ -49,9 +49,9 @@ public class Expansion extends PlaceholderExpansion {
                     case "get" -> this.manager.getDisplayTag(tag, player, "");
                     case "get-formatted" -> this.manager.getDisplayTag(tag, player, this.formattedPlaceholder);
                     case "has" -> String.valueOf(this.manager.canUseTag(player, tag));
-                    case "has-unlocked" -> this.manager.canUseTag(player, tag) ? Setting.TAG_UNLOCKED_FORMAT.getString() : Setting.TAG_LOCKED_FORMAT.getString();
+                    case "has-unlocked" -> this.manager.canUseTag(player, tag) ? Setting.TAG_UNLOCKED_FORMAT.get() : Setting.TAG_LOCKED_FORMAT.get();
                     case "active" -> String.valueOf(activeTag != null && activeTag.getId().equalsIgnoreCase(tag.getId()));
-                    case "description" -> TagsUtils.formatList(tag.getDescription(), Setting.DESCRIPTION_DELIMITER.getString());
+                    case "description" -> TagsUtils.formatList(tag.getDescription(), Setting.DESCRIPTION_DELIMITER.get());
                     default -> null;
                 };
             }
@@ -83,9 +83,9 @@ public class Expansion extends PlaceholderExpansion {
 
         // Has unlocked is a double special case
         if (param.equalsIgnoreCase("has-unlocked")) {
-            if (tag == null) return Setting.TAG_LOCKED_FORMAT.getString();
+            if (tag == null) return Setting.TAG_LOCKED_FORMAT.get();
 
-            return this.manager.canUseTag(player, tag) ? Setting.TAG_UNLOCKED_FORMAT.getString() : Setting.TAG_LOCKED_FORMAT.getString();
+            return this.manager.canUseTag(player, tag) ? Setting.TAG_UNLOCKED_FORMAT.get() : Setting.TAG_LOCKED_FORMAT.get();
         }
 
         if (tag == null) return this.formattedPlaceholder; // Return the formatted placeholder if the tag is null
@@ -97,7 +97,7 @@ public class Expansion extends PlaceholderExpansion {
             case "tag_name" -> tag.getName();
             case "tag_id" -> tag.getId();
             case "tag_permission" -> tag.getPermission();
-            case "tag_description" -> TagsUtils.formatList(tag.getDescription(), Setting.DESCRIPTION_DELIMITER.getString());
+            case "tag_description" -> TagsUtils.formatList(tag.getDescription(), Setting.DESCRIPTION_DELIMITER.get());
             case "tag_order" -> String.valueOf(tag.getOrder());
             default -> null;
         };

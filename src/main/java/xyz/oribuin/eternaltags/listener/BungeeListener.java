@@ -5,7 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.EternalTags;
-import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
+import xyz.oribuin.eternaltags.config.Setting;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 
 import java.io.ByteArrayInputStream;
@@ -28,7 +28,7 @@ public class BungeeListener implements PluginMessageListener {
      * Force all eternaltags servers to reload the plugin
      */
     public static void sendReload() {
-        if (!Setting.PLUGIN_MESSAGING_RELOAD.getBoolean()) return;
+        if (!Setting.PLUGIN_MESSAGING_RELOAD.get()) return;
 
         try (
                 ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -47,7 +47,7 @@ public class BungeeListener implements PluginMessageListener {
     @Override
     public void onPluginMessageReceived(@NotNull String channel, @NotNull Player player, byte[] message) {
         if (!channel.equalsIgnoreCase("BungeeCord")) return;
-        if (!Setting.PLUGIN_MESSAGING_RELOAD.getBoolean()) return;
+        if (!Setting.PLUGIN_MESSAGING_RELOAD.get()) return;
 
         try (
                 ByteArrayInputStream bytes = new ByteArrayInputStream(message);

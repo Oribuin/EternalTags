@@ -65,13 +65,13 @@ public class EventWaiter implements Listener {
 
 
         if (timeout > 0 && unit != null) {
-            EternalTags.getInstance().getServer().getScheduler().runTaskLater(EternalTags.getInstance(), () -> {
+            EternalTags.getInstance().getScheduler().runTaskLater(() -> {
                 if (set.remove(we) && timeoutAction != null) {
                     timeoutAction.run();
                     HandlerList.unregisterAll(this);
                 }
 
-            }, unit.toMillis(timeout));
+            }, timeout, unit);
         }
     }
 

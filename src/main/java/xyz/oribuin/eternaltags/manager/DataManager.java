@@ -7,6 +7,8 @@ import dev.rosewood.rosegarden.manager.AbstractDataManager;
 import dev.rosewood.rosegarden.utils.NMSUtil;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
+import xyz.oribuin.eternaltags.EternalAPI;
+import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.database.migration._1_CreateInitialTables;
 import xyz.oribuin.eternaltags.database.migration._2_CreateNewTagTables;
 import xyz.oribuin.eternaltags.database.migration._3_ModifyTagDataItems;
@@ -24,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 public class DataManager extends AbstractDataManager {
 
@@ -291,7 +294,7 @@ public class DataManager extends AbstractDataManager {
     public void saveTagData(@NotNull Tag tag) {
         this.async(() -> this.databaseConnector.connect(connection -> {
             String query = "REPLACE INTO " + this.getTablePrefix() + "tag_data (`tagId`, `name`, " +
-                                 "`description`, `tag`, `permission`, `order`, `icon`, `category`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                    "`description`, `tag`, `permission`, `order`, `icon`, `category`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, tag.getId());
                 statement.setString(2, tag.getName());
@@ -314,7 +317,7 @@ public class DataManager extends AbstractDataManager {
     public void saveTagData(Map<String, Tag> tags) {
         this.async(() -> this.databaseConnector.connect(connection -> {
             String query = "REPLACE INTO " + this.getTablePrefix() + "tag_data (`tagId`, `name`, " +
-                                 "`description`, `tag`, `permission`, `order`, `icon`, `category`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                    "`description`, `tag`, `permission`, `order`, `icon`, `category`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 for (Tag tag : tags.values()) {
@@ -383,27 +386,22 @@ public class DataManager extends AbstractDataManager {
         this.cachedUsers.put(user.getPlayer(), user);
     }
 
-    @Override
-    public List<Class<? extends DataMigration>> getDataMigrations() {
-        return Arrays.asList(
-                _1_CreateInitialTables.class,
-                _2_CreateNewTagTables.class,
-                _3_ModifyTagDataItems.class,
-                _4_DeleteOldData.class
-        );
-    }
 
     private void async(Runnable runnable) {
-        if (TagsUtils.isFolia()) {
-            Bukkit.getAsyncScheduler().runNow(this.rosePlugin, scheduledTask -> runnable.run());
-            return;
-        }
-
-        this.rosePlugin.getServer().getScheduler().runTaskAsynchronously(rosePlugin, runnable);
+        EternalTags.getInstance().getScheduler().runTaskAsync(runnable);
     }
 
     public Map<UUID, TagUser> getCachedUsers() {
         return cachedUsers;
     }
 
+    @Override
+    public @NotNull List<Supplier<? extends DataMigration>> getDataMigrations() {
+        return List.of(_1_CreateInitialTables::new,
+                _2_CreateNewTagTables::new,
+                _3_ModifyTagDataItems::new,
+                _4_DeleteOldData::new
+        );
+    }
+     
 }

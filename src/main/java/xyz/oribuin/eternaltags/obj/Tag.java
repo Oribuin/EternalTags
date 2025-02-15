@@ -6,7 +6,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.oribuin.eternaltags.EternalTags;
-import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
+import xyz.oribuin.eternaltags.config.Setting;
 import xyz.oribuin.eternaltags.manager.DataManager;
 
 import java.util.ArrayList;
@@ -45,7 +45,7 @@ public class Tag {
         DataManager dataManager = EternalTags.getInstance().getManager(DataManager.class);
 
         // Remove the tag if the player does not have permission
-        if (Setting.REMOVE_TAGS.getBoolean() && this.permission != null && !player.hasPermission(this.permission)) {
+        if (Setting.REMOVE_TAGS.get() && this.permission != null && !player.hasPermission(this.permission)) {
             dataManager.removeUser(player.getUniqueId());
             return;
         }

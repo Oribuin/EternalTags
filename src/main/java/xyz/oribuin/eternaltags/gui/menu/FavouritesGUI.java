@@ -15,11 +15,11 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import xyz.oribuin.eternaltags.EternalTags;
 import xyz.oribuin.eternaltags.action.Action;
+import xyz.oribuin.eternaltags.config.Setting;
 import xyz.oribuin.eternaltags.gui.MenuItem;
 import xyz.oribuin.eternaltags.gui.MenuProvider;
 import xyz.oribuin.eternaltags.gui.PluginMenu;
 import xyz.oribuin.eternaltags.gui.enums.SortType;
-import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 import xyz.oribuin.eternaltags.manager.TagsManager;
 import xyz.oribuin.eternaltags.obj.Tag;
@@ -104,7 +104,7 @@ public class FavouritesGUI extends PluginMenu {
                 .path("main-menu")
                 .player(player)
                 .action(event -> {
-                    if (Setting.OPEN_CATEGORY_GUI_FIRST.getBoolean()) {
+                    if (Setting.OPEN_CATEGORY_GUI_FIRST.get()) {
                         MenuProvider.get(CategoryGUI.class).open(player);
                     } else {
                         MenuProvider.get(TagsGUI.class).open(player, null);
@@ -193,7 +193,7 @@ public class FavouritesGUI extends PluginMenu {
             };
 
             // If the tag is already in the cache, use that instead of creating a new one.
-            if (Setting.CACHE_GUI_TAGS.getBoolean() && this.tagItems.containsKey(tag.getId())) {
+            if (Setting.CACHE_GUI_TAGS.get() && this.tagItems.containsKey(tag.getId())) {
                 GuiItem item = new GuiItem(this.tagItems.get(tag.getId()));
                 item.setAction(action);
                 gui.addItem(item);
@@ -203,7 +203,7 @@ public class FavouritesGUI extends PluginMenu {
             GuiItem item = new GuiItem(this.getTagItem(player, tag), action);
 
             // Add the tag to the cache
-            if (Setting.CACHE_GUI_TAGS.getBoolean())
+            if (Setting.CACHE_GUI_TAGS.get())
                 this.tagItems.put(tag.getId(), item.getItemStack());
 
             gui.addItem(item);
@@ -239,7 +239,7 @@ public class FavouritesGUI extends PluginMenu {
      */
     private void setTag(Player player, Tag tag) {
         Tag activeTag = this.manager.getUserTag(player);
-        if (activeTag != null && activeTag.equals(tag) && Setting.RE_EQUIP_CLEAR.getBoolean()) {
+        if (activeTag != null && activeTag.equals(tag) && Setting.RE_EQUIP_CLEAR.get()) {
             this.clearTag(player);
             return;
         }

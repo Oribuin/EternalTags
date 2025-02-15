@@ -8,10 +8,10 @@ import dev.rosewood.rosegarden.command.framework.CommandContext;
 import dev.rosewood.rosegarden.command.framework.CommandInfo;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import org.bukkit.entity.Player;
+import xyz.oribuin.eternaltags.config.Setting;
 import xyz.oribuin.eternaltags.gui.MenuProvider;
 import xyz.oribuin.eternaltags.gui.menu.CategoryGUI;
 import xyz.oribuin.eternaltags.gui.menu.TagsGUI;
-import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
 import xyz.oribuin.eternaltags.manager.LocaleManager;
 
 public class TagsCommand extends BaseRoseCommand {
@@ -30,7 +30,7 @@ public class TagsCommand extends BaseRoseCommand {
             return;
         }
 
-        if (Setting.OPEN_CATEGORY_GUI_FIRST.getBoolean())
+        if (Setting.OPEN_CATEGORY_GUI_FIRST.get())
             MenuProvider.get(CategoryGUI.class).open(player);
         else
             MenuProvider.get(TagsGUI.class).open(player, null);

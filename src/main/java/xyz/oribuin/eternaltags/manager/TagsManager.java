@@ -11,8 +11,8 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.oribuin.eternaltags.config.Setting;
 import xyz.oribuin.eternaltags.hook.VaultHook;
-import xyz.oribuin.eternaltags.manager.ConfigurationManager.Setting;
 import xyz.oribuin.eternaltags.obj.Category;
 import xyz.oribuin.eternaltags.obj.CategoryType;
 import xyz.oribuin.eternaltags.obj.Tag;
@@ -53,14 +53,14 @@ public class TagsManager extends Manager {
 
         // Load the default tag groups
         this.defaultTagGroups = new HashMap<>();
-        CommentedConfigurationSection groupSection = Setting.DEFAULT_TAG_GROUPS.getSection();
+        CommentedConfigurationSection groupSection = Setting.DEFAULT_TAG_GROUPS.get();
         groupSection.getKeys(false).forEach(s -> this.defaultTagGroups.put(s.toLowerCase(), groupSection.getString(s)));
 
         // Check if we're using default tags
-        this.isDefaultTagEnabled = this.usingGroupDefaults() || !Setting.DEFAULT_TAG.getString().equalsIgnoreCase("none");
+        this.isDefaultTagEnabled = this.usingGroupDefaults() || !Setting.DEFAULT_TAG.get().equalsIgnoreCase("none");
 
         // Load all tags from mysql instead of tags.yml
-        if (Setting.MYSQL_TAGDATA.getBoolean()) {
+        if (Setting.MYSQL_TAGDATA.get()) {
             dataManager.loadTagData(this.cachedTags);
             return;
         }
@@ -147,7 +147,7 @@ public class TagsManager extends Manager {
         if (tag.getCategory() == null && defaultCategory != null)
             tag.setCategory(defaultCategory.getId());
 
-        if (Setting.MYSQL_TAGDATA.getBoolean()) {
+        if (Setting.MYSQL_TAGDATA.get()) {
             this.rosePlugin.getManager(DataManager.class).saveTagData(tag);
         } else {
             this.saveToConfig(tag);
@@ -212,7 +212,7 @@ public class TagsManager extends Manager {
         this.cachedTags.putAll(tags);
 
         // If MySQL Tags is enabled, save the tags to the database instead of the tags.yml
-        if (Setting.MYSQL_TAGDATA.getBoolean()) {
+        if (Setting.MYSQL_TAGDATA.get()) {
             this.rosePlugin.getManager(DataManager.class).saveTagData(tags);
             return;
         }
@@ -243,7 +243,7 @@ public class TagsManager extends Manager {
         this.rosePlugin.getManager(DataManager.class).clearTagForAll(id);
 
         // Delete the tag from the database if MySQL TagData is enabled.
-        if (Setting.MYSQL_TAGDATA.getBoolean()) {
+        if (Setting.MYSQL_TAGDATA.get()) {
             this.rosePlugin.getManager(DataManager.class).deleteTagData(tag);
             return;
         }
@@ -311,7 +311,7 @@ public class TagsManager extends Manager {
         }
 
         // Remove the tag if the player doesn't have permission to use it.
-        if (Setting.REMOVE_TAGS.getBoolean() && tag != null && !this.canUseTag(player, tag) && !user.isUsingDefaultTag()) {
+        if (Setting.REMOVE_TAGS.get() && tag != null && !this.canUseTag(player, tag) && !user.isUsingDefaultTag()) {
             data.removeUser(player.getUniqueId());
             user.setActiveTag(null);
             user.setUsingDefaultTag(false);
@@ -430,7 +430,7 @@ public class TagsManager extends Manager {
     public Tag getDefaultTag(@NotNull Player player) {
         if (!this.isDefaultTagEnabled) return null;
 
-        String defaultTagID = Setting.DEFAULT_TAG.getString();
+        String defaultTagID = Setting.DEFAULT_TAG.get();
 
         // Check if the default tag is a group.
         if (VaultHook.isEnabled() && !this.defaultTagGroups.isEmpty()) {
@@ -523,7 +523,7 @@ public class TagsManager extends Manager {
 
         StringPlaceholders placeholders = this.getTagPlaceholders(tag);
         return TagsUtils.colorAsString(PlaceholderAPI.setPlaceholders(player, placeholders.apply(
-                Setting.TAG_PREFIX.getString() + tag.getTag() + Setting.TAG_SUFFIX.getString())
+                Setting.TAG_PREFIX.get() + tag.getTag() + Setting.TAG_SUFFIX.get())
         ));
     }
 
@@ -639,7 +639,7 @@ public class TagsManager extends Manager {
         return StringPlaceholders.builder()
                 .add("id", tag.getId())
                 .add("name", tag.getName())
-                .add("description", String.join(Setting.DESCRIPTION_DELIMITER.getString(), tag.getDescription()))
+                .add("description", String.join(Setting.DESCRIPTION_DELIMITER.get(), tag.getDescription()))
                 .add("permission", tag.getPermission())
                 .add("order", tag.getOrder())
                 .build();
