@@ -1,21 +1,21 @@
 package dev.oribuin.eternaltags.config;
 
+import dev.oribuin.eternaltags.EternalTags;
 import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.config.RoseSetting;
 import dev.rosewood.rosegarden.config.RoseSettingSerializer;
 import dev.rosewood.rosegarden.config.RoseSettingSerializers;
-import dev.oribuin.eternaltags.EternalTags;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static dev.rosewood.rosegarden.config.RoseSettingSerializers.*;
+import static dev.rosewood.rosegarden.config.RoseSettingSerializers.STRING;
 
 /**
  * The general settings for the plugin.
  */
 public class Setting {
-    
+
     private static final List<RoseSetting<?>> KEYS = new ArrayList<>();
 
     /**
@@ -34,8 +34,8 @@ public class Setting {
     public static RoseSetting<Boolean> CHAT_PLACEHOLDERS = create(
             "chat-placeholders", RoseSettingSerializers.BOOLEAN, false,
             "Should the plugin change the Chat Format to allow PlaceholderAPI placeholders to be used?",
-            "It is recommended to enable this if you are using EssentialsXChat or a chat plugin that does not support PlaceholderAPI.",
-            "It's not recommended for you to enable this if your chat plugin already supports PlaceholderAPI (Most do)."
+            "It is recommended to enable this if you are using EssentialsXChat or a chat plugin that does not support PlaceholderAPI,",
+            "It's not recommended for you to enable this if your chat plugin already supports PlaceholderAPI (Most should do)."
     );
 
     /**
@@ -66,8 +66,9 @@ public class Setting {
             "Use this to establish a prefix and suffix for the tag in the placeholder.",
             "Example: 'tag-formatting: '%tag% <white><reset>' to add a space and white color on the end of the tag."
     );
-    
+
     // TODO: save-data-sql
+
     /**
      * Establishes a configuration setting for the plugin which will be generated on reload.
      *

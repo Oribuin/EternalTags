@@ -6,6 +6,7 @@ import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import dev.rosewood.rosegarden.manager.Manager;
+import dev.rosewood.rosegarden.utils.NMSUtil;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
@@ -58,9 +59,13 @@ public class TagsManager extends Manager {
 //
         // Establish the default files 
         File folder = TAGS_FOLDER.toFile();
-        if (folder.exists()) {
+        if (!folder.exists() || folder.listFiles() == null || folder.listFiles().length == 0) {
             TagsUtils.createFile(this.rosePlugin, "tags", "default.yml");
             TagsUtils.createFile(this.rosePlugin, "tags", "dynamic.yml");
+            
+            if (NMSUtil.getVersionNumber() >= 21) { // todo: require 1.21.4 
+                TagsUtils.createFile(this.rosePlugin, "tags", "pride.yml");
+            }
         }
 
         // Load all the config files <3
@@ -101,6 +106,7 @@ public class TagsManager extends Manager {
      * @param file The directory to load items from
      */
     public void loadFile(File file) {
+        System.out.println("Searching file: " + file.getPath());
         if (!file.getName().endsWith(".yml")) return; // check if the file is a yml file
 
         CommentedFileConfiguration config = CommentedFileConfiguration.loadConfiguration(file);
@@ -109,6 +115,7 @@ public class TagsManager extends Manager {
 
         section.getKeys(false).forEach(tagId -> {
             Tag tag = Tag.fromConfig(file, section, tagId);
+            System.out.println("Found the tag from config: " + tag);
             if (tag == null) return;
 
             this.cachedTags.put(tag.getId(), tag);

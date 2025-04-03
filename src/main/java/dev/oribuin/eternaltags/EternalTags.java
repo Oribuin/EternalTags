@@ -6,6 +6,7 @@ import dev.rosewood.rosegarden.manager.Manager;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginManager;
+import org.codehaus.plexus.util.Expand;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,13 +40,14 @@ public class EternalTags extends RosePlugin {
 
     @Override
     public void enable() {
-        PluginManager pluginManager = this.getServer().getPluginManager();
-
         // Register Plugin Listeners
-        pluginManager.registerEvents(new PlayerListeners(), this);
+        this.chatListener = new ChatListener();
 
-        // Enable Placeholder Formatting :-)
-        new Expansion(this).register();
+        PluginManager manager = this.getServer().getPluginManager();
+        manager.registerEvents(new PlayerListeners(), this);
+        
+        Expansion expansion = new Expansion(this);
+        expansion.register();
     }
 
     @Override

@@ -1,15 +1,17 @@
 package dev.oribuin.eternaltags.obj;
 
+import dev.oribuin.eternaltags.EternalTags;
 import dev.oribuin.eternaltags.config.Setting;
+import dev.oribuin.eternaltags.manager.DataManager;
+import dev.oribuin.eternaltags.manager.TagsManager;
 import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import dev.oribuin.eternaltags.EternalTags;
-import dev.oribuin.eternaltags.manager.DataManager;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -31,7 +33,25 @@ public class Tag {
         this.description = new ArrayList<>();
         this.permission = "eternaltags.tag." + id.toLowerCase();
         this.order = -1;
-        this.source = null;
+        this.source = this.defineSource();
+    }
+
+    /**
+     * Define the "ingame" folder as the source for all tags by default
+     *
+     * @return The new file source
+     */
+    public File defineSource() {
+        try {
+            File ingameFolder = TagsManager.TAGS_FOLDER.resolve("ingame.yml").toFile();
+            if (!ingameFolder.exists()) {
+                ingameFolder.createNewFile();
+            }
+
+            return ingameFolder;
+        } catch (IOException ex) {
+            return null;
+        }
     }
 
     /**
@@ -58,13 +78,13 @@ public class Tag {
         // Create the tag object
         Tag tag = new Tag(key.toLowerCase(), name, content);
         tag.setSource(source);
-        
+
         if (permission != null) tag.setPermission(permission);
         if (!description.isEmpty()) tag.setDescription(description);
         if (order != -1) tag.setOrder(order);
         return tag;
     }
-    
+
     /**
      * Save the tag to a configuration section in the config file.
      *
@@ -77,7 +97,7 @@ public class Tag {
         section.set("description", this.description);
         section.set("order", this.order);
     }
-    
+
     /**
      * Save the tag to the source file.
      */
@@ -96,7 +116,7 @@ public class Tag {
             config.save(this.source);
         });
     }
-    
+
     /**
      * Delete the tag from the source file.
      */
@@ -201,9 +221,9 @@ public class Tag {
     public File getSource() {
         return source;
     }
-    
+
     public void setSource(File source) {
         this.source = source;
     }
-    
+
 }

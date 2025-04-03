@@ -1,0 +1,18 @@
+# This is the default file for EternalTags, Here are all the basic configuration for tag items
+#
+# All tags by default will use the Mini Message formatting, You can swap back to legacy formatting in the config.yml file
+# 
+# name = The display name for the tag
+# content = The customisable content of the tag
+# description = The tag description
+# permission = The required permission to unlock the tag (Use LuckPerms or other permission plugins to apply)
+# order = The order of the tag in the gui
+tags:
+  'smiley_face':
+    name: 'Smiley Face'
+    content: '<gray>[<#FFD700>^-^</#FFD700>]' # Legacy: '&f&l<#FFD700^-^&f&l>'
+    permission: 'eternaltags.tag.smiley_face'
+  'heart':
+    name: Heart
+    content: '<gray>[<red>❤<gray>]' # Legacy: '&f[&c❤&f]'
+    permission: 'eternaltags.tag.heart'

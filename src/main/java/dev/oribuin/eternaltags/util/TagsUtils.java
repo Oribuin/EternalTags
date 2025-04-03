@@ -1,5 +1,6 @@
 package dev.oribuin.eternaltags.util;
 
+import dev.oribuin.eternaltags.config.Setting;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.utils.HexUtils;
@@ -59,12 +60,12 @@ public final class TagsUtils {
     public static String colorAsString(String text) {
         if (text == null) return "";
 
-//        if (Setting.TAG_FORMATTING.getString().equalsIgnoreCase("mini_message")) {
-//            if (MINIMESSAGE == null) MINIMESSAGE = MiniMessage.miniMessage();
-//            if (LEGACY == null) LEGACY = LegacyComponentSerializer.legacySection();
-//
-//            return LEGACY.serialize(MINIMESSAGE.deserialize(text));
-//        }
+        if (Setting.STYLE_FORMAT.get().equalsIgnoreCase("mini_message")) {
+            if (MINIMESSAGE == null) MINIMESSAGE = MiniMessage.miniMessage();
+            if (LEGACY == null) LEGACY = LegacyComponentSerializer.legacySection();
+
+            return LEGACY.serialize(MINIMESSAGE.deserialize(text));
+        }
 
         return HexUtils.colorify(text);
     }
