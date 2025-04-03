@@ -106,7 +106,6 @@ public class TagsManager extends Manager {
      * @param file The directory to load items from
      */
     public void loadFile(File file) {
-        System.out.println("Searching file: " + file.getPath());
         if (!file.getName().endsWith(".yml")) return; // check if the file is a yml file
 
         CommentedFileConfiguration config = CommentedFileConfiguration.loadConfiguration(file);
@@ -115,7 +114,6 @@ public class TagsManager extends Manager {
 
         section.getKeys(false).forEach(tagId -> {
             Tag tag = Tag.fromConfig(file, section, tagId);
-            System.out.println("Found the tag from config: " + tag);
             if (tag == null) return;
 
             this.cachedTags.put(tag.getId(), tag);
