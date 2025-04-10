@@ -169,14 +169,14 @@ public class FavouritesGUI extends PluginMenu {
                 // Make sure the player has permission to use the tag
                 if (!this.manager.canUseTag(player, tag)) {
                     this.locale.sendMessage(player, "no-permission");
-                    gui.close(player);
+                    this.close(gui, player);
                     return;
                 }
 
                 // Run the tag actions
                 if (!tagActions.isEmpty()) {
                     this.runActions(tagActions, event, this.getTagPlaceholders(tag, player));
-                    gui.close(player);
+                    this.close(gui, player);
                     return;
                 }
 
@@ -189,7 +189,7 @@ public class FavouritesGUI extends PluginMenu {
 
                 // Set the tag
                 this.setTag(player, tag);
-                gui.close(player);
+                this.close(gui, player);
             };
 
             // If the tag is already in the cache, use that instead of creating a new one.

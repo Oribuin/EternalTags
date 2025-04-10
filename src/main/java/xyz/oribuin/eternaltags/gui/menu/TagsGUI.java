@@ -188,7 +188,7 @@ public class TagsGUI extends PluginMenu {
             paginatedGui.clearPageItems();
 
         Map<ClickType, List<Action>> tagActions = this.getTagActions();
-        Sound tagSound = TagsUtils.getEnum(Sound.class, this.config.getString("tag-item.sound", ""));
+//        Sound tagSound = TagsUtils.getEnum(Sound.class, this.config.getString("tag-item.sound", ""));
 
         this.getTags(player, filter).forEach(tag -> {
             GuiAction<InventoryClickEvent> action = event -> {
@@ -196,7 +196,7 @@ public class TagsGUI extends PluginMenu {
                 // Check if the player has permission to use the tag
                 if (!this.manager.canUseTag(player, tag)) {
                     this.locale.sendMessage(player, "no-permission");
-                    gui.close(player);
+                    this.close(gui, player);
                     return;
                 }
 
@@ -207,9 +207,9 @@ public class TagsGUI extends PluginMenu {
                 }
 
                 // Play the sound if it's not null
-                if (tagSound != null) {
-                    player.playSound(player.getLocation(), tagSound, 75, 1);
-                }
+//                if (tagSound != null) {
+//                    player.playSound(player.getLocation(), tagSound, 75, 1);
+//                }
 
                 // If the player is shift clicking, toggle the favourite status of the tag
                 if (event.isShiftClick()) {
@@ -220,7 +220,7 @@ public class TagsGUI extends PluginMenu {
 
                 // Set the tag if the player is not shift clicking
                 this.setTag(player, tag);
-                gui.close(player);
+                this.close(gui, player);
             };
 
             // If the tag is already in the cache, use that instead of creating a new one.

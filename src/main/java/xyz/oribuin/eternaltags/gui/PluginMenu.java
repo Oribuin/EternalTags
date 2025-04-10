@@ -342,7 +342,7 @@ public abstract class PluginMenu {
                 event -> {
                     event.setCancelled(true);
                     String message = event.getMessage().toLowerCase();
-                    this.sync(() -> MenuProvider.get(TagsGUI.class).open(player, tag -> tag.getId().contains(message) || tag.getName().contains(message)
+                    this.sync(() -> MenuProvider.get(TagsGUI.class).open(event.getPlayer(), tag -> tag.getId().contains(message) || tag.getName().contains(message)
                     ));
                 },
                 60,
