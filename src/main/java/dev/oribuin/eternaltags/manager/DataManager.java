@@ -4,20 +4,15 @@ import com.google.gson.Gson;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.database.DataMigration;
 import dev.rosewood.rosegarden.manager.AbstractDataManager;
-import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import dev.oribuin.eternaltags.database.migration._1_CreateInitialTables;
 import dev.oribuin.eternaltags.database.migration._2_CreateNewTagTables;
-import dev.oribuin.eternaltags.database.migration._3_ModifyTagDataItems;
-import dev.oribuin.eternaltags.database.migration._4_DeleteOldData;
 import dev.oribuin.eternaltags.obj.Tag;
 import dev.oribuin.eternaltags.obj.TagDescription;
 import dev.oribuin.eternaltags.obj.TagUser;
-import dev.oribuin.eternaltags.util.TagsUtils;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -291,7 +286,7 @@ public class DataManager extends AbstractDataManager {
                 statement.setString(1, tag.getId());
                 statement.setString(2, tag.getName());
                 statement.setString(3, gson.toJson(new TagDescription(tag.getDescription())));
-                statement.setString(4, tag.getTag());
+                statement.setString(4, tag.getContent());
                 statement.setString(5, tag.getPermission());
                 statement.setInt(6, tag.getOrder());
                 statement.executeUpdate();
@@ -314,7 +309,7 @@ public class DataManager extends AbstractDataManager {
                     statement.setString(1, tag.getId());
                     statement.setString(2, tag.getName());
                     statement.setString(3, gson.toJson(new TagDescription(tag.getDescription())));
-                    statement.setString(4, tag.getTag());
+                    statement.setString(4, tag.getContent());
                     statement.setString(5, tag.getPermission());
                     statement.setInt(6, tag.getOrder());
                     statement.addBatch();
@@ -378,9 +373,7 @@ public class DataManager extends AbstractDataManager {
     public @NotNull List<Supplier<? extends DataMigration>> getDataMigrations() {
         return List.of(
                 _1_CreateInitialTables::new,
-                _2_CreateNewTagTables::new,
-                _3_ModifyTagDataItems::new,
-                _4_DeleteOldData::new
+                _2_CreateNewTagTables::new
         );
     }
 

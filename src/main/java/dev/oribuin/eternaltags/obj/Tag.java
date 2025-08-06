@@ -6,6 +6,9 @@ import dev.oribuin.eternaltags.manager.DataManager;
 import dev.oribuin.eternaltags.manager.TagsManager;
 import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
+import dev.rosewood.rosegarden.config.SettingField;
+import dev.rosewood.rosegarden.config.SettingSerializer;
+import dev.rosewood.rosegarden.config.SettingSerializers;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -16,24 +19,56 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import static dev.rosewood.rosegarden.config.SettingSerializers.INTEGER;
+import static dev.rosewood.rosegarden.config.SettingSerializers.STRING;
+import static dev.rosewood.rosegarden.config.SettingSerializers.STRING_LIST;
+
 public class Tag {
 
-    private final @NotNull String id; // The id of the tag
+    private @NotNull String id; // The id of the tag
     private @NotNull String name; // The name of the tag
     private @NotNull String content; // The tag to be added to the player
     private @Nullable String permission;   // The permission required to use the tag
     private @NotNull List<String> description; // The description of the tag
-    private int order; // The order of the tag
+    private Integer order; // The order of the tag
     private File source;
 
-    public Tag(@NotNull String id, @NotNull String name, @NotNull String content) {
+    /**
+     * Create a new tag from the plugin config file
+     *
+     * @param id          The id of the tag
+     * @param name        The display name of the tag
+     * @param content     The content to display inside the tag
+     * @param description The description for the tag
+     * @param permission  The permission required to use the tag
+     * @param order       The order of the tag in the gui
+     */
+    public Tag(
+            @NotNull String id,
+            @NotNull String name,
+            @NotNull String content,
+            @NotNull List<String> description,
+            @Nullable String permission,
+            @Nullable Integer order
+    ) {
         this.id = id;
         this.name = name;
         this.content = content;
-        this.description = new ArrayList<>();
-        this.permission = "eternaltags.tag." + id.toLowerCase();
-        this.order = -1;
+        this.description = description;
+        this.permission = permission;
+        this.order = order;
         this.source = this.defineSource();
+    }
+
+    /**
+     * Create a new tag from the plugin config file
+     *
+     * @param id      The id of the tag
+     * @param name    The display name of the tag
+     * @param content The content to display inside the tag
+     */
+    public Tag(@NotNull String id, @NotNull String name, @NotNull String content) {
+        this(id, name, content, new ArrayList<>(), "eternaltags.tag." + id, -1);
     }
 
     /**
@@ -54,6 +89,19 @@ public class Tag {
         }
     }
 
+
+    /**
+     * Create a new setting serializer for the tag to be used in configs
+     */
+    private final static SettingSerializer<Tag> SERIALIZER = SettingSerializers.ofRecord(Tag.class, instance -> instance.group(
+            SettingField.ofOptionalValue("id", STRING, Tag::getId, null),
+            SettingField.of("name", STRING, Tag::getName),
+            SettingField.of("content", STRING, Tag::getContent),
+            SettingField.ofOptionalValue("description", STRING_LIST, Tag::getDescription, new ArrayList<>()),
+            SettingField.ofOptionalValue("permission", STRING, Tag::getPermission, null),
+            SettingField.ofOptionalValue("order", INTEGER, Tag::getOrder, -1)
+    ).apply(instance, Tag::new));
+
     /**
      * Load a tag from a configuration section in the config file.
      *
@@ -62,40 +110,12 @@ public class Tag {
      * @return The loaded tag
      */
     public static Tag fromConfig(File source, CommentedConfigurationSection base, String key) {
-        CommentedConfigurationSection section = base.getConfigurationSection(key);
-        if (section == null) return null;
+        Tag tag = SERIALIZER.read(base, key);
+        if (tag == null) return null;
 
-        // Load the important values first
-        String name = section.getString("name");
-        String content = section.getString("content");
-        if (name == null || content == null) return null;
-
-        // Load the optional values
-        String permission = section.getString("permission");
-        List<String> description = section.getStringList("description");
-        int order = section.getInt("order", -1);
-
-        // Create the tag object
-        Tag tag = new Tag(key.toLowerCase(), name, content);
+        tag.setId(key.toLowerCase());
         tag.setSource(source);
-
-        if (permission != null) tag.setPermission(permission);
-        if (!description.isEmpty()) tag.setDescription(description);
-        if (order != -1) tag.setOrder(order);
         return tag;
-    }
-
-    /**
-     * Save the tag to a configuration section in the config file.
-     *
-     * @param section The section to save the tag to
-     */
-    public void save(CommentedConfigurationSection section) {
-        section.set("name", this.name);
-        section.set("content", this.content);
-        section.set("permission", this.permission);
-        section.set("description", this.description);
-        section.set("order", this.order);
     }
 
     /**
@@ -109,10 +129,10 @@ public class Tag {
 
         CompletableFuture.runAsync(() -> {
             CommentedFileConfiguration config = CommentedFileConfiguration.loadConfiguration(this.source);
-            CommentedConfigurationSection section = config.getConfigurationSection("tags." + this.id);
-            if (section == null) section = config.createSection("tags." + this.id);
+            CommentedConfigurationSection tagSection = config.getConfigurationSection("tags");
+            if (tagSection == null) config.createSection("tags");
 
-            this.save(section);
+            SERIALIZER.write(tagSection, this.id, this);
             config.save(this.source);
         });
     }
@@ -169,13 +189,16 @@ public class Tag {
      */
     public boolean hasPermission(Player player) {
         if (this.permission == null) return true; // No permission required
-        if (player.hasPermission("eternaltags.tags.*")) return true; // Bypass all permissions
 
         return player.hasPermission(this.permission);
     }
 
     public @NotNull String getId() {
         return id;
+    }
+
+    public void setId(@NotNull String id) {
+        this.id = id;
     }
 
     public @NotNull String getName() {
@@ -186,12 +209,12 @@ public class Tag {
         this.name = name;
     }
 
-    public @NotNull String getTag() {
+    public @NotNull String getContent() {
         return content;
     }
 
-    public void setTag(@NotNull String tag) {
-        this.content = tag;
+    public void setContent(@NotNull String content) {
+        this.content = content;
     }
 
     public @Nullable String getPermission() {

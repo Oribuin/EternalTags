@@ -2,12 +2,14 @@ package dev.oribuin.eternaltags;
 
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.config.RoseSetting;
+import dev.rosewood.rosegarden.config.SettingHolder;
 import dev.rosewood.rosegarden.manager.Manager;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginManager;
 import org.codehaus.plexus.util.Expand;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import dev.oribuin.eternaltags.config.Setting;
@@ -76,8 +78,8 @@ public class EternalTags extends RosePlugin {
     }
 
     @Override
-    protected @NotNull List<RoseSetting<?>> getRoseConfigSettings() {
-        return Setting.getKeys();
+    protected @Nullable SettingHolder getRoseConfigSettingHolder() {
+        return Setting.instance();
     }
 
     @Override

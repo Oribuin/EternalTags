@@ -78,7 +78,7 @@ public class Expansion extends PlaceholderExpansion {
         // These tags are different and dont always want formattedPlaceholder
         if (param.equalsIgnoreCase("active")) return String.valueOf(tag != null); // Return true if the tag is not null
         if (param.equalsIgnoreCase("tag")) return this.manager.getDisplayTag(tag, player, ""); // Return the tag with the player's tag
-        if (param.equalsIgnoreCase("tag_stripped")) return tag != null ? tag.getTag() : ""; // Return nothing when the tag is null
+        if (param.equalsIgnoreCase("tag_stripped")) return tag != null ? tag.getContent() : ""; // Return nothing when the tag is null
 
         // Has unlocked is a double special case
 //        if (param.equalsIgnoreCase("has-unlocked")) {
@@ -92,7 +92,7 @@ public class Expansion extends PlaceholderExpansion {
         // Regular tag placeholders
         return switch (param) {
             case "tag_formatted" -> this.manager.getDisplayTag(tag, player, Setting.FORMATTED_PLACEHOLDER.get());
-            case "tag_stripped_formatted" -> tag.getTag();
+            case "tag_stripped_formatted" -> tag.getContent();
             case "tag_name" -> tag.getName();
             case "tag_id" -> tag.getId();
             case "tag_permission" -> tag.getPermission();
@@ -112,7 +112,7 @@ public class Expansion extends PlaceholderExpansion {
      * @return The joined tags
      */
     public String joinTags(List<Tag> tags) {
-        return tags.stream().map(Tag::getTag).map(HexUtils::colorify).reduce("", (a, b) -> a + b);
+        return tags.stream().map(Tag::getContent).map(HexUtils::colorify).reduce("", (a, b) -> a + b);
     }
 
     @Override

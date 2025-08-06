@@ -25,7 +25,7 @@ public class EditTagCommand extends BaseRoseCommand {
         TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
         LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
 
-        tag.setTag(newTag);
+        tag.setContent(newTag);
         tag.save();
         manager.updateActiveTag(tag);
 

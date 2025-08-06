@@ -23,7 +23,6 @@ public class _2_CreateNewTagTables extends DataMigration {
                                     "permission TEXT, " +
                                     "description TEXT, " +
                                     "`order` INTEGER DEFAULT 0, " +
-                                    "`icon` TEXT NULL, " +
                                     "PRIMARY KEY(tagId))");
         }
     }

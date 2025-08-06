@@ -44,8 +44,8 @@ import java.util.Map;
 @SuppressWarnings("unchecked")
 public final class TagsUtils {
 
-    private static MiniMessage MINIMESSAGE;
-    private static LegacyComponentSerializer LEGACY;
+    public static MiniMessage MINIMESSAGE;
+    public static LegacyComponentSerializer LEGACY;
 
     private TagsUtils() {
         throw new IllegalStateException("Utility class");

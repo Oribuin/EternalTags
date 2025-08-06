@@ -49,9 +49,6 @@ permissions:
       - eternaltags.random
       - eternaltags.search
       - eternaltags.set
-  eternaltags.tag.*:
-    description: Allow the player to use all tags
-    default: op
   eternaltags.use:
     description: Allow the player to open the tag menu
     default: true

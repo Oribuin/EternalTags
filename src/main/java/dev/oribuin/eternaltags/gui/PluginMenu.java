@@ -15,13 +15,10 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import dev.oribuin.eternaltags.EternalTags;
 import dev.oribuin.eternaltags.action.Action;
 import dev.oribuin.eternaltags.action.PluginAction;
-import dev.oribuin.eternaltags.gui.menu.TagsGUI;
 import dev.oribuin.eternaltags.manager.LocaleManager;
 import dev.oribuin.eternaltags.manager.TagsManager;
 import dev.oribuin.eternaltags.obj.Tag;
@@ -34,7 +31,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public abstract class PluginMenu {
@@ -292,7 +288,7 @@ public abstract class PluginMenu {
     protected StringPlaceholders getTagPlaceholders(Tag tag, OfflinePlayer player) {
         return StringPlaceholders.builder()
                 .add("tag", this.rosePlugin.getManager(TagsManager.class).getDisplayTag(tag, player))
-                .add("tag_stripped", tag.getTag())
+                .add("tag_stripped", tag.getContent())
                 .add("id", tag.getId())
                 .add("name", tag.getName())
                 .add("description", String.join("\n", tag.getDescription())) // TODO: Delimiter

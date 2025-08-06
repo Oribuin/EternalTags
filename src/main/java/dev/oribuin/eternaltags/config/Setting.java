@@ -1,28 +1,44 @@
 package dev.oribuin.eternaltags.config;
 
 import dev.oribuin.eternaltags.EternalTags;
-import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.config.RoseSetting;
-import dev.rosewood.rosegarden.config.RoseSettingSerializer;
-import dev.rosewood.rosegarden.config.RoseSettingSerializers;
+import dev.rosewood.rosegarden.config.SettingHolder;
+import dev.rosewood.rosegarden.config.SettingSerializer;
+import dev.rosewood.rosegarden.config.SettingSerializers;
+import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static dev.rosewood.rosegarden.config.RoseSettingSerializers.STRING;
+import static dev.rosewood.rosegarden.config.SettingSerializers.STRING;
 
 /**
  * The general settings for the plugin.
  */
-public class Setting {
+public class Setting implements SettingHolder {
 
     private static final List<RoseSetting<?>> KEYS = new ArrayList<>();
+    private static Setting instance;
+
+    /**
+     * Get the instance of the plugin settings
+     *
+     * @return The plugin settings
+     */
+    public static Setting instance() {
+        if (instance == null) {
+            instance = new Setting();
+        }
+
+        return instance;
+    }
+
 
     /**
      * The option for checking if the plugin should remove a tag if the player doesn't have permission to use it.
      */
     public static RoseSetting<Boolean> REMOVE_INACCESSIBLE = create(
-            "remove-inaccessible-tags", RoseSettingSerializers.BOOLEAN, false,
+            "remove-inaccessible-tags", SettingSerializers.BOOLEAN, false,
             "Should a tag be automatically removed if the player doesn't have permission to use it?",
             " ",
             "This is recommended if you are giving players temporary tags. May have a slight performance cost"
@@ -32,7 +48,7 @@ public class Setting {
      * The option for checking if the plugin should apply PlaceholderAPI placeholders to the chat format.
      */
     public static RoseSetting<Boolean> CHAT_PLACEHOLDERS = create(
-            "chat-placeholders", RoseSettingSerializers.BOOLEAN, false,
+            "chat-placeholders", SettingSerializers.BOOLEAN, false,
             "Should the plugin change the Chat Format to allow PlaceholderAPI placeholders to be used?",
             "It is recommended to enable this if you are using EssentialsXChat or a chat plugin that does not support PlaceholderAPI,",
             "It's not recommended for you to enable this if your chat plugin already supports PlaceholderAPI (Most should do)."
@@ -42,7 +58,7 @@ public class Setting {
      * The option for checking if the plugin should clear the player's tag when they re-equip the same tag.
      */
     public static RoseSetting<String> FORMATTED_PLACEHOLDER = create(
-            "formatted-placeholder", RoseSettingSerializers.STRING, "None",
+            "formatted-placeholder", SettingSerializers.STRING, "None",
             "The placeholder that will show when the player has no active tag."
     );
 
@@ -73,14 +89,14 @@ public class Setting {
      * Establishes a configuration setting for the plugin which will be generated on reload.
      *
      * @param key          The key (path) of the setting
-     * @param serializer   The {@link dev.rosewood.rosegarden.config.RoseSettingSerializers} for the setting
+     * @param serializer   The {@link dev.rosewood.rosegarden.config.SettingSerializers} for the setting
      * @param defaultValue The default value of the setting
      * @param comments     The comments for the setting
      * @param <T>          The type of the setting
      * @return The generated {@link dev.rosewood.rosegarden.config.RoseSetting}
      */
-    private static <T> RoseSetting<T> create(String key, RoseSettingSerializer<T> serializer, T defaultValue, String... comments) {
-        RoseSetting<T> setting = RoseSetting.backed(EternalTags.get(), key, serializer, defaultValue, comments);
+    private static <T> RoseSetting<T> create(String key, SettingSerializer<T> serializer, T defaultValue, String... comments) {
+        RoseSetting<T> setting = RoseSetting.ofBackedValue(key, EternalTags.get(), serializer, defaultValue, comments);
         KEYS.add(setting);
         return setting;
     }
@@ -92,8 +108,8 @@ public class Setting {
      * @param comments The comments for the setting
      * @return The generated {@link dev.rosewood.rosegarden.config.RoseSetting}
      */
-    private static RoseSetting<CommentedConfigurationSection> create(String key, String... comments) {
-        RoseSetting<CommentedConfigurationSection> setting = RoseSetting.backedSection(EternalTags.get(), key, comments);
+    private static RoseSetting<ConfigurationSection> create(String key, String... comments) {
+        RoseSetting<ConfigurationSection> setting = RoseSetting.ofBackedSection(key, EternalTags.get(), comments);
         KEYS.add(setting);
         return setting;
     }
@@ -103,8 +119,8 @@ public class Setting {
      *
      * @return The generated {@link dev.rosewood.rosegarden.config.RoseSetting} for the plugin.
      */
-    public static List<RoseSetting<?>> getKeys() {
+    @Override
+    public List<RoseSetting<?>> get() {
         return KEYS;
     }
-
 }

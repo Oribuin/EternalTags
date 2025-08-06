@@ -1,7 +1,9 @@
 package dev.oribuin.eternaltags.manager;
 
 import dev.oribuin.eternaltags.EternalTags;
-import dev.oribuin.eternaltags.config.Setting;
+import dev.oribuin.eternaltags.obj.Tag;
+import dev.oribuin.eternaltags.obj.TagUser;
+import dev.oribuin.eternaltags.util.TagsUtils;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
@@ -11,26 +13,18 @@ import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import dev.oribuin.eternaltags.obj.Tag;
-import dev.oribuin.eternaltags.obj.TagUser;
-import dev.oribuin.eternaltags.util.TagsUtils;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -59,10 +53,11 @@ public class TagsManager extends Manager {
 //
         // Establish the default files 
         File folder = TAGS_FOLDER.toFile();
-        if (!folder.exists() || folder.listFiles() == null || folder.listFiles().length == 0) {
+        File[] files = folder.listFiles();
+        if (!folder.exists() || files == null || files.length == 0) {
             TagsUtils.createFile(this.rosePlugin, "tags", "default.yml");
             TagsUtils.createFile(this.rosePlugin, "tags", "dynamic.yml");
-            
+
             if (NMSUtil.getVersionNumber() >= 21) { // todo: require 1.21.4 
                 TagsUtils.createFile(this.rosePlugin, "tags", "pride.yml");
             }
@@ -319,8 +314,7 @@ public class TagsManager extends Manager {
      */
     @NotNull
     public List<Tag> getPlayerTags(@Nullable Player player) {
-        if (player == null || player.hasPermission("eternaltags.tags.*"))
-            return new ArrayList<>(this.cachedTags.values());
+        if (player == null) return new ArrayList<>(this.cachedTags.values());
 
         return this.cachedTags.values().stream()
                 .filter(entry -> this.canUseTag(player, entry))
@@ -349,7 +343,7 @@ public class TagsManager extends Manager {
 
         return this.cachedTags.get(id.toLowerCase());
     }
-    
+
     /**
      * Check if a tag is favourite by ap layer
      *
@@ -406,7 +400,7 @@ public class TagsManager extends Manager {
 
         StringPlaceholders.Builder placeholders = StringPlaceholders.builder();
         placeholders.addAll(this.getTagPlaceholders(tag));
-        placeholders.add("tag", tag.getTag());
+        placeholders.add("tag", tag.getContent());
 
         return TagsUtils.colorAsString(PlaceholderAPI.setPlaceholders(player, placeholders.build().apply(TAG_FORMATTING.get())));
     }
