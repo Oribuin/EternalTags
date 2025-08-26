@@ -1,0 +1,24 @@
+# This is the default file for EternalTags, Here are all the basic configuration for tag items.
+#
+# All tags by default will use the Mini Message formatting, You can swap back to legacy formatting in the config.yml file
+# 
+# name = The display name for the tag
+# content = The customisable content of the tag
+# description = The tag description
+# permission = The required permission to unlock the tag (Use LuckPerms or other permission plugins to apply)
+# order = The order of the tag in the gui
+#
+# The following tags require their respective PlaceholderAPI Expansions (Statistic)
+tags:
+  blocks_broken:
+    name: 'Blocks Broken'
+    content: '<gray>[<#20BDFF>⛏ %statistic_mine_block% Blocks</#20BDFF>]' # Legacy: '&f&l[<#20BDFF>⛏ %statistic_mine_block% Blocks&f&l]'
+    permission: 'eternaltags.tag.blocks_broken'
+  mob_kills:
+    name: 'Mob Kills'
+    content: '<gray>[<#20BDFF>⚔ %statistic_mob_kills% Mobs</#20BDFF>]' # Legacy: '&f&l[<#20BDFF>⚔ %statistic_mob_kills% Mobs&f&l]'
+    permission: 'eternaltags.tag.mob_kills'
+  playtime:
+    name: 'Playtime'
+    content: '<gray>[<#20BDFF>⌚ %statistic_hours_played%h</#20BDFF>]' # Legacy '&f&l[<#20BDFF>⌚ %statistic_hours_played%h&f&l]'
+    permission: 'eternaltags.tag.playtime'

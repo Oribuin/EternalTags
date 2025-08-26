@@ -1,0 +1,40 @@
+# The following tags are 1.21.4 exclusive, They're a relatively new addition to Adventure
+#
+# https://docs.advntr.dev/minimessage/format.html#pride
+# 
+# These styles will not work on Legacy Style Formatting.
+
+# name = The display name for the tag
+# content = The customisable content of the tag
+# description = The tag description
+# permission = The required permission to unlock the tag (Use LuckPerms or other permission plugins to apply)
+# order = The order of the tag in the gu
+tags:
+  'pride_progress':
+    name: Progress
+    content: '<gray>[<pride:progress>❤ Progress ❤</pride><gray>]'
+    permission: 'eternaltags.tag.progress'
+  'pride_trans':
+    name: Trans Flag
+    content: '<gray>[<pride:trans>❤ Pride ❤</pride><gray>]'
+    permission: 'eternaltags.tag.trans'
+  'pride_gay':
+    name: Lesbian Flag
+    content: '<gray>[<pride:gay>❤ Pride ❤</pride><gray>]'
+    permission: 'eternaltags.tag.gay'
+  'pride_lesbian':
+    name: Lesbian Flag
+    content: '<gray>[<pride:lesbian>❤ Pride ❤</pride><gray>]'
+    permission: 'eternaltags.tag.lesbian'
+  'pride_bisexual':
+    name: Bisexual Flag
+    content: '<gray>[<pride:bi>❤ Pride ❤</pride><gray>]'
+    permission: 'eternaltags.tag.bisexual'
+  'pride_pansexual':
+    name: Pansexual Flag
+    content: '<gray>[<pride:pan>❤ Pride ❤</pride><gray>]'
+    permission: 'eternaltags.tag.pansexual'
+  'pride_nonbinary':
+    name: Non Binary Flag
+    content: '<gray>[<pride:nb>❤ Pride ❤</pride><gray>]'
+    permission: 'eternaltags.tag.nonbinary'
