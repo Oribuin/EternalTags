@@ -1,5 +1,8 @@
 package dev.oribuin.eternaltags.util;
 
+import com.destroystokyo.paper.profile.PlayerProfile;
+import io.papermc.paper.datacomponent.item.ResolvableProfile;
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -12,11 +15,16 @@ import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.profile.PlayerTextures;
 import org.jetbrains.annotations.Nullable;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @SuppressWarnings({"unused", "deprecation"})
 public class ItemBuilder {
@@ -174,13 +182,25 @@ public class ItemBuilder {
      * @param texture The texture.
      * @return Item.Builder
      */
+    @SuppressWarnings("UnstableApiUsage")
     public ItemBuilder texture(@Nullable String texture) {
         if (item.getType() != Material.PLAYER_HEAD || texture == null)
             return this;
 
         if (!(this.meta instanceof SkullMeta skullMeta)) return this;
-        
-        // TODO: SkullUtils.setSkullTexture(skullMeta, texture);
+
+        try {
+            PlayerProfile profile = Bukkit.createProfile(UUID.nameUUIDFromBytes(texture.getBytes()), "");
+            PlayerTextures textures = profile.getTextures();
+
+            String decodedTextureJson = new String(Base64.getDecoder().decode(texture));
+            String decodedTextureUrl = decodedTextureJson.substring(28, decodedTextureJson.length() - 4);
+            textures.setSkin(new URL(decodedTextureUrl));
+            profile.setTextures(textures);
+            skullMeta.setPlayerProfile(profile);
+        } catch (MalformedURLException | NullPointerException ignored) {
+        }
+
         return this;
     }
 
