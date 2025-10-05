@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "dev.oribuin"
-version = "2.0.0"
+version = "2.0.0-SNAPSHOT"
 
 
 java {
@@ -84,8 +84,8 @@ tasks {
 
         repositories {
             val version = project.version as String
-            val mavenUser = project.properties["mavenUser"] as String?
-            val mavenPassword = project.properties["mavenPassword"] as String?
+            val mavenUser = project.properties["oribuin_repo_username"] as String?
+            val mavenPassword = project.properties["oribuin_repo_password"] as String?
 
             if (mavenUser != null && mavenPassword != null) {
                 maven {
@@ -94,8 +94,8 @@ tasks {
                         password = mavenPassword
                     }
 
-                    val releasesRepoUrl = "https://repo.rosewooddev.io/repository/public-releases/"
-                    val snapshotsRepoUrl = "https://repo.rosewooddev.io/repository/public-snapshots/"
+                    val releasesRepoUrl = "https://repo.oribuin.dev/repository/maven-releases/"
+                    val snapshotsRepoUrl = "https://repo.oribuin.dev/repository/maven-snapshots/"
                     url = uri(if (version.endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
                 }
             }
