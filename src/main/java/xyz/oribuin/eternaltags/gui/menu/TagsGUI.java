@@ -274,11 +274,13 @@ public class TagsGUI extends PluginMenu {
             tags.addAll(allTags);
         }
 
+        tags.removeIf(Objects::isNull);
+        
         // If the keyword is not null, filter the list of tags
         if (filter != null)
             tags = tags.stream().filter(filter).toList();
 
-        return tags.stream().distinct().filter(Objects::nonNull).toList();
+        return tags.stream().distinct().toList();
     }
 
     /**

@@ -613,13 +613,10 @@ public class TagsManager extends Manager {
     public boolean canUseTag(@NotNull Player player, @NotNull Tag tag) {
         CategoryManager manager = this.rosePlugin.getManager(CategoryManager.class);
         boolean defaultResult = tag.hasPermission(player); // Check if the player has permission to use the tag
-        TagUser user = this.rosePlugin.getManager(DataManager.class).getCachedUser(player.getUniqueId());
-        if (user.isUsingDefaultTag()) return true; // Players can always use a default tag.
 
         // If the tag has no category, then we can just return the tag unlocked status
         Category category = manager.getCategory(tag.getCategory());
-        if (category == null) return defaultResult;
-        if (category.getPermission() == null) return defaultResult;
+        if (category == null || category.getPermission() == null) return defaultResult;
 
         // If the category can bypass tag permissions and the category has a permission set
         if (category.isBypassPermission() && category.getPermission() != null)

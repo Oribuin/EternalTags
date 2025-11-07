@@ -73,8 +73,6 @@ public class Tag {
      */
     public boolean hasPermission(Player player) {
         if (this.permission == null) return true; // No permission required
-        if (player.hasPermission("eternaltags.tags.*")) return true; // Bypass all permissions
-
         return player.hasPermission(this.permission);
     }
 
