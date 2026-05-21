@@ -79,7 +79,7 @@ public class FavouritesGUI extends PluginMenu {
                 .player(player)
                 .action(event -> {
                     gui.next();
-                    this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                    this.sync(() -> gui.updateTitle(this.format(player, finalMenuTitle, this.getPagePlaceholders(gui))));
                 })
                 .player(player)
                 .place(gui);
@@ -89,7 +89,7 @@ public class FavouritesGUI extends PluginMenu {
                 .player(player)
                 .action(event -> {
                     gui.previous();
-                    this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                    this.sync(() -> gui.updateTitle(this.format(player, finalMenuTitle, this.getPagePlaceholders(gui))));
                 })
                 .place(gui);
 
@@ -127,7 +127,7 @@ public class FavouritesGUI extends PluginMenu {
             this.addTags(gui, player);
 
             if (this.reloadTitle())
-                this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                this.sync(() -> gui.updateTitle(this.format(player, finalMenuTitle, this.getPagePlaceholders(gui))));
         };
 
         if (this.addPagesAsynchronously())

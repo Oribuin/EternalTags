@@ -7,16 +7,16 @@ plugins {
 }
 
 group = "dev.oribuin"
-version = "2.0.0-SNAPSHOT"
+version = "2.0.0-pre1"
 
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
     
     disableAutoTargetJvm()
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
     }
 }
 
@@ -35,13 +35,13 @@ repositories {
 }
 
 dependencies {
-    api("dev.rosewood:rosegarden:1.5.4-SNAPSHOT")
-    api("dev.triumphteam:triumph-gui:3.1.11") {  // https://mf.mattstudios.me/triumph-gui/introduction
+    api("dev.rosewood:rosegarden:1.5.5")
+    api("dev.triumphteam:triumph-gui:3.1.13") {  // https://mf.mattstudios.me/triumph-gui/introduction
         exclude(group = "com.google.code.gson", module = "gson") // Remove GSON, Already included in spigot api
         exclude(group = "net.kyori", module = "*") // Remove kyori
     }
     
-    compileOnly("io.papermc.paper:paper-api:1.21.7-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:26.1.2.build.5-alpha")
     compileOnly("com.mojang:authlib:1.5.21")
     compileOnly("me.clip:placeholderapi:2.11.6")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7") {

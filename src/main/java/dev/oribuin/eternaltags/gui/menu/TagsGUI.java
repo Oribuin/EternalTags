@@ -118,7 +118,7 @@ public class TagsGUI extends PluginMenu {
             this.addTags(gui, player, filter);
 
             if (this.reloadTitle())
-                this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                this.sync(() -> gui.updateTitle(this.format(player, finalMenuTitle, this.getPagePlaceholders(gui))));
         };
 
         if (this.addPagesAsynchronously())
@@ -145,7 +145,7 @@ public class TagsGUI extends PluginMenu {
                     if (gui.next()) {
                         item.sound((Player) event.getWhoClicked());
                         this.addNavigationIcons(gui, player, finalMenuTitle);
-                        this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                        this.sync(() -> gui.updateTitle(this.format(player, finalMenuTitle, this.getPagePlaceholders(gui))));
                     }
                 })
                 .place(gui);
@@ -157,7 +157,7 @@ public class TagsGUI extends PluginMenu {
                     if (gui.previous()) {
                         item.sound((Player) event.getWhoClicked());
                         this.addNavigationIcons(gui, player, finalMenuTitle);
-                        this.sync(() -> gui.updateTitle(this.formatString(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                        this.sync(() -> gui.updateTitle(this.format(player, finalMenuTitle, this.getPagePlaceholders(gui))));
                     }
                 })
                 .place(gui);
