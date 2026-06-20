@@ -68,7 +68,6 @@ public class Tag {
      * Check if a player has permission to use the tag.
      *
      * @param player The player to check
-     *
      * @return Whether the player has permission or not
      */
     public boolean hasPermission(Player player) {

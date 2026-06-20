@@ -24,7 +24,7 @@ public final class PluginAction {
         registerAction("console", ConsoleAction::new);
         registerAction("message", MessageAction::new);
         registerAction("player", PlayerAction::new);
-        registerAction("sound", SoundAction::new);
+//        registerAction("sound", SoundAction::new);
     }
 
     /**

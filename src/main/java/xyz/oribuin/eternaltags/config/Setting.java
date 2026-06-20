@@ -1,28 +1,29 @@
 package xyz.oribuin.eternaltags.config;
 
-import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.config.RoseSetting;
-import dev.rosewood.rosegarden.config.RoseSettingSerializer;
-import dev.rosewood.rosegarden.config.RoseSettingSerializers;
+import dev.rosewood.rosegarden.config.SettingHolder;
+import dev.rosewood.rosegarden.config.SettingSerializer;
+import org.bukkit.configuration.ConfigurationSection;
 import xyz.oribuin.eternaltags.EternalTags;
 
-import javax.print.DocFlavor;
-import java.security.PrivateKey;
 import java.util.ArrayList;
 import java.util.List;
 
-import static dev.rosewood.rosegarden.config.RoseSettingSerializers.*;
+import static dev.rosewood.rosegarden.config.SettingSerializers.BOOLEAN;
+import static dev.rosewood.rosegarden.config.SettingSerializers.STRING;
 
 /**
  * The general settings for the plugin.
  */
-public class Setting {
+public class Setting implements SettingHolder {
+
+    public static final SettingHolder INSTANCE = new Setting();
 
     private static final List<RoseSetting<?>> KEYS = new ArrayList<>();
 
     public static final RoseSetting<String> DEFAULT_TAG = create("default-tag", STRING, "none", "The tag that will show when player does not have an active tag.", "Set to 'none' to disable.", "Set to 'random' to apply a random tag");
 
-    public static final RoseSetting<CommentedConfigurationSection> DEFAULT_TAG_GROUPS = create("default-tag-groups", "The groups that will be applied to the player when they join the server.", "Set to 'none' to disable.", "Set to 'random' to apply a random tag", "This requires vault and a vault supported permission plugin.");
+    public static final RoseSetting<ConfigurationSection> DEFAULT_TAG_GROUPS = create("default-tag-groups", "The groups that will be applied to the player when they join the server.", "Set to 'none' to disable.", "Set to 'random' to apply a random tag", "This requires vault and a vault supported permission plugin.");
     private static final RoseSetting<String> DEFAULT_TAG_GROUP_DEFAULT = create("default-tag-groups.default", STRING, "none");
 
     public static final RoseSetting<Boolean> REMOVE_TAGS = create("remove-inaccessible-tags", BOOLEAN, false, "Should a tag be automatically removed if the player doesn't have permission to use it?");
@@ -54,21 +55,21 @@ public class Setting {
 
     // Data Systems
     public static final RoseSetting<Boolean> MYSQL_TAGDATA = create("save-tagdata-sql", BOOLEAN, false, "Should the tag data be stored in a MySQL/SQLite database? (Tags that would be saved in tags.yml)");
-    private static final RoseSetting<CommentedConfigurationSection> PLUGIN_MESSAGING = create("plugin-messaging", "Should the plugin use plugin messaging to communicate between servers? (Requires BungeeCord)");
+    private static final RoseSetting<ConfigurationSection> PLUGIN_MESSAGING = create("plugin-messaging", "Should the plugin use plugin messaging to communicate between servers? (Requires BungeeCord)");
     public static final RoseSetting<Boolean> PLUGIN_MESSAGING_RELOAD = create("plugin-messaging.reload", BOOLEAN, false, "Should /tags reload run on all servers? (Requires BungeeCord)");
 
     /**
      * Establishes a configuration setting for the plugin which will be generated on reload.
      *
      * @param key          The key (path) of the setting
-     * @param serializer   The {@link dev.rosewood.rosegarden.config.RoseSettingSerializers} for the setting
+     * @param serializer   The {@link dev.rosewood.rosegarden.config.SettingSerializer} for the setting
      * @param defaultValue The default value of the setting
      * @param comments     The comments for the setting
      * @param <T>          The type of the setting
      * @return The generated {@link dev.rosewood.rosegarden.config.RoseSetting}
      */
-    private static <T> RoseSetting<T> create(String key, RoseSettingSerializer<T> serializer, T defaultValue, String... comments) {
-        RoseSetting<T> setting = RoseSetting.backed(EternalTags.getInstance(), key, serializer, defaultValue, comments);
+    private static <T> RoseSetting<T> create(String key, SettingSerializer<T> serializer, T defaultValue, String... comments) {
+        RoseSetting<T> setting = RoseSetting.ofBackedValue(key, EternalTags.getInstance(), serializer, defaultValue, comments);
         KEYS.add(setting);
         return setting;
     }
@@ -80,8 +81,8 @@ public class Setting {
      * @param comments The comments for the setting
      * @return The generated {@link dev.rosewood.rosegarden.config.RoseSetting}
      */
-    private static RoseSetting<CommentedConfigurationSection> create(String key, String... comments) {
-        RoseSetting<CommentedConfigurationSection> setting = RoseSetting.backedSection(EternalTags.getInstance(), key, comments);
+    private static RoseSetting<ConfigurationSection> create(String key, String... comments) {
+        RoseSetting<ConfigurationSection> setting = RoseSetting.ofBackedSection(key, EternalTags.getInstance(), comments);
         KEYS.add(setting);
         return setting;
     }
@@ -110,4 +111,10 @@ public class Setting {
                 "        \\/           \\/           \\/     \\/                  \\//_____/     \\/ "
         };
     }
+
+    @Override
+    public List<RoseSetting<?>> get() {
+        return KEYS;
+    }
+
 }

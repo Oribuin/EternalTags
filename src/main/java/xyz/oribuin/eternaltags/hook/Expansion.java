@@ -67,7 +67,6 @@ public class Expansion extends PlaceholderExpansion {
      * @param param         The placeholder to parse
      * @param offlinePlayer The player to parse the placeholder for
      * @param tag           The tag to parse the placeholder for
-     *
      * @return The result of the placeholder
      */
     public String result(String param, OfflinePlayer offlinePlayer, Tag tag) {
@@ -109,7 +108,6 @@ public class Expansion extends PlaceholderExpansion {
      * Join all the tags in a single string
      *
      * @param tags The tags to join
-     *
      * @return The joined tags
      */
     public String joinTags(List<Tag> tags) {

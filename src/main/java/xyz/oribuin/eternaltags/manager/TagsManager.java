@@ -8,6 +8,7 @@ import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -53,7 +54,7 @@ public class TagsManager extends Manager {
 
         // Load the default tag groups
         this.defaultTagGroups = new HashMap<>();
-        CommentedConfigurationSection groupSection = Setting.DEFAULT_TAG_GROUPS.get();
+        ConfigurationSection groupSection = Setting.DEFAULT_TAG_GROUPS.get();
         groupSection.getKeys(false).forEach(s -> this.defaultTagGroups.put(s.toLowerCase(), groupSection.getString(s)));
 
         // Check if we're using default tags
@@ -257,9 +258,7 @@ public class TagsManager extends Manager {
      * Get a tag by the UUID, load the user if they aren't cached.
      *
      * @param uuid The UUID of the player.
-     *
      * @return The active tag if present
-     *
      * @deprecated Use {@link TagsManager#getUserTag(UUID)} instead.
      */
     @Nullable
@@ -272,7 +271,6 @@ public class TagsManager extends Manager {
      * Get a tag by the UUID, If the user isn't cached, return null.
      *
      * @param uuid The UUID of the player.
-     *
      * @return The active tag if present
      */
     @Nullable
@@ -287,7 +285,6 @@ public class TagsManager extends Manager {
      * if a player needs to have their tag updated. (Remove Inactive Tags or Default Tags)
      *
      * @param player The player object.
-     *
      * @return The active tag if present
      */
     @Nullable
@@ -325,9 +322,7 @@ public class TagsManager extends Manager {
      * Get a tag by the offline player object, If the user isn't cached, return null.
      *
      * @param player The offline player object.
-     *
      * @return The active tag if present
-     *
      * @since 1.1.6
      */
     @Nullable
@@ -368,7 +363,6 @@ public class TagsManager extends Manager {
      * Get a user's favourite tags.
      *
      * @param uuid The UUID of the player.
-     *
      * @return The map of favourite tags.
      */
     @NotNull
@@ -387,7 +381,6 @@ public class TagsManager extends Manager {
      * Get all the tags a player has permission to use.
      *
      * @param player The player
-     *
      * @return The tags the player has.
      */
     @NotNull
@@ -404,7 +397,6 @@ public class TagsManager extends Manager {
      * Check if a tag exists from the id.
      *
      * @param id The id of the tag.
-     *
      * @return true if the tag exists.
      */
     public boolean checkTagExists(String id) {
@@ -415,7 +407,6 @@ public class TagsManager extends Manager {
      * Match a tag based on the id.
      *
      * @param id The id of the tag.
-     *
      * @return An optional tag.
      */
     @Nullable
@@ -469,7 +460,6 @@ public class TagsManager extends Manager {
      *
      * @param player The player
      * @param tag    The tag
-     *
      * @return If the tag is favourited.
      */
     public boolean isFavourite(UUID player, Tag tag) {
@@ -494,7 +484,6 @@ public class TagsManager extends Manager {
      * Get a randomized tag from a user's available tags.
      *
      * @param offlinePlayer The offlinePlayer
-     *
      * @return The random tag.
      */
     public Tag getRandomTag(@Nullable OfflinePlayer offlinePlayer) {
@@ -515,7 +504,6 @@ public class TagsManager extends Manager {
      * @param tag         The tag.
      * @param player      The player.
      * @param placeholder The placeholder.
-     *
      * @return The display tag.
      */
     public String getDisplayTag(@Nullable Tag tag, OfflinePlayer player, @NotNull String placeholder) {
@@ -532,7 +520,6 @@ public class TagsManager extends Manager {
      *
      * @param tag    The tag.
      * @param player The player.
-     *
      * @return The display tag.
      */
     public String getDisplayTag(@Nullable Tag tag, OfflinePlayer player) {
@@ -552,7 +539,6 @@ public class TagsManager extends Manager {
      * Get the tags in a category
      *
      * @param category The category
-     *
      * @return The tags in the category
      */
     public List<Tag> getTagsInCategory(Category category) {
@@ -570,7 +556,6 @@ public class TagsManager extends Manager {
      * Get all the tags in a category
      *
      * @param category The category
-     *
      * @return The tags in the category
      */
     public List<Tag> getCategoryTags(Category category) {
@@ -582,7 +567,6 @@ public class TagsManager extends Manager {
      *
      * @param category The category
      * @param player   The player
-     *
      * @return The tags in the category that the player has access to
      */
     public List<Tag> getCategoryTags(Category category, Player player) {
@@ -607,7 +591,6 @@ public class TagsManager extends Manager {
      *
      * @param player The player
      * @param tag    The tag
-     *
      * @return If the player has access to the tag
      */
     public boolean canUseTag(@NotNull Player player, @NotNull Tag tag) {
@@ -629,7 +612,6 @@ public class TagsManager extends Manager {
      * Get the tag placeholders for the given player
      *
      * @param tag The tag
-     *
      * @return The tag placeholders
      */
     private StringPlaceholders getTagPlaceholders(Tag tag) {

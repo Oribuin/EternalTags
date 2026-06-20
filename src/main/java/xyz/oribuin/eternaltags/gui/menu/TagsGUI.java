@@ -7,7 +7,6 @@ import dev.triumphteam.gui.components.ScrollType;
 import dev.triumphteam.gui.guis.BaseGui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -275,7 +274,7 @@ public class TagsGUI extends PluginMenu {
         }
 
         tags.removeIf(Objects::isNull);
-        
+
         // If the keyword is not null, filter the list of tags
         if (filter != null)
             tags = tags.stream().filter(filter).toList();

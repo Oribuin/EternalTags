@@ -32,7 +32,7 @@ public class MenuItem {
     private String itemPath; // The path to the item in the config
     private StringPlaceholders placeholders; // The custom placeholders for the item
     private Player player; //  The player who is viewing the menu, this is used for placeholders
-    private Sound clickSound; // The sound to be played when the item is clicked
+    private final Sound clickSound; // The sound to be played when the item is clicked
     private BiConsumer<MenuItem, InventoryClickEvent> action; // The action to be performed when the item is clicked
     private List<Integer> slots; // The slots the item should be placed in
     private Predicate<MenuItem> condition; // The condition for the item to be displayed
@@ -92,9 +92,9 @@ public class MenuItem {
         if (!this.isConditional())
             return;
 
-        if (this.clickSound == null && this.customItem == null) {
-            this.clickSound = TagsUtils.getEnum(Sound.class, this.config.getString(this.itemPath + ".sound", ""));
-        }
+//        if (this.clickSound == null && this.customItem == null) {
+//            this.clickSound = TagsUtils.getEnum(Sound.class, this.config.getString(this.itemPath + ".sound", ""));
+//        }
 
         // Add any slots that were not added
         if (this.slots.isEmpty()) {

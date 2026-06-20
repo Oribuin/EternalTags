@@ -1,10 +1,12 @@
 package xyz.oribuin.eternaltags;
 
 import dev.rosewood.rosegarden.RosePlugin;
-import dev.rosewood.rosegarden.config.RoseSetting;
+import dev.rosewood.rosegarden.config.SettingHolder;
 import dev.rosewood.rosegarden.manager.Manager;
 import org.bukkit.plugin.PluginManager;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 import xyz.oribuin.eternaltags.config.Setting;
 import xyz.oribuin.eternaltags.gui.MenuProvider;
 import xyz.oribuin.eternaltags.hook.Expansion;
@@ -27,7 +29,7 @@ public class EternalTags extends RosePlugin {
     private static EventWaiter eventWaiter;
 
     public EternalTags() {
-        super(91842, 11508,DataManager.class, LocaleManager.class, CommandManager.class);
+        super(91842, 11508, DataManager.class, LocaleManager.class, CommandManager.class);
         instance = this;
     }
 
@@ -80,16 +82,20 @@ public class EternalTags extends RosePlugin {
     }
 
     @Override
-    protected List<Class<? extends Manager>> getManagerLoadPriority() {
+    protected @NonNull List<Class<? extends Manager>> getManagerLoadPriority() {
         return Arrays.asList(
                 TagsManager.class,
                 PluginConversionManager.class
         );
     }
 
+
+    /**
+     * @return the SettingHolder containing settings to be written to the config.yml
+     */
     @Override
-    protected @NotNull List<RoseSetting<?>> getRoseConfigSettings() {
-        return Setting.getKeys();
+    protected @Nullable SettingHolder getRoseConfigSettingHolder() {
+        return Setting.INSTANCE;
     }
 
     @Override

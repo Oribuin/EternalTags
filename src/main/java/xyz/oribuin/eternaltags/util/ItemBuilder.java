@@ -165,7 +165,7 @@ public class ItemBuilder {
     public ItemBuilder glow(boolean b) {
         if (!b) return this;
 
-        this.meta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL, 1, true);
+        this.meta.addEnchant(Enchantment.MULTISHOT, 1, true);
         this.meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         return this;
     }
