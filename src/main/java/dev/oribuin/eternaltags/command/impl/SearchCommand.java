@@ -1,5 +1,8 @@
 package dev.oribuin.eternaltags.command.impl;
 
+import dev.oribuin.eternaltags.gui.MenuProvider;
+import dev.oribuin.eternaltags.gui.menu.TagsGUI;
+import dev.oribuin.eternaltags.obj.Tag;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.command.argument.ArgumentHandlers;
 import dev.rosewood.rosegarden.command.framework.ArgumentsDefinition;
@@ -8,9 +11,6 @@ import dev.rosewood.rosegarden.command.framework.CommandContext;
 import dev.rosewood.rosegarden.command.framework.CommandInfo;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import org.bukkit.entity.Player;
-import dev.oribuin.eternaltags.gui.MenuProvider;
-import dev.oribuin.eternaltags.gui.menu.TagsGUI;
-import dev.oribuin.eternaltags.obj.Tag;
 
 import java.util.function.Predicate;
 
@@ -33,8 +33,8 @@ public class SearchCommand extends BaseRoseCommand {
      */
     private Predicate<Tag> containsKeyword(String keyword) {
         return tag -> tag.getId().contains(keyword)
-                      || tag.getName().contains(keyword)
-                      || tag.getDescription().contains(keyword);
+                || tag.getName().contains(keyword)
+                || tag.getDescription().contains(keyword);
     }
 
     @Override

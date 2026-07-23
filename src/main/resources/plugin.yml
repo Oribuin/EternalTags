@@ -14,8 +14,6 @@ folia-supported: true
 depend:
   - PlaceholderAPI
 softdepend:
-  - Vault
-  - Oraxen
   - HeadDatabase
 permissions:
   eternaltags.*:

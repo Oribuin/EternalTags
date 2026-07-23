@@ -1,7 +1,6 @@
 package dev.oribuin.eternaltags.util;
 
 import com.destroystokyo.paper.profile.PlayerProfile;
-import io.papermc.paper.datacomponent.item.ResolvableProfile;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Material;

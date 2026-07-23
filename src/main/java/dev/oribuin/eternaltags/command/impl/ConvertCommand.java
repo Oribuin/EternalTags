@@ -1,20 +1,24 @@
 package dev.oribuin.eternaltags.command.impl;
 
+import dev.oribuin.eternaltags.manager.TagsManager;
+import dev.oribuin.eternaltags.obj.Tag;
+import dev.oribuin.eternaltags.obj.TagConfig;
 import dev.rosewood.rosegarden.RosePlugin;
-import dev.rosewood.rosegarden.command.framework.ArgumentsDefinition;
 import dev.rosewood.rosegarden.command.framework.BaseRoseCommand;
 import dev.rosewood.rosegarden.command.framework.CommandContext;
 import dev.rosewood.rosegarden.command.framework.CommandInfo;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
-import dev.rosewood.rosegarden.utils.StringPlaceholders;
+import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
+import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.command.CommandSender;
-import dev.oribuin.eternaltags.command.argument.PluginArgumentHandler;
-import dev.oribuin.eternaltags.conversion.ConversionPlugin;
-import dev.oribuin.eternaltags.conversion.ConversionPluginRegistry;
-import dev.oribuin.eternaltags.manager.LocaleManager;
-import dev.oribuin.eternaltags.util.TagsUtils;
 
-import java.util.stream.Collectors;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ConvertCommand extends BaseRoseCommand {
 
@@ -23,22 +27,53 @@ public class ConvertCommand extends BaseRoseCommand {
     }
 
     @RoseExecutable
-    public void execute(CommandContext context, ConversionPlugin plugin) {
-        LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
+    public void execute(CommandContext context) {
+        TagsManager manager = this.rosePlugin.getManager(TagsManager.class);
         CommandSender sender = context.getSender();
 
-        // Check if the player arg was provided.
-        if (plugin == null) {
-            String options = ConversionPluginRegistry.PLUGINS.values().stream()
-                    .map(x -> x.get().getPluginName())
-                    .collect(Collectors.joining(", "));
-            
-            locale.sendMessage(sender, "command-convert-invalid-plugin", StringPlaceholders.of("options", options));
+        File original = new File(this.rosePlugin.getDataFolder(), "tags.yml");
+        File target = new File(TagsManager.TAGS_FOLDER.toFile(), "converted.yml");
+
+        try {
+            if (!target.exists()) target.createNewFile();
+        } catch (IOException ignored) {
+        }
+
+        CommentedFileConfiguration originalConfig = CommentedFileConfiguration.loadConfiguration(original);
+        CommentedConfigurationSection tagSection = originalConfig.getConfigurationSection("tags");
+        if (tagSection == null) {
+            sender.sendMessage("no tags section in original tags.yml");
             return;
         }
 
-        int total = plugin.convert().size();
-        locale.sendMessage(sender, "command-convert-converted", StringPlaceholders.of("total", total));
+        LegacyComponentSerializer serializer = LegacyComponentSerializer.legacyAmpersand();
+        MiniMessage miniMessage = MiniMessage.miniMessage();
+
+
+        Map<String, Tag> result = new HashMap<>();
+        for (String key : tagSection.getKeys(false)) {
+            String name = tagSection.getString(key + ".name");
+            String content = tagSection.getString(key + ".tag");
+            String permission = tagSection.getString(key + ".permission");
+            if (name == null || content == null) continue;
+
+            // okay lets convert the content
+            TextComponent legacySerialized = serializer.deserialize(content);
+            String miniMessageSerialized = miniMessage.serialize(legacySerialized);
+
+            Tag tag = new Tag(key, name, miniMessageSerialized);
+            tag.setPermission(permission);
+            result.put(key, tag);
+        }
+
+        TagConfig tagConfig = new TagConfig(
+                target,
+                CommentedFileConfiguration.loadConfiguration(target),
+                result
+        );
+
+        tagConfig.writeAll();
+        manager.getTagConfigs().add(tagConfig);
     }
 
     @Override
@@ -46,13 +81,6 @@ public class ConvertCommand extends BaseRoseCommand {
         return CommandInfo.builder("convert")
                 .descriptionKey("command-convert-description")
                 .permission("eternaltags.convert")
-                .arguments(this.createArguments())
-                .build();
-    }
-
-    private ArgumentsDefinition createArguments() {
-        return ArgumentsDefinition.builder()
-                .required("plugin", new PluginArgumentHandler())
                 .build();
     }
 

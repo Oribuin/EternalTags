@@ -1,15 +1,15 @@
 package dev.oribuin.eternaltags.command.impl;
 
+import dev.oribuin.eternaltags.manager.LocaleManager;
+import dev.oribuin.eternaltags.manager.TagsManager;
+import dev.oribuin.eternaltags.obj.Tag;
 import dev.rosewood.rosegarden.RosePlugin;
-import dev.rosewood.rosegarden.command.framework.CommandContext;
 import dev.rosewood.rosegarden.command.framework.BaseRoseCommand;
+import dev.rosewood.rosegarden.command.framework.CommandContext;
 import dev.rosewood.rosegarden.command.framework.CommandInfo;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import org.bukkit.entity.Player;
-import dev.oribuin.eternaltags.manager.LocaleManager;
-import dev.oribuin.eternaltags.manager.TagsManager;
-import dev.oribuin.eternaltags.obj.Tag;
 
 public class RandomCommand extends BaseRoseCommand {
 

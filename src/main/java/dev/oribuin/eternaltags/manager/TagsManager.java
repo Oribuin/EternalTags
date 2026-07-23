@@ -2,11 +2,10 @@ package dev.oribuin.eternaltags.manager;
 
 import dev.oribuin.eternaltags.EternalTags;
 import dev.oribuin.eternaltags.obj.Tag;
+import dev.oribuin.eternaltags.obj.TagConfig;
 import dev.oribuin.eternaltags.obj.TagUser;
 import dev.oribuin.eternaltags.util.TagsUtils;
 import dev.rosewood.rosegarden.RosePlugin;
-import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
-import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import dev.rosewood.rosegarden.manager.Manager;
 import dev.rosewood.rosegarden.utils.NMSUtil;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
@@ -34,7 +33,7 @@ import static dev.oribuin.eternaltags.config.Setting.TAG_FORMATTING;
 public class TagsManager extends Manager {
 
     public static final Path TAGS_FOLDER = EternalTags.get().getDataPath().resolve("tags");
-    private final Map<String, Tag> cachedTags = new HashMap<>();
+    private final List<TagConfig> tagConfigs = new ArrayList<>();
     private final Random random = new Random();
 
     public TagsManager(RosePlugin plugin) {
@@ -71,7 +70,10 @@ public class TagsManager extends Manager {
                 return;
             }
 
-            results.forEach(this::loadFile);
+            results.stream()
+                    .map(TagConfig::from)
+                    .filter(Objects::nonNull)
+                    .forEach(this.tagConfigs::add);
         }).thenAccept(unused -> {
 
             // Load users here in a better, less ugly way    
@@ -92,27 +94,7 @@ public class TagsManager extends Manager {
 
     @Override
     public void disable() {
-        this.cachedTags.clear();
-    }
-
-    /**
-     * Load all the items from the item directory into the items map
-     *
-     * @param file The directory to load items from
-     */
-    public void loadFile(File file) {
-        if (!file.getName().endsWith(".yml")) return; // check if the file is a yml file
-
-        CommentedFileConfiguration config = CommentedFileConfiguration.loadConfiguration(file);
-        CommentedConfigurationSection section = config.getConfigurationSection("tags");
-        if (section == null) return;
-
-        section.getKeys(false).forEach(tagId -> {
-            Tag tag = Tag.fromConfig(file, section, tagId);
-            if (tag == null) return;
-
-            this.cachedTags.put(tag.getId(), tag);
-        });
+        this.tagConfigs.clear();
     }
 
     /**
@@ -157,30 +139,40 @@ public class TagsManager extends Manager {
     }
 
     /**
+     * Write a tag into the config & cache
+     *
+     * @param tag The tag being saved.
+     */
+    public void writeTag(Tag tag) {
+        TagConfig config = this.getConfig(tag.getId());
+        if (config == null) return;
+
+        config.write(tag);
+        this.updateActiveTag(tag);
+    }
+
+    /**
+     * Write a tag into the config & cache
+     *
+     * @param id The tag being saved.
+     */
+    public void writeTag(String id) {
+        TagConfig config = this.getConfig(id);
+        if (config == null) return;
+
+        config.write(id);
+    }
+
+    /**
      * Delete a tag from the config & cache by object.
      *
      * @param tag The tag being deleted.
      */
     public void deleteTag(Tag tag) {
-        this.deleteTag(tag.getId().toLowerCase());
-    }
+        TagConfig config = this.getConfig(tag.getId());
+        if (config == null) return;
 
-    /**
-     * Save a collection of tags at once.
-     *
-     * @param tags The tags being saved.
-     */
-    public void saveTags(Map<String, Tag> tags) {
-        this.cachedTags.putAll(tags);
-
-        // TODO: If MySQL Tags is enabled, save the tags to the database instead of the tags.yml
-//        if (Setting.MYSQL_TAGDATA.getBoolean()) {
-//            this.rosePlugin.getManager(DataManager.class).saveTagData(tags);
-//            return;
-//        }
-
-        // Save the tags to the tags.yml
-        CompletableFuture.runAsync(() -> tags.values().forEach(Tag::save));
+        config.delete(tag);
     }
 
     /**
@@ -189,20 +181,17 @@ public class TagsManager extends Manager {
      * @param id The id of the tag.
      */
     public void deleteTag(String id) {
-        Tag tag = this.getTagFromId(id);
-        if (tag == null) return;
+        TagConfig config = this.getConfig(id);
+        if (config == null) return;
 
-        this.cachedTags.remove(id);
-        this.rosePlugin.getManager(DataManager.class).clearTagForAll(id);
+        config.delete(id);
+    }
 
-        // TODO: Delete the tag from the database if MySQL TagData is enabled.
-//        if (Setting.MYSQL_TAGDATA.getBoolean()) {
-//            this.rosePlugin.getManager(DataManager.class).deleteTagData(tag);
-//            return;
-//        }
-
-        // Delete the tag from the tags.yml
-        tag.delete();
+    public TagConfig getConfig(String tagId) {
+        return this.tagConfigs.stream()
+                .filter(x -> x.has(tagId))
+                .findFirst()
+                .orElse(null);
     }
 
     /**
@@ -314,9 +303,9 @@ public class TagsManager extends Manager {
      */
     @NotNull
     public List<Tag> getPlayerTags(@Nullable Player player) {
-        if (player == null) return new ArrayList<>(this.cachedTags.values());
+        if (player == null) return new ArrayList<>();
 
-        return this.cachedTags.values().stream()
+        return this.getCachedTags().values().stream()
                 .filter(entry -> this.canUseTag(player, entry))
                 .collect(Collectors.toList());
     }
@@ -328,7 +317,7 @@ public class TagsManager extends Manager {
      * @return true if the tag exists.
      */
     public boolean checkTagExists(String id) {
-        return this.cachedTags.get(id.toLowerCase().replace(".", "_")) != null;
+        return this.tagConfigs.stream().anyMatch(x -> x.has(id));
     }
 
     /**
@@ -341,7 +330,11 @@ public class TagsManager extends Manager {
     public Tag getTagFromId(@Nullable String id) {
         if (id == null) return null;
 
-        return this.cachedTags.get(id.toLowerCase());
+        return this.tagConfigs.stream()
+                .map(x -> x.from(id))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
     }
 
     /**
@@ -453,7 +446,13 @@ public class TagsManager extends Manager {
     }
 
     public Map<String, Tag> getCachedTags() {
-        return cachedTags;
+        Map<String, Tag> result = new HashMap<>();
+        this.tagConfigs.forEach(x -> result.putAll(x.tags()));
+
+        return result;
     }
 
+    public List<TagConfig> getTagConfigs() {
+        return tagConfigs;
+    }
 }

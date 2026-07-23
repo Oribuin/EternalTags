@@ -1,16 +1,16 @@
 package dev.oribuin.eternaltags.command.impl;
 
+import dev.oribuin.eternaltags.command.impl.edit.EditDescriptionCommand;
+import dev.oribuin.eternaltags.command.impl.edit.EditNameCommand;
+import dev.oribuin.eternaltags.command.impl.edit.EditOrderCommand;
+import dev.oribuin.eternaltags.command.impl.edit.EditPermissionCommand;
+import dev.oribuin.eternaltags.command.impl.edit.EditTagCommand;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.command.framework.ArgumentsDefinition;
 import dev.rosewood.rosegarden.command.framework.BaseRoseCommand;
 import dev.rosewood.rosegarden.command.framework.CommandContext;
 import dev.rosewood.rosegarden.command.framework.CommandInfo;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
-import dev.oribuin.eternaltags.command.impl.edit.EditDescriptionCommand;
-import dev.oribuin.eternaltags.command.impl.edit.EditNameCommand;
-import dev.oribuin.eternaltags.command.impl.edit.EditOrderCommand;
-import dev.oribuin.eternaltags.command.impl.edit.EditPermissionCommand;
-import dev.oribuin.eternaltags.command.impl.edit.EditTagCommand;
 
 public class EditCommand extends BaseRoseCommand {
 

@@ -1,11 +1,11 @@
 package dev.oribuin.eternaltags.listener;
 
+import dev.oribuin.eternaltags.EternalTags;
+import dev.oribuin.eternaltags.manager.TagsManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.jetbrains.annotations.NotNull;
-import dev.oribuin.eternaltags.EternalTags;
-import dev.oribuin.eternaltags.manager.TagsManager;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

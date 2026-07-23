@@ -59,7 +59,7 @@ public class TagUser {
     public void setActiveTag(@Nullable String activeTag) {
         this.activeTag = activeTag;
     }
-    
+
     /**
      * @return The player's favourite tags.
      */

@@ -1,20 +1,21 @@
 package dev.oribuin.eternaltags.hook;
 
+import dev.oribuin.eternaltags.EternalTags;
 import dev.oribuin.eternaltags.config.Setting;
+import dev.oribuin.eternaltags.manager.TagsManager;
+import dev.oribuin.eternaltags.obj.Tag;
+import dev.oribuin.eternaltags.util.TagsUtils;
 import dev.rosewood.rosegarden.utils.HexUtils;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import dev.oribuin.eternaltags.EternalTags;
-import dev.oribuin.eternaltags.manager.TagsManager;
-import dev.oribuin.eternaltags.obj.Tag;
-import dev.oribuin.eternaltags.util.TagsUtils;
 
 import java.util.List;
 
-import static dev.oribuin.eternaltags.config.Setting.*;
+import static dev.oribuin.eternaltags.config.Setting.FORMATTED_PLACEHOLDER;
+
 public class Expansion extends PlaceholderExpansion {
 
     private final EternalTags plugin;
@@ -66,7 +67,6 @@ public class Expansion extends PlaceholderExpansion {
      * @param param         The placeholder to parse
      * @param offlinePlayer The player to parse the placeholder for
      * @param tag           The tag to parse the placeholder for
-     *
      * @return The result of the placeholder
      */
     public String result(String param, OfflinePlayer offlinePlayer, Tag tag) {
@@ -108,7 +108,6 @@ public class Expansion extends PlaceholderExpansion {
      * Join all the tags in a single string
      *
      * @param tags The tags to join
-     *
      * @return The joined tags
      */
     public String joinTags(List<Tag> tags) {

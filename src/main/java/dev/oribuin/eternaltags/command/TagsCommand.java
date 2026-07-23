@@ -1,5 +1,16 @@
-package dev.oribuin.eternaltags.command.impl;
+package dev.oribuin.eternaltags.command;
 
+import dev.oribuin.eternaltags.command.impl.ClearCommand;
+import dev.oribuin.eternaltags.command.impl.ConvertCommand;
+import dev.oribuin.eternaltags.command.impl.CreateCommand;
+import dev.oribuin.eternaltags.command.impl.DeleteCommand;
+import dev.oribuin.eternaltags.command.impl.EditCommand;
+import dev.oribuin.eternaltags.command.impl.FavoriteCommand;
+import dev.oribuin.eternaltags.command.impl.RandomCommand;
+import dev.oribuin.eternaltags.command.impl.ReloadCommand;
+import dev.oribuin.eternaltags.command.impl.SearchCommand;
+import dev.oribuin.eternaltags.command.impl.SetAllCommand;
+import dev.oribuin.eternaltags.command.impl.SetCommand;
 import dev.oribuin.eternaltags.gui.MenuProvider;
 import dev.oribuin.eternaltags.gui.menu.TagsGUI;
 import dev.oribuin.eternaltags.manager.LocaleManager;

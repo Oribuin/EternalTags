@@ -1,5 +1,12 @@
 package dev.oribuin.eternaltags.gui;
 
+import dev.oribuin.eternaltags.action.Action;
+import dev.oribuin.eternaltags.action.PluginAction;
+import dev.oribuin.eternaltags.manager.LocaleManager;
+import dev.oribuin.eternaltags.manager.TagsManager;
+import dev.oribuin.eternaltags.obj.Tag;
+import dev.oribuin.eternaltags.util.ItemBuilder;
+import dev.oribuin.eternaltags.util.TagsUtils;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
@@ -10,20 +17,13 @@ import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.PaginatedGui;
 import dev.triumphteam.gui.guis.ScrollingGui;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import dev.oribuin.eternaltags.action.Action;
-import dev.oribuin.eternaltags.action.PluginAction;
-import dev.oribuin.eternaltags.manager.LocaleManager;
-import dev.oribuin.eternaltags.manager.TagsManager;
-import dev.oribuin.eternaltags.obj.Tag;
-import dev.oribuin.eternaltags.util.ItemBuilder;
-import dev.oribuin.eternaltags.util.TagsUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -306,7 +306,7 @@ public abstract class PluginMenu {
      */
     public final void searchTags(Player player, BaseGui gui) {
         LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
-        this.close(gui, player);
+        this.close(player);
 
         locale.sendMessage(player, "command-search-start");
         // TODO: Player suggest command
@@ -328,17 +328,10 @@ public abstract class PluginMenu {
     /**
      * Close the gui with folia support to prevent UnsupportedOperationException
      *
-     * @param gui    The gui to close
      * @param player The player to close the gui for
      */
-    public void close(BaseGui gui, Player player) {
-        if (TagsUtils.isFolia()) {
-            // Recreate the close function since the original one uses BukkitScheduler
-            this.sync(player::closeInventory);
-            return;
-        }
-
-        gui.close(player);
+    public void close(Player player) {
+        this.entitySync(player, player::closeInventory);
     }
 
     /**
@@ -347,26 +340,16 @@ public abstract class PluginMenu {
      * @param runnable The task to run
      */
     public final void async(Runnable runnable) {
-        if (TagsUtils.isFolia()) {
-            Bukkit.getAsyncScheduler().runNow(this.rosePlugin, scheduledTask -> runnable.run());
-            return;
-        }
-
-        Bukkit.getScheduler().runTaskAsynchronously(this.rosePlugin, runnable);
+        this.rosePlugin.getScheduler().runTaskAsync(runnable);
     }
-
+    
     /**
      * Run a task synchronously
      *
      * @param runnable The task to run
      */
-    public final void sync(Runnable runnable) {
-        if (TagsUtils.isFolia()) {
-            Bukkit.getGlobalRegionScheduler().execute(this.rosePlugin, runnable);
-            return;
-        }
-
-        Bukkit.getScheduler().runTask(this.rosePlugin, runnable);
+    public final void entitySync(Entity entity, Runnable runnable) {
+        this.rosePlugin.getScheduler().runTaskAtEntity(entity, runnable);
     }
 
     /**

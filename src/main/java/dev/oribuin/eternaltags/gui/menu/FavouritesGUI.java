@@ -1,5 +1,15 @@
 package dev.oribuin.eternaltags.gui.menu;
 
+import dev.oribuin.eternaltags.EternalTags;
+import dev.oribuin.eternaltags.action.Action;
+import dev.oribuin.eternaltags.gui.MenuItem;
+import dev.oribuin.eternaltags.gui.MenuProvider;
+import dev.oribuin.eternaltags.gui.PluginMenu;
+import dev.oribuin.eternaltags.gui.enums.SortType;
+import dev.oribuin.eternaltags.manager.LocaleManager;
+import dev.oribuin.eternaltags.manager.TagsManager;
+import dev.oribuin.eternaltags.obj.Tag;
+import dev.oribuin.eternaltags.util.TagsUtils;
 import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.triumphteam.gui.components.GuiAction;
@@ -13,16 +23,6 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import dev.oribuin.eternaltags.EternalTags;
-import dev.oribuin.eternaltags.action.Action;
-import dev.oribuin.eternaltags.gui.MenuItem;
-import dev.oribuin.eternaltags.gui.MenuProvider;
-import dev.oribuin.eternaltags.gui.PluginMenu;
-import dev.oribuin.eternaltags.gui.enums.SortType;
-import dev.oribuin.eternaltags.manager.LocaleManager;
-import dev.oribuin.eternaltags.manager.TagsManager;
-import dev.oribuin.eternaltags.obj.Tag;
-import dev.oribuin.eternaltags.util.TagsUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -79,7 +79,7 @@ public class FavouritesGUI extends PluginMenu {
                 .player(player)
                 .action(event -> {
                     gui.next();
-                    this.sync(() -> gui.updateTitle(this.format(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                    this.entitySync(player, () -> gui.updateTitle(this.format(player, finalMenuTitle, this.getPagePlaceholders(gui))));
                 })
                 .player(player)
                 .place(gui);
@@ -89,7 +89,7 @@ public class FavouritesGUI extends PluginMenu {
                 .player(player)
                 .action(event -> {
                     gui.previous();
-                    this.sync(() -> gui.updateTitle(this.format(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                    this.entitySync(player, () -> gui.updateTitle(this.format(player, finalMenuTitle, this.getPagePlaceholders(gui))));
                 })
                 .place(gui);
 
@@ -127,7 +127,7 @@ public class FavouritesGUI extends PluginMenu {
             this.addTags(gui, player);
 
             if (this.reloadTitle())
-                this.sync(() -> gui.updateTitle(this.format(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                this.entitySync(player, () -> gui.updateTitle(this.format(player, finalMenuTitle, this.getPagePlaceholders(gui))));
         };
 
         if (this.addPagesAsynchronously())
@@ -254,7 +254,7 @@ public class FavouritesGUI extends PluginMenu {
     private void clearFavourites(Player player, BaseGui gui) {
         this.manager.clearFavourites(player.getUniqueId());
         this.locale.sendMessage(player, "command-favorite-cleared");
-        this.close(gui, player);
+        this.close(player);
     }
 
     @Override

@@ -3,9 +3,7 @@ package dev.oribuin.eternaltags.obj;
 import dev.oribuin.eternaltags.EternalTags;
 import dev.oribuin.eternaltags.config.Setting;
 import dev.oribuin.eternaltags.manager.DataManager;
-import dev.oribuin.eternaltags.manager.TagsManager;
 import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
-import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import dev.rosewood.rosegarden.config.SettingField;
 import dev.rosewood.rosegarden.config.SettingSerializer;
 import dev.rosewood.rosegarden.config.SettingSerializers;
@@ -13,11 +11,8 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import static dev.rosewood.rosegarden.config.SettingSerializers.INTEGER;
 import static dev.rosewood.rosegarden.config.SettingSerializers.STRING;
@@ -31,7 +26,6 @@ public class Tag {
     private @Nullable String permission;   // The permission required to use the tag
     private @NotNull List<String> description; // The description of the tag
     private Integer order; // The order of the tag
-    private File source;
 
     /**
      * Create a new tag from the plugin config file
@@ -43,21 +37,13 @@ public class Tag {
      * @param permission  The permission required to use the tag
      * @param order       The order of the tag in the gui
      */
-    public Tag(
-            @NotNull String id,
-            @NotNull String name,
-            @NotNull String content,
-            @NotNull List<String> description,
-            @Nullable String permission,
-            @Nullable Integer order
-    ) {
+    public Tag(@NotNull String id, @NotNull String name, @NotNull String content, @NotNull List<String> description, @Nullable String permission, @Nullable Integer order) {
         this.id = id;
         this.name = name;
         this.content = content;
         this.description = description;
         this.permission = permission;
         this.order = order;
-        this.source = this.defineSource();
     }
 
     /**
@@ -72,35 +58,15 @@ public class Tag {
     }
 
     /**
-     * Define the "ingame" folder as the source for all tags by default
-     *
-     * @return The new file source
-     */
-    public File defineSource() {
-        try {
-            File ingameFolder = TagsManager.TAGS_FOLDER.resolve("ingame.yml").toFile();
-            if (!ingameFolder.exists()) {
-                ingameFolder.createNewFile();
-            }
-
-            return ingameFolder;
-        } catch (IOException ex) {
-            return null;
-        }
-    }
-
-
-    /**
      * Create a new setting serializer for the tag to be used in configs
      */
-    private final static SettingSerializer<Tag> SERIALIZER = SettingSerializers.ofRecord(Tag.class, instance -> instance.group(
-            SettingField.ofOptionalValue("id", STRING, Tag::getId, null),
-            SettingField.of("name", STRING, Tag::getName),
-            SettingField.of("content", STRING, Tag::getContent),
-            SettingField.ofOptionalValue("description", STRING_LIST, Tag::getDescription, new ArrayList<>()),
-            SettingField.ofOptionalValue("permission", STRING, Tag::getPermission, null),
-            SettingField.ofOptionalValue("order", INTEGER, Tag::getOrder, -1)
-    ).apply(instance, Tag::new));
+    public final static SettingSerializer<Tag> SERIALIZER = SettingSerializers.ofRecord(Tag.class, instance ->
+            instance.group(SettingField.ofOptionalValue("id", STRING, Tag::getId, null),
+                            SettingField.of("name", STRING, Tag::getName), SettingField.of("content", STRING, Tag::getContent),
+                            SettingField.ofOptionalValue("description", STRING_LIST, Tag::getDescription, new ArrayList<>()),
+                            SettingField.ofOptionalValue("permission", STRING, Tag::getPermission, null),
+                            SettingField.ofOptionalValue("order", INTEGER, Tag::getOrder, -1))
+                    .apply(instance, Tag::new));
 
     /**
      * Load a tag from a configuration section in the config file.
@@ -109,49 +75,14 @@ public class Tag {
      * @param key  The id of the tag to load
      * @return The loaded tag
      */
-    public static Tag fromConfig(File source, CommentedConfigurationSection base, String key) {
+    public static Tag fromConfig(CommentedConfigurationSection base, String key) {
         Tag tag = SERIALIZER.read(base, key);
         if (tag == null) return null;
 
         tag.setId(key.toLowerCase());
-        tag.setSource(source);
         return tag;
     }
 
-    /**
-     * Save the tag to the source file.
-     */
-    public void save() {
-        if (this.source == null) {
-            CompletableFuture.completedFuture(null);
-            return;
-        }
-
-        CompletableFuture.runAsync(() -> {
-            CommentedFileConfiguration config = CommentedFileConfiguration.loadConfiguration(this.source);
-            CommentedConfigurationSection tagSection = config.getConfigurationSection("tags");
-            if (tagSection == null) config.createSection("tags");
-
-            SERIALIZER.write(tagSection, this.id, this);
-            config.save(this.source);
-        });
-    }
-
-    /**
-     * Delete the tag from the source file.
-     */
-    public void delete() {
-        if (this.source == null) {
-            CompletableFuture.completedFuture(null);
-            return;
-        }
-
-        CompletableFuture.runAsync(() -> {
-            CommentedFileConfiguration config = CommentedFileConfiguration.loadConfiguration(this.source);
-            config.set("tags." + this.id, null);
-            config.save(this.source);
-        });
-    }
 
     /**
      * Equip a tag to a specific player.
@@ -239,14 +170,6 @@ public class Tag {
 
     public void setOrder(int order) {
         this.order = order;
-    }
-
-    public File getSource() {
-        return source;
-    }
-
-    public void setSource(File source) {
-        this.source = source;
     }
 
 }

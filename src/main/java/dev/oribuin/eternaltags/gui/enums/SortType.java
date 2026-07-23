@@ -12,7 +12,7 @@ public enum SortType {
     CUSTOM,
     NONE,
     RANDOM;
-    
+
     public void sort(List<Tag> tags) {
         tags.removeIf(Objects::isNull); // Remove null tags.
 

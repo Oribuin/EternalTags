@@ -1,5 +1,9 @@
 package dev.oribuin.eternaltags.command.impl.edit;
 
+import dev.oribuin.eternaltags.command.argument.TagsArgumentHandler;
+import dev.oribuin.eternaltags.manager.LocaleManager;
+import dev.oribuin.eternaltags.manager.TagsManager;
+import dev.oribuin.eternaltags.obj.Tag;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.command.argument.ArgumentHandlers;
 import dev.rosewood.rosegarden.command.framework.ArgumentsDefinition;
@@ -9,10 +13,6 @@ import dev.rosewood.rosegarden.command.framework.CommandInfo;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import org.bukkit.entity.Player;
-import dev.oribuin.eternaltags.command.argument.TagsArgumentHandler;
-import dev.oribuin.eternaltags.manager.LocaleManager;
-import dev.oribuin.eternaltags.manager.TagsManager;
-import dev.oribuin.eternaltags.obj.Tag;
 
 public class EditTagCommand extends BaseRoseCommand {
 
@@ -26,7 +26,7 @@ public class EditTagCommand extends BaseRoseCommand {
         LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
 
         tag.setContent(newTag);
-        tag.save();
+        manager.writeTag(tag);
         manager.updateActiveTag(tag);
 
         StringPlaceholders placeholders = StringPlaceholders.builder()

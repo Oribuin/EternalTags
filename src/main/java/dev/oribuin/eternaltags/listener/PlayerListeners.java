@@ -1,13 +1,13 @@
 package dev.oribuin.eternaltags.listener;
 
+import dev.oribuin.eternaltags.EternalTags;
+import dev.oribuin.eternaltags.manager.DataManager;
+import dev.oribuin.eternaltags.manager.TagsManager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import dev.oribuin.eternaltags.EternalTags;
-import dev.oribuin.eternaltags.manager.DataManager;
-import dev.oribuin.eternaltags.manager.TagsManager;
 
 public class PlayerListeners implements Listener {
 

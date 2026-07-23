@@ -1,15 +1,15 @@
 package dev.oribuin.eternaltags.manager;
 
 import com.google.gson.Gson;
-import dev.rosewood.rosegarden.RosePlugin;
-import dev.rosewood.rosegarden.database.DataMigration;
-import dev.rosewood.rosegarden.manager.AbstractDataManager;
-import org.jetbrains.annotations.NotNull;
 import dev.oribuin.eternaltags.database.migration._1_CreateInitialTables;
 import dev.oribuin.eternaltags.database.migration._2_CreateNewTagTables;
 import dev.oribuin.eternaltags.obj.Tag;
 import dev.oribuin.eternaltags.obj.TagDescription;
 import dev.oribuin.eternaltags.obj.TagUser;
+import dev.rosewood.rosegarden.RosePlugin;
+import dev.rosewood.rosegarden.database.DataMigration;
+import dev.rosewood.rosegarden.manager.AbstractDataManager;
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

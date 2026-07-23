@@ -1,10 +1,10 @@
 package dev.oribuin.eternaltags.manager;
 
+import dev.oribuin.eternaltags.command.TagsCommand;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.command.framework.BaseRoseCommand;
 import dev.rosewood.rosegarden.manager.AbstractCommandManager;
 import org.jetbrains.annotations.NotNull;
-import dev.oribuin.eternaltags.command.impl.TagsCommand;
 
 import java.util.List;
 import java.util.function.Function;

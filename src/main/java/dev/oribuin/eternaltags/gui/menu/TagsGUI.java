@@ -1,19 +1,5 @@
 package dev.oribuin.eternaltags.gui.menu;
 
-import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
-import dev.rosewood.rosegarden.utils.StringPlaceholders;
-import dev.triumphteam.gui.components.GuiAction;
-import dev.triumphteam.gui.components.ScrollType;
-import dev.triumphteam.gui.guis.BaseGui;
-import dev.triumphteam.gui.guis.GuiItem;
-import dev.triumphteam.gui.guis.PaginatedGui;
-import org.bukkit.Sound;
-import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.ClickType;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import dev.oribuin.eternaltags.EternalTags;
 import dev.oribuin.eternaltags.action.Action;
 import dev.oribuin.eternaltags.gui.MenuItem;
@@ -24,6 +10,19 @@ import dev.oribuin.eternaltags.manager.LocaleManager;
 import dev.oribuin.eternaltags.manager.TagsManager;
 import dev.oribuin.eternaltags.obj.Tag;
 import dev.oribuin.eternaltags.util.TagsUtils;
+import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
+import dev.rosewood.rosegarden.utils.StringPlaceholders;
+import dev.triumphteam.gui.components.GuiAction;
+import dev.triumphteam.gui.components.ScrollType;
+import dev.triumphteam.gui.guis.BaseGui;
+import dev.triumphteam.gui.guis.GuiItem;
+import dev.triumphteam.gui.guis.PaginatedGui;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -112,13 +111,13 @@ public class TagsGUI extends PluginMenu {
                 })
                 .place(gui);
 
-        this.sync(() -> gui.open(player));
+        this.entitySync(player, () -> gui.open(player));
 
         Runnable task = () -> {
             this.addTags(gui, player, filter);
 
             if (this.reloadTitle())
-                this.sync(() -> gui.updateTitle(this.format(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                this.entitySync(player, () -> gui.updateTitle(this.format(player, finalMenuTitle, this.getPagePlaceholders(gui))));
         };
 
         if (this.addPagesAsynchronously())
@@ -145,7 +144,7 @@ public class TagsGUI extends PluginMenu {
                     if (gui.next()) {
                         item.sound((Player) event.getWhoClicked());
                         this.addNavigationIcons(gui, player, finalMenuTitle);
-                        this.sync(() -> gui.updateTitle(this.format(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                        this.entitySync(player, () -> gui.updateTitle(this.format(player, finalMenuTitle, this.getPagePlaceholders(gui))));
                     }
                 })
                 .place(gui);
@@ -157,7 +156,7 @@ public class TagsGUI extends PluginMenu {
                     if (gui.previous()) {
                         item.sound((Player) event.getWhoClicked());
                         this.addNavigationIcons(gui, player, finalMenuTitle);
-                        this.sync(() -> gui.updateTitle(this.format(player, finalMenuTitle, this.getPagePlaceholders(gui))));
+                        this.entitySync(player, () -> gui.updateTitle(this.format(player, finalMenuTitle, this.getPagePlaceholders(gui))));
                     }
                 })
                 .place(gui);

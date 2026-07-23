@@ -1,6 +1,8 @@
 package dev.oribuin.eternaltags.util;
 
+import dev.oribuin.eternaltags.EternalTags;
 import dev.oribuin.eternaltags.config.Setting;
+import dev.oribuin.eternaltags.manager.LocaleManager;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.utils.HexUtils;
@@ -26,8 +28,6 @@ import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import dev.oribuin.eternaltags.EternalTags;
-import dev.oribuin.eternaltags.manager.LocaleManager;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

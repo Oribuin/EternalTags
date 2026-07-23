@@ -1,12 +1,12 @@
 package dev.oribuin.eternaltags.command.impl;
 
+import dev.oribuin.eternaltags.gui.MenuProvider;
+import dev.oribuin.eternaltags.manager.LocaleManager;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.command.framework.BaseRoseCommand;
 import dev.rosewood.rosegarden.command.framework.CommandContext;
 import dev.rosewood.rosegarden.command.framework.CommandInfo;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
-import dev.oribuin.eternaltags.gui.MenuProvider;
-import dev.oribuin.eternaltags.manager.LocaleManager;
 
 public class ReloadCommand extends BaseRoseCommand {
 
