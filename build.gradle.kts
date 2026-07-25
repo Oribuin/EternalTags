@@ -35,7 +35,7 @@ repositories {
 }
 
 dependencies {
-    api("dev.rosewood:rosegarden:1.5.5")
+    api("dev.rosewood:rosegarden:1.5.7")
     api("dev.triumphteam:triumph-gui:3.1.13") {  // https://mf.mattstudios.me/triumph-gui/introduction
         exclude(group = "com.google.code.gson", module = "gson") // Remove GSON, Already included in spigot api
         exclude(group = "net.kyori", module = "*") // Remove kyori

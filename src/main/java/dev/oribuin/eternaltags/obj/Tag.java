@@ -3,20 +3,16 @@ package dev.oribuin.eternaltags.obj;
 import dev.oribuin.eternaltags.EternalTags;
 import dev.oribuin.eternaltags.config.Setting;
 import dev.oribuin.eternaltags.manager.DataManager;
+import dev.rosewood.rosegarden.config.BaseSettingSerializer;
 import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
-import dev.rosewood.rosegarden.config.SettingField;
 import dev.rosewood.rosegarden.config.SettingSerializer;
-import dev.rosewood.rosegarden.config.SettingSerializers;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static dev.rosewood.rosegarden.config.SettingSerializers.INTEGER;
-import static dev.rosewood.rosegarden.config.SettingSerializers.STRING;
-import static dev.rosewood.rosegarden.config.SettingSerializers.STRING_LIST;
 
 public class Tag {
 
@@ -60,13 +56,32 @@ public class Tag {
     /**
      * Create a new setting serializer for the tag to be used in configs
      */
-    public final static SettingSerializer<Tag> SERIALIZER = SettingSerializers.ofRecord(Tag.class, instance ->
-            instance.group(SettingField.ofOptionalValue("id", STRING, Tag::getId, null),
-                            SettingField.of("name", STRING, Tag::getName), SettingField.of("content", STRING, Tag::getContent),
-                            SettingField.ofOptionalValue("description", STRING_LIST, Tag::getDescription, new ArrayList<>()),
-                            SettingField.ofOptionalValue("permission", STRING, Tag::getPermission, null),
-                            SettingField.ofOptionalValue("order", INTEGER, Tag::getOrder, -1))
-                    .apply(instance, Tag::new));
+    public final static SettingSerializer<Tag> SERIALIZER = new BaseSettingSerializer<>(Tag.class) {
+        @Override
+        public void write(ConfigurationSection config, String key, Tag value, String... comments) {
+            config.set(key + ".name", value.getName());
+            config.set(key + ".content", value.getContent());
+            config.set(key + ".description", value.getDescription());
+            config.set(key + ".permission", value.getPermission());
+            config.set(key + ".order", value.getOrder());
+        }
+
+        @Override
+        public Tag read(ConfigurationSection config, String key) {
+            String name = config.getString(key + ".name");
+            String content = config.getString(key + ".content");
+            List<String> description = config.getStringList(key + ".description");
+            String permission = config.getString(key + ".permission");
+            int order = config.getInt(key + ".order", -1);
+            if (name == null || content == null) return null;
+
+            Tag tag = new Tag(key.toLowerCase(), name, content);
+            tag.setDescription(description);
+            tag.setPermission(permission);
+            tag.setOrder(order);
+            return tag;
+        }
+    };
 
     /**
      * Load a tag from a configuration section in the config file.
