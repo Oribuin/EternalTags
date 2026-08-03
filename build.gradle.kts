@@ -74,32 +74,32 @@ tasks {
         }
     }
     
-    publishing {
-        publications { 
-            create("shadow", MavenPublication::class.java) {
-                this.artifactId = "eternaltags"
-                this.pom.name.set("eternaltags")
-            }
-
-            repositories {
-                val version = project.version as String
-                val mavenUser = project.property("oribuin_repo_username") as String?
-                val mavenPassword = project.property("oribuin_repo_password") as String?
-
-                if (mavenUser != null && mavenPassword != null) {
-                    maven {
-                        credentials {
-                            username = mavenUser
-                            password = mavenPassword
-                        }
-
-                        val releasesRepoUrl = "https://repo.oribuin.dev/repository/maven-releases/"
-                        val snapshotsRepoUrl = "https://repo.oribuin.dev/repository/maven-snapshots/"
-                        url = uri(if (version.endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
-                    }
-                }
-            }
-        }
+//    publishing {
+//        publications { 
+//            create("shadow", MavenPublication::class.java) {
+//                this.artifactId = "eternaltags"
+//                this.pom.name.set("eternaltags")
+//            }
+//
+//            repositories {
+//                val version = project.version as String
+//                val mavenUser = project.property("oribuin_repo_username") as String?
+//                val mavenPassword = project.property("oribuin_repo_password") as String?
+//
+//                if (mavenUser != null && mavenPassword != null) {
+//                    maven {
+//                        credentials {
+//                            username = mavenUser
+//                            password = mavenPassword
+//                        }
+//
+//                        val releasesRepoUrl = "https://repo.oribuin.dev/repository/maven-releases/"
+//                        val snapshotsRepoUrl = "https://repo.oribuin.dev/repository/maven-snapshots/"
+//                        url = uri(if (version.endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
+//                    }
+//                }
+//            }
+//        }
     }
 
 //    publishing {
