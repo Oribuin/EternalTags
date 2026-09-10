@@ -1,11 +1,15 @@
 package dev.oribuin.eternaltags.manager;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import dev.oribuin.eternaltags.EternalTags;
 import dev.oribuin.eternaltags.obj.Tag;
 import dev.oribuin.eternaltags.obj.TagConfig;
 import dev.oribuin.eternaltags.obj.TagUser;
 import dev.oribuin.eternaltags.util.TagsUtils;
 import dev.rosewood.rosegarden.RosePlugin;
+import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
+import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import dev.rosewood.rosegarden.manager.Manager;
 import dev.rosewood.rosegarden.utils.NMSUtil;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
@@ -17,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,7 +38,8 @@ import static dev.oribuin.eternaltags.config.Setting.TAG_FORMATTING;
 public class TagsManager extends Manager {
 
     public static final Path TAGS_FOLDER = EternalTags.get().getDataPath().resolve("tags");
-    private final List<TagConfig> tagConfigs = new ArrayList<>();
+    private final Table<File, String, Tag> tagCache = HashBasedTable.create();
+    //    private final List<TagConfig> tagConfigs = new ArrayList<>();
     private final Random random = new Random();
 
     public TagsManager(RosePlugin plugin) {
@@ -73,7 +79,12 @@ public class TagsManager extends Manager {
             results.stream()
                     .map(TagConfig::from)
                     .filter(Objects::nonNull)
-                    .forEach(this.tagConfigs::add);
+                    .forEach(config -> {
+                        File file = config.file();
+                        config.tags().forEach((s, tag) -> this.tagCache.put(
+                                file, s, tag
+                        ));
+                    });
         }).thenAccept(unused -> {
 
             // Load users here in a better, less ugly way    
@@ -94,7 +105,7 @@ public class TagsManager extends Manager {
 
     @Override
     public void disable() {
-        this.tagConfigs.clear();
+        this.tagCache.clear();
     }
 
     /**
@@ -187,7 +198,28 @@ public class TagsManager extends Manager {
         config.delete(id);
     }
 
-    public TagConfig getConfig(String tagId) {
+    /**
+     * Create a new tag for the plugin
+     *
+     * @param file The file to create tags in
+     * @param tag  The tag for it
+     */
+    public void createTag(File file, Tag tag) {
+        try {
+            if (!file.exists()) file.createNewFile();
+        } catch (IOException ignored) {
+        }
+
+        CommentedFileConfiguration config = CommentedFileConfiguration.loadConfiguration(file);
+        CommentedConfigurationSection section = config.getConfigurationSection("tags");
+        if (section == null) section = config.createSection("tags");
+
+        String tagId = tag.getId().toLowerCase();
+        Tag.SERIALIZER.write(section, tagId, tag);
+        this.tagCache.put(file, tagId, tag);
+    }
+
+    public File getConfig(String tagId) {
         return this.tagConfigs.stream()
                 .filter(x -> x.has(tagId))
                 .findFirst()
