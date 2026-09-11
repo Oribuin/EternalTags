@@ -9,6 +9,7 @@ import dev.oribuin.eternaltags.obj.TagUser;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.database.DataMigration;
 import dev.rosewood.rosegarden.manager.AbstractDataManager;
+import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.PreparedStatement;
@@ -101,8 +102,7 @@ public class DataManager extends AbstractDataManager {
             user.setActiveTag(tag.getId());
             this.cachedUsers.put(player, user);
         });
-
-
+        
         this.async(() -> this.databaseConnector.connect(connection -> {
             String query = "REPLACE INTO " + this.getTablePrefix() + "tags (player, tagID) VALUES (?, ?)";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
@@ -263,10 +263,15 @@ public class DataManager extends AbstractDataManager {
                     String id = result.getString("tagId");
                     List<String> description = gson.fromJson(result.getString("description"), TagDescription.class).description();
 
-                    Tag tag = new Tag(id, result.getString("name"), result.getString("tag"));
-                    tag.setPermission(result.getString("permission"));
-                    tag.setDescription(description);
-                    tag.setOrder(result.getInt("order"));
+                    Tag tag = new Tag(null, 
+                            id, 
+                            result.getString("name"), 
+                            result.getString("tag"),
+                            description,
+                            result.getString("permission"),
+                            result.getInt("order")
+                    );
+
                     cachedTags.put(id, tag);
                 }
             }

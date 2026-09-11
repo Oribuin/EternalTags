@@ -1,17 +1,14 @@
 package dev.oribuin.eternaltags.manager;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
 import dev.oribuin.eternaltags.EternalTags;
+import dev.oribuin.eternaltags.config.Setting;
 import dev.oribuin.eternaltags.obj.Tag;
-import dev.oribuin.eternaltags.obj.TagConfig;
 import dev.oribuin.eternaltags.obj.TagUser;
 import dev.oribuin.eternaltags.util.TagsUtils;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import dev.rosewood.rosegarden.manager.Manager;
-import dev.rosewood.rosegarden.utils.NMSUtil;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
@@ -19,6 +16,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.yaml.snakeyaml.events.CommentEvent;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,19 +26,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import static dev.oribuin.eternaltags.config.Setting.TAG_FORMATTING;
 
 public class TagsManager extends Manager {
 
+    public static final ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
     public static final Path TAGS_FOLDER = EternalTags.get().getDataPath().resolve("tags");
-    private final Table<File, String, Tag> tagCache = HashBasedTable.create();
-    //    private final List<TagConfig> tagConfigs = new ArrayList<>();
-    private final Random random = new Random();
+
+    private final Map<String, Tag> tagCache = new HashMap<>();
+    private final Map<Path, CommentedFileConfiguration> configCache = new HashMap<>();
+    private Path defaultFile;
 
     public TagsManager(RosePlugin plugin) {
         super(plugin);
@@ -50,23 +50,17 @@ public class TagsManager extends Manager {
     public void reload() {
         DataManager dataManager = this.rosePlugin.getManager(DataManager.class);
 
-        // TODO: Load all tags from MySQL instead of tags.yml
-//        if (Setting.MYSQL_TAGDATA.getBoolean()) {
-//            dataManager.loadTagData(this.cachedTags);
-//            return;
-//        }
-//
         // Establish the default files 
         File folder = TAGS_FOLDER.toFile();
         File[] files = folder.listFiles();
         if (!folder.exists() || files == null || files.length == 0) {
             TagsUtils.createFile(this.rosePlugin, "tags", "default.yml");
             TagsUtils.createFile(this.rosePlugin, "tags", "dynamic.yml");
-
-            if (NMSUtil.getVersionNumber() >= 21) { // todo: require 1.21.4 
-                TagsUtils.createFile(this.rosePlugin, "tags", "pride.yml");
-            }
+            TagsUtils.createFile(this.rosePlugin, "tags", "pride.yml");
         }
+
+        this.defaultFile = TAGS_FOLDER.resolve(Setting.DEFAULT_FILE.get());
+        this.configCache.putIfAbsent(this.defaultFile, CommentedFileConfiguration.loadConfiguration(defaultFile.toFile()));
 
         // Load all the config files <3
         CompletableFuture.runAsync(() -> {
@@ -76,27 +70,35 @@ public class TagsManager extends Manager {
                 return;
             }
 
-            results.stream()
-                    .map(TagConfig::from)
-                    .filter(Objects::nonNull)
-                    .forEach(config -> {
-                        File file = config.file();
-                        config.tags().forEach((s, tag) -> this.tagCache.put(
-                                file, s, tag
-                        ));
-                    });
-        }).thenAccept(unused -> {
+            for (File file : results) {
+                if (!file.getName().endsWith(".yml")) continue;
+
+                CommentedFileConfiguration config = this.configCache.computeIfAbsent(
+                        file.toPath(),
+                        path -> CommentedFileConfiguration.loadConfiguration(path.toFile())
+                );
+
+                CommentedConfigurationSection section = config.getConfigurationSection("tags");
+                if (section == null) continue;
+
+                section.getKeys(false).forEach(tagId -> {
+                    Tag tag = Tag.fromConfig(section, tagId);
+                    if (tag == null) return;
+
+                    tag.setDestination(file.toPath());
+                    this.tagCache.put(tag.getId(), tag);
+                });
+            }
 
             // Load users here in a better, less ugly way    
-            List<Player> users = Bukkit.getOnlinePlayers().stream()
+            List<Player> users = Bukkit.getOnlinePlayers()
+                    .stream()
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
 
             // Load all the users from the database
-            dataManager.loadUsers(users.stream()
-                    .map(Player::getUniqueId)
-                    .collect(Collectors.toList())
-            );
+            List<UUID> uuids = users.stream().map(Player::getUniqueId).toList();
+            dataManager.loadUsers(uuids);
 
             // Get each user and load their tags
             users.forEach(this::getUserTag);
@@ -154,24 +156,34 @@ public class TagsManager extends Manager {
      *
      * @param tag The tag being saved.
      */
-    public void writeTag(Tag tag) {
-        TagConfig config = this.getConfig(tag.getId());
-        if (config == null) return;
+    public void writeTag(@NotNull Tag tag) {
+        if (!this.tagCache.containsKey(tag.getId()) || tag.getDestination() == null) {
+            this.createTag(this.defaultFile.toFile(), tag);
+            return;
+        }
 
-        config.write(tag);
+        // region Save the tag into it's designated file
+        File file = tag.getDestination().toFile();
+        CommentedFileConfiguration config = this.configCache.get(tag.getDestination());
+        if (config != null) {
+            CommentedConfigurationSection section = this.getTagSection(config);
+            Tag.SERIALIZER.write(section, tag.getId(), tag);
+            config.save(file);
+        }
+        // endregion
+
+        this.tagCache.put(tag.getId(), tag);
         this.updateActiveTag(tag);
     }
 
     /**
      * Write a tag into the config & cache
      *
-     * @param id The tag being saved.
+     * @param identifier The tag being saved.
      */
-    public void writeTag(String id) {
-        TagConfig config = this.getConfig(id);
-        if (config == null) return;
-
-        config.write(id);
+    public void writeTag(String identifier) {
+        Tag tag = this.tagCache.get(identifier);
+        if (tag != null) this.writeTag(tag);
     }
 
     /**
@@ -179,23 +191,27 @@ public class TagsManager extends Manager {
      *
      * @param tag The tag being deleted.
      */
-    public void deleteTag(Tag tag) {
-        TagConfig config = this.getConfig(tag.getId());
+    public void deleteTag(@NotNull Tag tag) {
+        this.tagCache.remove(tag.getId());
+        if (tag.getDestination() == null) return;
+
+        File file = tag.getDestination().toFile();
+        CommentedFileConfiguration config = this.configCache.get(tag.getDestination());
         if (config == null) return;
 
-        config.delete(tag);
+        CommentedConfigurationSection section = this.getTagSection(config);
+        section.set(tag.getId(), null);
+        config.save(file);
     }
 
     /**
-     * Delete a tag from the config & cache by id.
+     * Delete the tag from the server files and cache
      *
-     * @param id The id of the tag.
+     * @param identifier The id of the tag being deleted
      */
-    public void deleteTag(String id) {
-        TagConfig config = this.getConfig(id);
-        if (config == null) return;
-
-        config.delete(id);
+    public void deleteTag(String identifier) {
+        Tag tag = this.tagCache.get(identifier);
+        if (tag != null) this.deleteTag(tag);
     }
 
     /**
@@ -204,26 +220,23 @@ public class TagsManager extends Manager {
      * @param file The file to create tags in
      * @param tag  The tag for it
      */
-    public void createTag(File file, Tag tag) {
+    public void createTag(@NotNull File file, @NotNull Tag tag) {
         try {
             if (!file.exists()) file.createNewFile();
         } catch (IOException ignored) {
         }
 
-        CommentedFileConfiguration config = CommentedFileConfiguration.loadConfiguration(file);
-        CommentedConfigurationSection section = config.getConfigurationSection("tags");
-        if (section == null) section = config.createSection("tags");
-
+        CommentedFileConfiguration config = this.configCache.computeIfAbsent(
+                file.toPath(), 
+                path -> CommentedFileConfiguration.loadConfiguration(file)
+        );
+        CommentedConfigurationSection section = this.getTagSection(config);
         String tagId = tag.getId().toLowerCase();
-        Tag.SERIALIZER.write(section, tagId, tag);
-        this.tagCache.put(file, tagId, tag);
-    }
 
-    public File getConfig(String tagId) {
-        return this.tagConfigs.stream()
-                .filter(x -> x.has(tagId))
-                .findFirst()
-                .orElse(null);
+        Tag.SERIALIZER.write(section, tagId, tag);
+        config.save(file);
+        tag.setDestination(file.toPath());
+        this.tagCache.put(tagId, tag);
     }
 
     /**
@@ -320,9 +333,7 @@ public class TagsManager extends Manager {
         Map<String, Tag> favourites = new HashMap<>();
         TagUser user = this.rosePlugin.getManager(DataManager.class).getCachedUser(uuid);
 
-        user.getFavourites().stream()
-                .filter(Objects::nonNull)
-                .forEach(tag -> favourites.put(tag, this.getTagFromId(tag)));
+        user.getFavourites().stream().filter(Objects::nonNull).forEach(tag -> favourites.put(tag, this.getTagFromId(tag)));
 
         return favourites;
     }
@@ -337,9 +348,7 @@ public class TagsManager extends Manager {
     public List<Tag> getPlayerTags(@Nullable Player player) {
         if (player == null) return new ArrayList<>();
 
-        return this.getCachedTags().values().stream()
-                .filter(entry -> this.canUseTag(player, entry))
-                .collect(Collectors.toList());
+        return this.getCachedTags().values().stream().filter(entry -> this.canUseTag(player, entry)).collect(Collectors.toList());
     }
 
     /**
@@ -349,7 +358,7 @@ public class TagsManager extends Manager {
      * @return true if the tag exists.
      */
     public boolean checkTagExists(String id) {
-        return this.tagConfigs.stream().anyMatch(x -> x.has(id));
+        return this.tagCache.containsKey(id);
     }
 
     /**
@@ -361,12 +370,7 @@ public class TagsManager extends Manager {
     @Nullable
     public Tag getTagFromId(@Nullable String id) {
         if (id == null) return null;
-
-        return this.tagConfigs.stream()
-                .map(x -> x.from(id))
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElse(null);
+        return this.tagCache.get(id);
     }
 
     /**
@@ -386,12 +390,12 @@ public class TagsManager extends Manager {
      * @param tag The tag
      */
     public void setEveryone(Tag tag) {
-        this.rosePlugin.getManager(DataManager.class).updateUsers(tag, new ArrayList<>(
-                Bukkit.getOnlinePlayers()
+        this.rosePlugin.getManager(DataManager.class).updateUsers(tag,
+                new ArrayList<>(Bukkit.getOnlinePlayers()
                         .stream()
                         .map(Player::getUniqueId)
-                        .collect(Collectors.toList()))
-        );
+                        .collect(Collectors.toList())
+                ));
     }
 
     /**
@@ -403,13 +407,10 @@ public class TagsManager extends Manager {
     public Tag getRandomTag(@Nullable OfflinePlayer offlinePlayer) {
         List<Tag> tags = new ArrayList<>(this.getCachedTags().values());
 
-        if (offlinePlayer != null && offlinePlayer.getPlayer() != null)
-            tags = this.getPlayerTags(offlinePlayer.getPlayer());
+        if (offlinePlayer != null && offlinePlayer.getPlayer() != null) tags = this.getPlayerTags(offlinePlayer.getPlayer());
+        if (tags.isEmpty()) return null;
 
-        if (tags.isEmpty())
-            return null;
-
-        return tags.get(random.nextInt(tags.size()));
+        return tags.get(RANDOM.nextInt(tags.size()));
     }
 
     /**
@@ -462,6 +463,18 @@ public class TagsManager extends Manager {
     }
 
     /**
+     * Get the tags section from an existing config
+     *
+     * @param section The section or config to load from
+     * @return The resulting section
+     */
+    public CommentedConfigurationSection getTagSection(@NotNull CommentedConfigurationSection section) {
+        CommentedConfigurationSection result = section.getConfigurationSection("tags");
+        if (result == null) section.createSection("tags");
+        return result;
+    }
+
+    /**
      * Get the tag placeholders for the given player
      *
      * @param tag The tag
@@ -472,19 +485,11 @@ public class TagsManager extends Manager {
                 .add("id", tag.getId())
                 .add("name", tag.getName())
 //                .add("description", String.join(Setting.DESCRIPTION_DELIMITER.getString(), tag.getDescription()))
-                .add("permission", tag.getPermission())
-                .add("order", tag.getOrder())
-                .build();
+                .add("permission", tag.getPermission()).add("order", tag.getOrder()).build();
     }
 
     public Map<String, Tag> getCachedTags() {
-        Map<String, Tag> result = new HashMap<>();
-        this.tagConfigs.forEach(x -> result.putAll(x.tags()));
-
-        return result;
+        return this.tagCache;
     }
 
-    public List<TagConfig> getTagConfigs() {
-        return tagConfigs;
-    }
 }

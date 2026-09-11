@@ -2,7 +2,6 @@ package dev.oribuin.eternaltags.command.impl;
 
 import dev.oribuin.eternaltags.manager.TagsManager;
 import dev.oribuin.eternaltags.obj.Tag;
-import dev.oribuin.eternaltags.obj.TagConfig;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.command.framework.BaseRoseCommand;
 import dev.rosewood.rosegarden.command.framework.CommandContext;
@@ -49,7 +48,6 @@ public class ConvertCommand extends BaseRoseCommand {
         LegacyComponentSerializer serializer = LegacyComponentSerializer.legacyAmpersand();
         MiniMessage miniMessage = MiniMessage.miniMessage();
 
-
         Map<String, Tag> result = new HashMap<>();
         for (String key : tagSection.getKeys(false)) {
             String name = tagSection.getString(key + ".name");
@@ -61,19 +59,12 @@ public class ConvertCommand extends BaseRoseCommand {
             TextComponent legacySerialized = serializer.deserialize(content);
             String miniMessageSerialized = miniMessage.serialize(legacySerialized);
 
-            Tag tag = new Tag(key, name, miniMessageSerialized);
+            Tag tag = new Tag(target.toPath(), key, name, miniMessageSerialized);
             tag.setPermission(permission);
             result.put(key, tag);
         }
-
-        TagConfig tagConfig = new TagConfig(
-                target,
-                CommentedFileConfiguration.loadConfiguration(target),
-                result
-        );
-
-        tagConfig.writeAll();
-        manager.getTagConfigs().add(tagConfig);
+        
+        manager.getCachedTags().putAll(result);
     }
 
     @Override

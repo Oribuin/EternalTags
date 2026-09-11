@@ -8,9 +8,11 @@ import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.config.SettingSerializer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,13 +21,15 @@ public class Tag {
     private @NotNull String id; // The id of the tag
     private @NotNull String name; // The name of the tag
     private @NotNull String content; // The tag to be added to the player
-    private @Nullable String permission;   // The permission required to use the tag
     private @NotNull List<String> description; // The description of the tag
-    private Integer order; // The order of the tag
+    private @Nullable String permission;   // The permission required to use the tag
+    private @NotNull Integer order; // The order of the tag
+    private @Nullable Path destination;
 
     /**
      * Create a new tag from the plugin config file
      *
+     * @param destination The target file that the tag is saved in
      * @param id          The id of the tag
      * @param name        The display name of the tag
      * @param content     The content to display inside the tag
@@ -33,7 +37,8 @@ public class Tag {
      * @param permission  The permission required to use the tag
      * @param order       The order of the tag in the gui
      */
-    public Tag(@NotNull String id, @NotNull String name, @NotNull String content, @NotNull List<String> description, @Nullable String permission, @Nullable Integer order) {
+    public Tag(@Nullable Path destination, @NotNull String id, @NotNull String name, @NotNull String content, @NotNull List<String> description, @Nullable String permission, @NotNull Integer order) {
+        this.destination = destination;
         this.id = id;
         this.name = name;
         this.content = content;
@@ -49,8 +54,8 @@ public class Tag {
      * @param name    The display name of the tag
      * @param content The content to display inside the tag
      */
-    public Tag(@NotNull String id, @NotNull String name, @NotNull String content) {
-        this(id, name, content, new ArrayList<>(), "eternaltags.tag." + id, -1);
+    public Tag(@Nullable Path destination, @NotNull String id, @NotNull String name, @NotNull String content) {
+        this(destination, id, name, content, new ArrayList<>(), "eternaltags.tag." + id, 0);
     }
 
     /**
@@ -58,7 +63,7 @@ public class Tag {
      */
     public final static SettingSerializer<Tag> SERIALIZER = new BaseSettingSerializer<>(Tag.class) {
         @Override
-        public void write(ConfigurationSection config, String key, Tag value, String... comments) {
+        public void write(@NotNull ConfigurationSection config, @NotNull String key, @NotNull Tag value, String... comments) {
             config.set(key + ".name", value.getName());
             config.set(key + ".content", value.getContent());
             config.set(key + ".description", value.getDescription());
@@ -67,19 +72,23 @@ public class Tag {
         }
 
         @Override
-        public Tag read(ConfigurationSection config, String key) {
+        public @Nullable Tag read(@NotNull ConfigurationSection config, @NotNull String key) {
             String name = config.getString(key + ".name");
             String content = config.getString(key + ".content");
             List<String> description = config.getStringList(key + ".description");
             String permission = config.getString(key + ".permission");
-            int order = config.getInt(key + ".order", -1);
+            int order = config.getInt(key + ".order", 0);
             if (name == null || content == null) return null;
 
-            Tag tag = new Tag(key.toLowerCase(), name, content);
-            tag.setDescription(description);
-            tag.setPermission(permission);
-            tag.setOrder(order);
-            return tag;
+            return new Tag(
+                    null,
+                    key.toLowerCase(),
+                    name,
+                    content,
+                    description,
+                    permission,
+                    order
+            );
         }
     };
 
@@ -91,13 +100,8 @@ public class Tag {
      * @return The loaded tag
      */
     public static Tag fromConfig(CommentedConfigurationSection base, String key) {
-        Tag tag = SERIALIZER.read(base, key);
-        if (tag == null) return null;
-
-        tag.setId(key.toLowerCase());
-        return tag;
+        return SERIALIZER.read(base, key);
     }
-
 
     /**
      * Equip a tag to a specific player.
@@ -179,12 +183,20 @@ public class Tag {
         this.description = description;
     }
 
-    public int getOrder() {
+    public @NotNull Integer getOrder() {
         return order;
     }
 
-    public void setOrder(int order) {
+    public void setOrder(@NotNull Integer order) {
         this.order = order;
     }
 
+    public @Nullable Path getDestination() {
+        return destination;
+    }
+
+    public void setDestination(@Nullable Path destination) {
+        this.destination = destination;
+    }
+    
 }

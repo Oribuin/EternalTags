@@ -83,8 +83,14 @@ public class Setting implements SettingHolder {
             "Example: 'tag-formatting: '%tag% <white><reset>' to add a space and white color on the end of the tag."
     );
 
-    // TODO: save-data-sql
-
+    /**
+     * The name of the file that default tags will be created in
+     */
+    public static RoseSetting<String> DEFAULT_FILE = create(
+            "default-tags-file", STRING, "default.yml",
+            "The default file that tags created ingame will be placed into."
+    );
+    
     /**
      * Establishes a configuration setting for the plugin which will be generated on reload.
      *
