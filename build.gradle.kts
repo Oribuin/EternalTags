@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "dev.oribuin"
-version = "2.0.0-pre1"
+version = "2.0.0-pre2"
 
 
 java {
