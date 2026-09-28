@@ -1,19 +1,17 @@
-import org.apache.tools.ant.filters.ExpandProperties
-
 plugins {
     `java-library`
-    `maven-publish` 
+    `maven-publish`
     id("com.gradleup.shadow") version "9.4.1"
 }
 
 group = "dev.oribuin"
-version = "2.0.0-pre2"
+version = "2.0.0-pre3"
 
 
 java {
     sourceCompatibility = JavaVersion.VERSION_21
     targetCompatibility = JavaVersion.VERSION_21
-    
+
     disableAutoTargetJvm()
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(25))
@@ -40,7 +38,7 @@ dependencies {
         exclude(group = "com.google.code.gson", module = "gson") // Remove GSON, Already included in spigot api
         exclude(group = "net.kyori", module = "*") // Remove kyori
     }
-    
+
     compileOnly("io.papermc.paper:paper-api:26.1.2.build.5-alpha")
     compileOnly("com.mojang:authlib:1.5.21")
     compileOnly("me.clip:placeholderapi:2.12.3")
@@ -50,7 +48,7 @@ dependencies {
 }
 
 tasks {
-    
+
     compileJava {
         this.options.compilerArgs.add("-parameters")
         this.options.isFork = true
@@ -74,7 +72,38 @@ tasks {
         }
     }
 
+
+    publishing {
+        publications {
+            create<MavenPublication>("shadow") {
+                from(components["shadow"])
+
+                groupId = project.group as String
+                artifactId = rootProject.name
+                repositories {
+                    if (project.hasProperty("mavenUser") && project.hasProperty("mavenPassword")) {
+                        maven {
+                            val version = project.version as String
+                            credentials {
+                                username = project.property("mavenUser") as String?
+                                password = project.property("mavenPassword") as String?
+                            }
+
+                            val releasesRepoUrl = "https://repo.rosewooddev.io/repository/public-releases/"
+                            val snapshotsRepoUrl = "https://repo.rosewooddev.io/repository/public-snapshots/"
+                            url = uri(if (version.endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     build {
         this.dependsOn(shadowJar)
+    }
+
+    this.named("generateMetadataFileForShadowPublication") {
+        this.dependsOn("jar")
     }
 }

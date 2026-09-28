@@ -16,7 +16,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.yaml.snakeyaml.events.CommentEvent;
 
 import java.io.File;
 import java.io.IOException;
@@ -227,7 +226,7 @@ public class TagsManager extends Manager {
         }
 
         CommentedFileConfiguration config = this.configCache.computeIfAbsent(
-                file.toPath(), 
+                file.toPath(),
                 path -> CommentedFileConfiguration.loadConfiguration(file)
         );
         CommentedConfigurationSection section = this.getTagSection(config);
@@ -472,6 +471,19 @@ public class TagsManager extends Manager {
         CommentedConfigurationSection result = section.getConfigurationSection("tags");
         if (result == null) section.createSection("tags");
         return result;
+    }
+
+    /**
+     * Get a config file from a config path
+     *
+     * @param path The path to the file
+     * @return The cached config file or a new cached object
+     */
+    public CommentedFileConfiguration getConfigCache(@NotNull Path path) {
+        return this.configCache.computeIfAbsent(
+                path,
+                x -> CommentedFileConfiguration.loadConfiguration(path.toFile())
+        );
     }
 
     /**

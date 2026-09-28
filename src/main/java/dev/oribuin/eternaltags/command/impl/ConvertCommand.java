@@ -38,12 +38,17 @@ public class ConvertCommand extends BaseRoseCommand {
         } catch (IOException ignored) {
         }
 
+
+        CommentedFileConfiguration targetConfig = CommentedFileConfiguration.loadConfiguration(target);
         CommentedFileConfiguration originalConfig = CommentedFileConfiguration.loadConfiguration(original);
         CommentedConfigurationSection tagSection = originalConfig.getConfigurationSection("tags");
         if (tagSection == null) {
             sender.sendMessage("no tags section in original tags.yml");
             return;
         }
+
+        CommentedConfigurationSection targetSection = targetConfig.getConfigurationSection("tags");
+        if (targetSection == null) targetSection = targetConfig.createSection("tags");
 
         LegacyComponentSerializer serializer = LegacyComponentSerializer.legacyAmpersand();
         MiniMessage miniMessage = MiniMessage.miniMessage();
@@ -61,10 +66,15 @@ public class ConvertCommand extends BaseRoseCommand {
 
             Tag tag = new Tag(target.toPath(), key, name, miniMessageSerialized);
             tag.setPermission(permission);
+
+            Tag.SERIALIZER.write(targetSection, tag.getId(), tag);
             result.put(key, tag);
         }
-        
+
+        targetConfig.save(target);
+
         manager.getCachedTags().putAll(result);
+        context.getSender().sendMessage("Converted a total of [" + result.size() + "] tags from `/EternalTags/tags.yml` to `/EternalTags/tags/converted.yml`");
     }
 
     @Override
