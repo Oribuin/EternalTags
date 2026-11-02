@@ -16,9 +16,9 @@ public class ReloadCommand extends BaseRoseCommand {
 
     @RoseExecutable
     public void execute(CommandContext context) {
-        MenuProvider.reload(); // Reload all menus
         this.rosePlugin.reload();
         this.rosePlugin.getManager(LocaleManager.class).sendCommandMessage(context.getSender(), "command-reload-reloaded");
+        MenuProvider.reload(); // Reload all menus
     }
 
     @Override

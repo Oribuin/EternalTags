@@ -60,7 +60,9 @@ public class TagsManager extends Manager {
 
         this.defaultFile = TAGS_FOLDER.resolve(Setting.DEFAULT_FILE.get());
         this.configCache.putIfAbsent(this.defaultFile, CommentedFileConfiguration.loadConfiguration(defaultFile.toFile()));
-
+        this.tagCache.clear();
+        this.configCache.clear();
+        
         // Load all the config files <3
         CompletableFuture.runAsync(() -> {
             List<File> results = this.searchFolder(folder);
